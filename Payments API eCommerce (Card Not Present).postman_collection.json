@@ -1,0 +1,1676 @@
+{
+  "info": {
+    "_postman_id": "1d68b4d8-8558-4c7b-b6eb-a76287467e71",
+    "name": "Payments API eCommerce (Card Not Present)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54730134",
+    "_collection_link": "https://go.postman.co/collection/54730134-1d68b4d8-8558-4c7b-b6eb-a76287467e71?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authenticate_FundingBatch_QA_notused",
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "content-length": true,
+          "host": true,
+          "user-agent": true,
+          "accept": true,
+          "accept-encoding": true,
+          "connection": true
+        }
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n   \"username\": \"WellfitAutomation\",\r\n  \"password\": \"Testing123!!W3llf1tGr3at!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  //\"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_FundingBatch_QA_New",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Funding-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Funding-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n  //.\"password\": \"Test123!\"\r\n   \"username\": \"WellfitAutomation\",\r\n  \"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n // \"password\": \"Test123!\"\r\n // \"username\": \"WellfitOnBoardingAPI\",\r\n // \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_FundingBatch_Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Funding-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Funding-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  //\"username\": \"WellfitAutomation\",\r\n // \"password\": \"Testing123!!W3llf1tGr3at!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   \"password\": \"Testing123!!W3llf1t1!\"\r\n  //\"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Payment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n \"password\": \"Test123!\"\r\n// \"username\": \"PDSAccounting\",\r\n // \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Refund",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Refund Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Payment-Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  //\"password\": \"Testing123!!W3llf1t1!\"\r\n  //\"username\": \"WellfitUnifiedPaymentsAPI\", \r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\", //Pre Prod\r\n   \"password\": \"Testing123!!W3llf1t1!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_ElectronickCheck",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Check-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Check-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n// \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_ElectronickCheck Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Check-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Check-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Testing123!!W3llf1t1!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Bank Account",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{URL}}/account/get-submerchant-details?processor=Vantiv&subMerchantId=0135747",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "account",
+            "get-submerchant-details"
+          ],
+          "query": [
+            {
+              "key": "processor",
+              "value": "Vantiv",
+              "description": "Name of the payment processor"
+            },
+            {
+              "key": "subMerchantId",
+              "value": "0135747",
+              "description": "ID of the sub-merchant"
+            }
+          ]
+        },
+        "description": "Gets The Dental Office on Red Hill bank account information"
+      },
+      "response": []
+    },
+    {
+      "name": "Tokenize Credit Card",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"accountNumber\": \"4457010000000009\",\r\n  \"cvv\": \"349\",\r\n  \"processor\": \"Vantiv\",\r\n  \"subMerchantId\": \"01334267\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/tokenize-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "tokenize-card"
+          ]
+        },
+        "description": "Tokenizes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Tokenize Check",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"accountNumber\": \"11130125\",\r\n  \"routingNumber\": \"11100125\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/electronic-check/tokenize-check",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "electronic-check",
+            "tokenize-check"
+          ]
+        },
+        "description": "Tokenizes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Registered Token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"processor\": \"Vantiv\",\r\n  \"registrationId\":\"OU43alhFODB1MkcyRVlKcDJUQXRhd1RhQU04Y043YlBBcWVTbDdXSnM4dTJ0TUorMHY1VWt5R2VZYnZveVI0SA==\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/get-registered-card-token",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "get-registered-card-token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (VISA)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 101,\r\n  //\"cvv\": \"123\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-9967\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n//\"token\": \"BB2D0000-480B-0022-FF16-08DD680F655F\", //token guid\r\n \"token\": \"5452292293501079716\",\r\n  \"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (AMEX)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 100,\r\n  \"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-1980\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n//\"token\": \"BB2D0000-480B-0022-FF16-08DD680F655F\", //token guid\r\n \"token\": \"113300101080009\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (DISCOVER)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 100,\r\n  \"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-9852\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n//\"token\": \"BB2D0000-480B-0022-FF16-08DD680F655F\", //token guid\r\n \"token\": \"1114000265160004\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (MASTER)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 123,\r\n  \"cvv\": \"123\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-1970\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n//\"token\": \"BB2D0000-480B-0022-FF16-08DD680F655F\", //token guid\r\n \"token\": \"1132000101070001\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (VISA) TokenGUID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 100,\r\n  \"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-2343\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n\"token\": \"21a70000-bd06-6045-1c4a-08dd7155a3ab\", //token guid\r\n //\"token\": \"5541039289404422\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (AMEX) TokenGUID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 100,\r\n  \"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-1890\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n\"token\": \"21a70000-bd06-6045-1c4a-08dd7155a3ab\", //token guid\r\n// \"token\": \"5541039289404422\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (DISCOVER) TokenGUID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 100,\r\n // \"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-1888\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n\"token\": \"21a70000-bd06-6045-58f1-08dd712df9ee\", //token guid\r\n //\"token\": \"5541039289404422\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card-2/3/22 (MASTER) TokenGUID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 100,\r\n  \"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-9876\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n\"token\": \"982d0000-480b-0022-316c-08dd71539ead\", //token guid\r\n //\"token\": \"5541039289404422\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "GetTRansactionDetails",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {
+          "content-type": true
+        }
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n //\"submerchantId\": \"EBD941F3-E725-463D-ADBD-0F61280EBCAD\",// Monet Stage\r\n\"submerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\", //Mesa Valley - Stage\r\n// \"orderId\": \"Postman-Process-Card-2502\", //CNP\r\n \"orderId\": \"Testin25\",  //CP\r\n  // \"submerchantId\": \"BA6590D2-CF05-4887-AE56-3540173E35C4\",\r\n // \"orderId\": \"Testin24\",\r\n // \"transactionId\": \"83995351233879337\", //CNP\r\n   \"transactionId\": \"442905529-1394\" ,// CP\r\n  \"amount\": \"189.00\",\r\n  \"fromDate\": \"2024-10-23\",\r\n   \"toDate\": \"2024-10-24\"\r\n}"
+        },
+        "url": {
+          "raw": "https://stage-platform.wellfit.com/payments/query/get-transaction-details",
+          "protocol": "https",
+          "host": [
+            "stage-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "query",
+            "get-transaction-details"
+          ],
+          "query": [
+            {
+              "key": "submerchantId",
+              "value": "CB8AC646-B45B-4304-BDC1-17FB9D100761",
+              "disabled": true
+            },
+            {
+              "key": "orderId",
+              "value": "2805e58c0ca04541bea56dd54",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Credit Card PayPage-2/3/22",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//\r\n//You should NEVER send CVV or Zip Code when using a token\r\n//You should ONLY send zip code with PayPage\r\n//You should ONLY send CVV when validating the card with a $0 auth\r\n//All of those are in postman just for those purposes\r\n//CVV is part of Paypage and never sent in our products with token\r\n{\r\n  \"amount\": 199,\r\n  //\"cvv\": \"349\",\r\n  \"expirationDate\": \"0327\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"Postman-Process-Card-2211\",\r\n  \"payFacFee\": 0.00,\r\n//  \"subMerchantId\": \"01334270\",\r\n//\"subMerchantId\": \"a36c0000-3a32-000d-5a1d-08dd1961183d\",\r\n //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //QA -11\r\n//\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\", // QA -468\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", // Stage -Park West - 101\r\n//\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", // Stage -Redhil\r\n\"subMerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\", // Stage -468\r\n//\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\", // Stage -Monet\r\n// \"token\": \"1111000270410009\", //-- works but correct paymenttype not loding on payments table\r\n//\"token\": \"6510004177830828\", //- not working\r\n//\"token\": \"A64B0000-4803-0022-8F88-08DE27AA72B1\", //token guid\r\n \"token\": \"1112000332035454\",  //pre-prod\r\n// \"token\": \"1111000394260009\",\r\n  //\"zipCode\": \"01803\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12218\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/process-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "process-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Authorize Card Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"token\": \"1111000270410009\",\r\n  \"amount\": 0.00,\r\n  \"cvv\": \"349\",\r\n  \"expirationDate\": \"0224\",\r\n  \"network\": \"VI\",\r\n  \"orderId\": \"testorder2\",\r\n  \"processor\": \"Vantiv\",\r\n  \"subMerchantId\": \"0135747\",\r\n  \"zipCode\": \"01803\",\r\n   \"metadata\": \"{\\\"test\\\":\\\"1234\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/authorize-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "authorize-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Authorize Card PayPage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "BearerToken{{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"payPageRegistrationId\": \"9122455576829883944\", \r\n  \"amount\": 0.00,\r\n  \"expirationDate\": \"0226\",\r\n  \"network\": \"Visa\",\r\n  \"orderId\": \"securityCodeFilter1\",\r\n  \"processor\": \"Vantiv\",\r\n  \"zipCode\": \"01803\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/authorize-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "authorize-card"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Trigger Disbursement",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Smile Health Core Benefit Assignment\",\r\n  \"orderId\": \"1234567890\",\r\n  \"paymentTransactionId\": \"84069722371850414\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/disbursement/trigger-disbursement",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "disbursement",
+            "trigger-disbursement"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Trigger Disbursement Variables",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Smile Generation Dental Plan Sale By Office\",\r\n  \"orderId\": \"1234567890\",\r\n  \"paymentTransactionId\": \"49926175\",\r\n  \"variables\": [\r\n    {\r\n      \"name\": \"Practice\",\r\n      \"value\": \"01334267\"\r\n    },\r\n    {\r\n      \"name\": \"AdminFeeAmount\",\r\n      \"value\": \"17.00\"\r\n    }\r\n  ]\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/disbursement/trigger-disbursement",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "disbursement",
+            "trigger-disbursement"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Funding Batch",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Funding-Bearer-Token}}",
+            "type": "text"
+          },
+          {
+            "key": "api_key",
+            "value": "V2VsbGZpdEF1dG9tYXRpb246VGVzdDEyMyE=",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{URL}}/generate-funding-batch",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "generate-funding-batch"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Funding-settlement-data- do not use",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Funding-Bearer-Token}}",
+            "type": "text"
+          },
+          {
+            "key": "api_key",
+            "value": "V2VsbGZpdEF1dG9tYXRpb246VGVzdDEyMyE=",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"settlementDate\": \"2023-04-06\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/funding-settlement-data",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "funding-settlement-data"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Funding Settlement",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Funding-Bearer-Token}}",
+            "type": "text"
+          },
+          {
+            "key": "api_key",
+            "value": "V2VsbGZpdEF1dG9tYXRpb246VGVzdDEyMyE=",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"settlementDate\": \"2023-04-06\"\r\n}"
+        },
+        "url": {
+          "raw": "https://qa-platform.wellfit.com/unifiedpayments/funding-settlement-data",
+          "protocol": "https",
+          "host": [
+            "qa-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "unifiedpayments",
+            "funding-settlement-data"
+          ]
+        },
+        "description": "Processes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Send Funding Batch",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Funding-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": " {\r\n \"processor\": \"vantiv\"\r\n}"
+        },
+        "url": {
+          "raw": "https://stage-platform.wellfit.com/payments/send-funding-batch",
+          "protocol": "https",
+          "host": [
+            "stage-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "send-funding-batch"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process Funding Batch-New",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Funding-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": " {\r\n \"processor\": \"worldpay\"\r\n}"
+        },
+        "url": {
+          "raw": "https://stage-platform.wellfit.com/payments/process-funding-batch-response",
+          "protocol": "https",
+          "host": [
+            "stage-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "process-funding-batch-response"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Refund Transaction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"amount\": 150,\r\n  \"orderId\": \"Postman-Process-Card-9240\",\r\n  \"originalTransactionId\": \"83999339462075814\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/refund-transaction",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "refund-transaction"
+          ]
+        },
+        "description": "Refunds a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "Process Check_New-QA",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Check-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n \"accountNumber\": \"11000011\",\r\n \"accountType\": \"Checking\",\r\n \"amount\": 56,\r\n \"firstName\": \"Radhika\",\r\n \"isToken\": false,\r\n \"lastName\": \"Kandoori\",\r\n \"orderId\": \"2326\",\r\n \"payFacFee\": 0,\r\n \"processor\": \"vantiv\",\r\n \"routingNumber\": \"211370545\",\r\n //Redhill - QA,\r\n\"subMerchantId\": \"105ABFBF-EE77-48AD-BF89-2C8B9665DE16\",\r\n // For ECheck negative amount QA\r\n //\"subMerchantId\": \"1D550000-3A34-000D-889B-08D412345678\",\r\n //\"subMerchantId\": \"01334267\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"Rad\\\"}\"\r\n}\r\n"
+        },
+        "url": {
+          "raw": "https://qa-platform.wellfit.com/payments/electronic-check/process-check",
+          "protocol": "https",
+          "host": [
+            "qa-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "electronic-check",
+            "process-check"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process Check_New-Stage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Check-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n \"accountNumber\": \"11000011\",\r\n \"accountType\": \"Checking\",\r\n \"amount\":-158,\r\n \"firstName\": \"Radhika\",\r\n \"isToken\": false,\r\n \"lastName\": \"Kandoori\",\r\n \"orderId\": \"2322\",\r\n \"payFacFee\": 0,\r\n \"processor\": \"vantiv\",\r\n \"routingNumber\": \"211370545\",\r\n //\"subMerchantId\": \"01334267\",\r\n //\"subMerchantId\": \"4C7F9C17-33EE-455A-AAEB-31AFAC123456\",\r\n \"subMerchantId\": \"4C7F9C17-33EE-455A-AAEB-31AFAC123456\", //allowachcredits -negative amount\r\n  \"metadata\": \"{\\\"test\\\":\\\"Rad\\\"}\"\r\n}\r\n"
+        },
+        "url": {
+          "raw": "https://stage-platform.wellfit.com/payments/electronic-check/process-check",
+          "protocol": "https",
+          "host": [
+            "stage-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "electronic-check",
+            "process-check"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process Check_New-Stage Copy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Check-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n \"accountNumber\": \"11000011\",\r\n \"accountType\": \"Checking\",\r\n \"amount\":99,\r\n \"firstName\": \"Radhika\",\r\n \"isToken\": false,\r\n \"lastName\": \"Kandoori\",\r\n \"orderId\": \"2322\",\r\n \"payFacFee\": 0,\r\n \"processor\": \"vantiv\",\r\n \"routingNumber\": \"211370545\",\r\n \"subMerchantId\": \"0135747\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"Rad\\\"}\"\r\n}\r\n"
+        },
+        "url": {
+          "raw": "https://qa-platform.wellfit.com/payments/electronic-check/process-check",
+          "protocol": "https",
+          "host": [
+            "qa-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "electronic-check",
+            "process-check"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process Funding Batch-do notuse",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": " {\r\n \"processor\": \"Vantiv\"\r\n}"
+        },
+        "url": {
+          "raw": "https://qa-platform.wellfit.com/payments/process-funding-batch-response",
+          "protocol": "https",
+          "host": [
+            "qa-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "process-funding-batch-response"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set(\"Financing-Bearer-Token\", \"\");\r",
+              "var jsonData = JSON.parse(responseBody);\r",
+              "pm.collectionVariables.set(\"Financing-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"Epic\",\r\n  \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://qa-platform.wellfit.com/unifiedpayments/authenticate",
+          "protocol": "http",
+          "host": [
+            "qa-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "unifiedpayments",
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate Copy-Unified",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set(\"Funding-Bearer-Token\", \"\");\r",
+              "var jsonData = JSON.parse(responseBody);\r",
+              "pm.collectionVariables.set(\"Funding-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n \"username\": \"PDSAccounting\",\r\n \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://qa-platform.wellfit.com/unifiedpayments/authenticate",
+          "protocol": "https",
+          "host": [
+            "qa-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "unifiedpayments",
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "URL",
+      "value": "localhost/payments"
+    },
+    {
+      "key": "Financing-Bearer-Token",
+      "value": ""
+    },
+    {
+      "key": "Funding-Bearer-Token",
+      "value": ""
+    }
+  ]
+}

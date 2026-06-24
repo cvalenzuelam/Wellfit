@@ -1,0 +1,72 @@
+---
+description: Format and context for Wellfit QA manual API test cases (CNP, Pay Page, refunds).
+globs:
+alwaysApply: true
+---
+
+# Wellfit QA — test case generation
+
+When the user asks for **test cases** for this project:
+
+## Language
+
+- **Test case body** (title, AC fields, Preconditions, Expected, Steps): **English** (US client).
+- **Chat explanations** to the user: **Spanish** when they write in Spanish.
+
+## Structure (always use)
+
+1. **Title** line (TestRail style). **Must begin with `Validate that`** — e.g. `Validate that Legacy Payments API publishes enriched Payment.Debit.Submitted when per-transaction limit is exceeded`. **Do not** append environment labels `(STAGE)`, `(DEV)`, or ticket/AC tags (`[PAY-XXXX]`, `[AC-n]`) to the title — Testmo links the ticket separately; use **AC Linked** for AC id and mention environment in **Preconditions** when it matters.
+2. **AC fields** (no `Description` heading — Testmo already labels that section). Start directly with:
+   - **AC Linked:** AC-*n* (and ticket id here if useful, e.g. `PAY-3609 / AC-1`)
+   - **AC Description:** one clear outcome statement.
+3. **`**Preconditions**`** — bold label only (not `###`). Bullet list allowed when it improves clarity; keep it lean.
+4. **`**Expected**`** — same bold label. Concrete where possible (HTTP codes, field names, DB tables).
+5. **`**Steps**`** — same bold label. **Ordered** sequence using **First / Then / Next / Finally** (or equivalent). **One blank line between each step** (each step starts its own paragraph). **No** numbered lists (1. 2. 3.) and **no** bullet points in Steps unless the user asks otherwise.
+
+## Scope — QA vs dev-only ACs
+
+- Generate **manual QA test cases** only for acceptance criteria that QA executes in an environment (API, DB, App Insights, email).
+- **Do not** create test cases for ACs covered exclusively by **unit tests, contract tests, or CI** (routing dispatch, fixture deserialization, etc.) — note those in Jira or link dev CI evidence instead.
+
+## Tone
+
+- **Middle ground**: professional QA English, easy to scan, not robotic legalese, not informal slang.
+- Prefer short paragraphs over walls of text; avoid repeating “per API contract” in every line.
+
+## CNP — token flow (default)
+
+- `POST {{URL}}/authenticate` → **Payment-Bearer-Token**.
+- `POST {{URL}}/credit-card/process-card` with Bearer token.
+- **`token`** in body: **`ProcessorToken`** from DB table **`PaymentTokens`** (not invented in the request).
+- **`subMerchantId`**: often `159F2670-1B71-4EF6-AD30-0EBF0991E2CC` as example; other merchants from merchant data as needed.
+- **`network`**: **VI** / **AMEX code** / **Discover code** / **MC** per internal spec when not Pay Page.
+- Happy-path API check: **200 OK**; response may include **`transactionId`**, **`approvalNumber`**, **`billingDescriptor`**, **`token`**, **`expirationDate`** (align with latest Postman/screenshots).
+- **`PaymentTypeMethod`** on **`[Payments].[Payments]`**: **2** = CNP token; **1** = Pay Page. Full mapping: 0 eCheck default, 1 Pay Page, 2 CNP token, 3 Apple Pay, 4 Google Pay, 5 CP device.
+- DB checks use **`[Payments].[Payments]`**, **`[Payments].[Refunds]`**, **`[Payments].[Voids]`** as the user specifies; example query pattern: `SELECT * FROM [Payments].[Payments] WHERE transactionId = '<id>'`.
+
+## CNP — Pay Page (“Wellfit GUID”) flow
+
+- `POST` to **eProtect** `…/eProtect/paypage` (**`x-www-form-urlencoded`**: `paypageId`, `reportGroup`, `orderId`, `id`, `accountNumber`, `cvv`).
+- Test PAN/CVV from **Confluence**; **Paypages** collection varies by card type (VISA, Master, AMEX, Discover).
+- Use **`paypageRegistrationId`** from response on **`POST {{URL}}/credit-card/process-card`** as **`payPageRegistrationId`** (not DB **`token`**).
+- Then authenticate to **`{{URL}}`** and call **`credit-card/process-card`** with Bearer + Pay Page body fields per Postman/internal doc.
+
+## Refunds / voids
+
+- **`POST {{URL}}/refund-transaction`** with **`amount`**, **`orderId`**, **`originalTransactionId`**.
+- **Partial refund**: **`wasVoided`**: **`false`**; **full same-day void**: **`wasVoided`**: **`true`** (confirm against current behavior).
+- DB: partial refunds in **`[Payments].[Refunds]`**; voids in **`[Payments].[Voids]`**; assert **`TransactionId`**, **`Amount`**, **`OrderId`**, **`OriginalPaymentId`** as appropriate.
+
+## Negatives (examples the user documented)
+
+- ZIP mismatch: **409**, `ProcessorResponse.Failure.ZipCode`, `Billing Zip Code Mismatch` — note some test tokens ignore ZIP/CVV; use ZIP-sensitive tokens when needed.
+- Expired / invalid expiry: **409**, `ExpirationDate.Invalid`, message about **MMYY** and future date.
+- CVV mismatch: error response identifiable as CVV/security code (exact shape per env).
+
+## Secrets
+
+- Do not paste real credentials, PANs, or passwords into test cases; reference Confluence / Postman env / test data obliquely.
+
+## References in repo
+
+- Postman: `Payments API eCommerce (Card Not Present).postman_collection.json`, `Paypages.postman_collection.json`, `Payments API triPOS Cloud (Card Present).postman_collection.json`.

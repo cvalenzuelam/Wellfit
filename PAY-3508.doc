@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>[#PAY-3508] 1.2 Rule Evaluation, Email Alert &amp; Observability</title>
+    <meta http-equiv="Content-Type" Content="application/vnd.ms-word; charset=UTF-8">
+        <style type="text/css">
+
+.tableBorder, .grid
+{
+    background-color: #fff;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableBorder td, .grid td
+{
+    vertical-align: top;
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+
+.noPadding
+{
+    padding: 0 !important;
+}
+
+h3 .subText
+{
+    font-size: 60%;
+    font-weight: normal;
+}
+
+.tabLabel
+{
+    font-weight: bold;
+    border: 1px solid #ccc;
+    border-bottom:none;
+    padding: 2px;
+    display: inline;
+}
+
+td.blank
+{
+    padding: 0;
+    margin: 0;
+}
+
+.blank td
+{
+    border: none;
+}
+
+#descriptionArea
+{
+    margin: 0;
+    padding: 2px;
+    border: 1px solid #ccc;
+}
+
+hr
+{
+    border-top:1px solid #aaa;
+}
+
+hr.fullcontent
+{
+  height: 15px;
+  padding: 10px 0;
+  background: #fff url('https://wellfit.atlassian.net/images/icons/hr.gif') no-repeat scroll center;
+}
+
+</style>
+
+</head>
+<body>
+
+<table class="tableBorder" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td bgcolor="#f0f0f0" width="100%" colspan="2" valign="top">
+                            <b><a id="parent_issue_summary" href="https://wellfit.atlassian.net/browse/PAY-3370">Transaction Limit Alerts - 1. Compliance Alert Processing</a></b>
+                <span style="font-size: 9px">(<a id="parent_issue_key" href="https://wellfit.atlassian.net/browse/PAY-3370">PAY-3370</a>)</span>
+                <h3 class="formtitle"><img src="https://wellfit.atlassian.net/images/icons/link_out_bot.gif" width="16" height="16" />
+                        [PAY-3508]&nbsp;<a href="https://wellfit.atlassian.net/browse/PAY-3508">1.2 Rule Evaluation, Email Alert &amp; Observability</a>
+            <span class="subText">
+               Created: 27/Apr/26                   &nbsp;Updated: 08/Jun/26
+
+                                            </span>
+            </h3>
+        </td>
+    </tr>
+    <tr>
+        <td width="20%"><b>Status:</b></td>
+        <td width="80%">In Stage</td>
+    </tr>
+    <tr>
+        <td width="20%"><b>Project:</b></td>
+        <td width="80%"><a href="https://wellfit.atlassian.net/secure/BrowseProject.jspa?id=10016">Payments</a></td>
+    </tr>
+
+        <tr>
+            <td><b>Components:</b></td>
+            <td>
+                            None
+                </td>
+    </tr>
+    
+
+        <tr>
+            <td><b>Affects versions:</b></td>
+            <td>
+                            None
+                </td>
+    </tr>
+    
+
+        <tr>
+            <td><b>Fix versions:</b></td>
+            <td>
+                                        <a title="R9.5 - July2026"
+                href="https://wellfit.atlassian.net/issues/?jql=project%3D10016%20AND%20%22fixVersion%22%3D11535%20ORDER%20BY%20priority%20ASC"
+            >R9.5</a>                        </td>
+    </tr>
+    
+    
+            <td width="20%"><b>Parent:</b></td>
+        <td width="80%"><a href="https://wellfit.atlassian.net/browse/PAY-3370">Transaction Limit Alerts - 1. Compliance Alert Processing</a></td>
+    </table>
+
+<br />
+<table class="grid" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td bgcolor="#f0f0f0" valign="top" width="20%">
+            <b>Type:</b>
+        </td>
+        <td bgcolor="#ffffff" valign="top"  width="30%" >
+            Story
+        </td>
+
+                    <td bgcolor="#f0f0f0">
+                <b>Priority:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top" nowrap>
+                3: Standard
+            </td>
+            </tr>
+    <tr>
+                        <td bgcolor="#f0f0f0" valign="top" width="20%">
+                <b>Reporter:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top"  width="30%" >
+                                        
+                
+        
+            <a class="user-hover" rel="712020:aa2afce0-9df4-4ba4-b955-cd538fded310"
+                id="word_reporter_712020:aa2afce0-9df4-4ba4-b955-cd538fded310"
+                href="https://wellfit.atlassian.net/secure/ViewProfile.jspa?accountId=712020%3Aaa2afce0-9df4-4ba4-b955-cd538fded310">
+                    Swetha Bayya
+                </a>
+
+                            </td>
+        
+                    <td bgcolor="#f0f0f0" width="20%">
+                <b>Assignee:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top" nowrap  width="30%" >
+                                        
+                
+        
+            <a class="user-hover" rel="712020:c31907b0-e8a3-4790-8686-3585fdb11873"
+                id="word_assignee_712020:c31907b0-e8a3-4790-8686-3585fdb11873"
+                href="https://wellfit.atlassian.net/secure/ViewProfile.jspa?accountId=712020%3Ac31907b0-e8a3-4790-8686-3585fdb11873">
+                    Brett Roy
+                </a>
+
+                            </td>
+            </tr>
+    	<tr>
+		<td bgcolor="#f0f0f0" width="20%">
+			<b>Resolution:</b>
+		</td>
+		<td bgcolor="#ffffff" valign="top" width="30%" nowrap>
+            				Unresolved
+                    </td>
+                    <td bgcolor="#ffffff" colspan="2">&nbsp;</td>
+        
+    </tr>
+    
+        <tr>
+        <td bgcolor="#f0f0f0" width="20%">
+            <b>Labels:</b>
+        </td>
+        <td id="labels-133568-value" class="value" bgcolor="#ffffff" valign="top" colspan="3" nowrap>
+                            transaction-limit-compliance-alerts                    </td>
+    </tr>
+    
+    	<tr>
+                <td bgcolor="#f0f0f0" width="20%"><b>Σ Remaining Estimate:</b></td>
+        <td bgcolor="#ffffff" valign="top" nowrap>
+                            5 hours
+                    </td>
+        		<td bgcolor="#f0f0f0" width="20%"><b>Remaining Estimate:</b></td>
+        <td bgcolor="#ffffff" valign="top" nowrap>
+                            Not Specified
+            		</td>
+    </tr>
+    <tr>
+                <td bgcolor="#f0f0f0" width="20%"><b>Σ Time Spent:</b></td>
+        <td bgcolor="#ffffff" valign="top" nowrap>
+                            1 day, 6 hours
+                    </td>
+                <td bgcolor="#f0f0f0" width="20%"><b>Time Spent:</b></td>
+		<td bgcolor="#ffffff" valign="top" nowrap>
+                            Not Specified
+            		</td>
+	</tr>
+    <tr>
+                <td bgcolor="#f0f0f0" width="20%"><b>Σ Original Estimate:</b></td>
+        <td bgcolor="#ffffff" valign="top" nowrap>
+                            1 day, 1 hour
+                    </td>
+                <td bgcolor="#f0f0f0" width="20%"><b>Original estimate:</b></td>
+		<td bgcolor="#ffffff" valign="top" nowrap>
+                            Not Specified
+            		</td>
+    </tr>
+    
+    </table>
+
+
+
+    <br />
+
+    	<table class="grid" cellpadding="0" cellspacing="0" border="0" width="100%">
+            
+
+                <tr>
+            <td bgcolor="#f0f0f0" width=20% valign=top>
+                <b>Attachments:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top">
+                                    <img src="https://wellfit.atlassian.net/images/icons/attach/text.gif" height="16" width="16" border="0" alt="Text File">
+                    PAY-3508-Transaction-Limit-Alert-QA-Testing-Guide.md &nbsp;&nbsp;&nbsp;
+                                    <img src="https://wellfit.atlassian.net/images/icons/attach/text.gif" height="16" width="16" border="0" alt="Text File">
+                    PAY-3508-Transaction-Limit-Alert-QA-Testing-Guide (892e52ac-2bdf-4c2f-aa17-0602fa6b1a33).md &nbsp;&nbsp;&nbsp;
+                            </td>
+        </tr>
+        
+            <tr>
+            <td bgcolor="#f0f0f0" width="20%" valign="top">
+                <b>Issue links:</b>
+            </td>
+            <td bgcolor="#ffffff" valign="top" class="noPadding">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" class="blank">
+                                            <tr>
+                            <td colspan="4" bgcolor="#f0f0f0">
+                                <b>Blocks</b><br/>
+                            </td>
+                        </tr>
+                                                                <tr>
+            <td>
+                is blocked by
+            </td>
+            <td>
+                <a href="https://wellfit.atlassian.net/browse/PAY-3507">
+                     <strike>PAY-3507</strike>                 </a>
+            </td>
+            <td>
+                1.1 Event Subscription Wiring, Consum...
+            </td>
+            <td>
+                Closed
+            </td>
+        </tr>
+                                        </table>
+            </td>
+        </tr>
+    
+
+
+            <tr><td bgcolor="#f0f0f0" width="20%" valign="top"><b>Sub-tasks:</b></td>
+    <td bgcolor="#ffffff" valign="top">
+        <table class="grid" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr bgcolor="#f0f0f0">
+                <td>
+                    <b>Key</b><br/>
+                </td>
+                <td>
+                    <b>Summary</b><br/>
+                </td>
+                <td>
+                    <b>Type</b><br/>
+                </td>
+                <td>
+                    <b>Status</b><br/>
+                </td>
+                <td>
+                    <b>Assignee</b><br/>
+                </td>
+            </tr>
+                            <tr>
+                    <td>
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3511">PAY-3511</a>
+                    </td>
+                    <td valign="top" width="25%">
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3511">QA: Test in Stage</a>
+                    </td>
+                    <td>
+                        Sub-task
+                    </td>
+                    <td>
+                        In Progress
+                    </td>
+                    <td>
+                                                     Ana Oliva (contractor)  &nbsp;
+                                            </td>
+                </tr>
+                            <tr>
+                    <td>
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3512">PAY-3512</a>
+                    </td>
+                    <td valign="top" width="25%">
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3512">QA: Create Test Cases</a>
+                    </td>
+                    <td>
+                        Sub-task
+                    </td>
+                    <td>
+                        Done
+                    </td>
+                    <td>
+                                                     Ana Oliva (contractor)  &nbsp;
+                                            </td>
+                </tr>
+                            <tr>
+                    <td>
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3715">PAY-3715</a>
+                    </td>
+                    <td valign="top" width="25%">
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3715">DEV - 1.2 Rule Evaluation, Email Aler...</a>
+                    </td>
+                    <td>
+                        Sub-task
+                    </td>
+                    <td>
+                        Done
+                    </td>
+                    <td>
+                                                     Brett Roy  &nbsp;
+                                            </td>
+                </tr>
+                            <tr>
+                    <td>
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3793">PAY-3793</a>
+                    </td>
+                    <td valign="top" width="25%">
+                        <a href="https://wellfit.atlassian.net/browse/PAY-3793">DEV - Fix Email And SubMerchant Name ...</a>
+                    </td>
+                    <td>
+                        Sub-task
+                    </td>
+                    <td>
+                        In Progress
+                    </td>
+                    <td>
+                                                     Brett Roy  &nbsp;
+                                            </td>
+                </tr>
+                    </table>
+    </td>
+</tr>
+    
+                        <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Sprint:</b></td>
+                <td id="customfield_10020-133568-value" class="value" bgcolor="#ffffff" width="80%">PAY‑Sprint 15</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>QA Required:</b></td>
+                <td id="customfield_10046-133568-value" class="value" bgcolor="#ffffff" width="80%">    Yes
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Health Status:</b></td>
+                <td id="customfield_10129-133568-value" class="value" bgcolor="#ffffff" width="80%">    Green
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Grooming Status:</b></td>
+                <td id="customfield_10176-133568-value" class="value" bgcolor="#ffffff" width="80%">    7-Groomed
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>BMAD_Generated:</b></td>
+                <td id="customfield_11558-133568-value" class="value" bgcolor="#ffffff" width="80%">
+
+
+    <div class="shorten" id="customfield_11558-field">
+        							<span>Yes</span>			            </div>
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>BMAD_SP:</b></td>
+                <td id="customfield_11559-133568-value" class="value" bgcolor="#ffffff" width="80%">    5
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Contributors:</b></td>
+                <td id="customfield_11832-133568-value" class="value" bgcolor="#ffffff" width="80%">    <div class="shorten" id="customfield_11832-field">
+                                    <span class="tinylink">        <span class="user-hover" rel="8600c0b8-21e1-4317-95ee-ef73fe49daf3" id="multiuser_cf_8600c0b8-21e1-4317-95ee-ef73fe49daf3">Ana Oliva (contractor)</span></span>,                                                 <span class="tinylink">        <span class="user-hover" rel="712020:c31907b0-e8a3-4790-8686-3585fdb11873" id="multiuser_cf_712020:c31907b0-e8a3-4790-8686-3585fdb11873">Brett Roy</span></span>                        </div>
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Contributors - Dev:</b></td>
+                <td id="customfield_11868-133568-value" class="value" bgcolor="#ffffff" width="80%">    <div class="shorten" id="customfield_11868-field">
+                                    <span class="tinylink">        <span class="user-hover" rel="712020:c31907b0-e8a3-4790-8686-3585fdb11873" id="multiuser_cf_712020:c31907b0-e8a3-4790-8686-3585fdb11873">Brett Roy</span></span>                        </div>
+</td>
+            </tr>
+                                <tr>
+                <td bgcolor="#f0f0f0" width="20%" valign="top"><b>Contributors - QA:</b></td>
+                <td id="customfield_11869-133568-value" class="value" bgcolor="#ffffff" width="80%">    <div class="shorten" id="customfield_11869-field">
+                                    <span class="tinylink">        <span class="user-hover" rel="8600c0b8-21e1-4317-95ee-ef73fe49daf3" id="multiuser_cf_8600c0b8-21e1-4317-95ee-ef73fe49daf3">Ana Oliva (contractor)</span></span>                        </div>
+</td>
+            </tr>
+            </table>
+
+    <br/>
+
+    <table cellpadding="2" cellspacing="0" border="0" width="100%" align="center">
+    <tr>
+        <td bgcolor="#bbbbbb" width="1%" nowrap align="center">
+            &nbsp;<font color="#ffffff"><b>Description</b></font>&nbsp;
+        </td>
+        <td>&nbsp;</td>
+    </tr>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td id="descriptionArea">
+            <p>As a compliance officer,<br/>
+I want the Compliance Monitor to evaluate incoming payment events for transaction limit breaches and send detailed email alerts when a breach is detected,<br/>
+So that the compliance team is notified immediately with all relevant transaction details and can take appropriate action.</p>
+
+<p>This story builds on Story 1.1's skeleton processor to implement the full processing logic: defense-in-depth status filtering, rejection reason evaluation, email content generation via IEmailContentService, email delivery, configuration of the alert recipient, and structured logging for AlertSent, AlertSkipped, and AlertFailed scenarios.</p>
+
+<h3><a name="AcceptanceCriteria"></a>Acceptance Criteria</h3>
+
+<p><b>Business Criteria (Non-Technical):</b></p>
+
+<p><b>Given</b> a payment event arrives with status "Declined" and rejection reason "TransactionLimitExceeded"<br/>
+<b>When</b> the Compliance Monitor processes the event<br/>
+<b>Then</b> an email alert is sent to the Compliance inbox containing merchant name, merchant ID, configured limit, attempted amount, timestamp, and percentage above limit<br/>
+<b>And</b> no impact to transaction processing performance</p>
+
+<p><b>Given</b> a payment event arrives with status "Approved"<br/>
+<b>When</b> the Compliance Monitor processes the event<br/>
+<b>Then</b> no email is sent and no error is raised</p>
+
+<p><b>AC-1: Status Filtering (Defense-in-Depth)</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> a Payment.Debit.Submitted event with status not equal to "Declined"</li>
+	<li><b>When</b> processed by TransactionLimitExceededProcessor</li>
+	<li><b>Then</b> EventGridResult.Acknowledge is returned</li>
+	<li><b>And</b> AlertSkipped is logged at Debug level with skipReason: "StatusNotDeclined"</li>
+	<li><b>And</b> no email is sent</li>
+</ul>
+
+
+<p><b>AC-2: Limit Breach Rule Match — Email Sent</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> a Payment.Debit.Submitted event with status: "Declined", rejectionReason: "TransactionLimitExceeded", and configuredTransactionLimit is not null</li>
+	<li><b>When</b> processed by TransactionLimitExceededProcessor</li>
+	<li><b>Then</b> email content is generated via IEmailContentService.GenerateTransactionLimitExceededContent() and sent via IEmailService</li>
+	<li><b>And</b> AlertSent is logged at Information level with merchantId, rejectionReason, attemptedAmount, configuredLimit</li>
+	<li><b>And</b> EventGridResult.Acknowledge is returned</li>
+</ul>
+
+
+<p><b>AC-3: Non-Matching Rejection Reason — Skipped</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> a Payment.Debit.Submitted event with status: "Declined" but rejectionReason is NOT "TransactionLimitExceeded"</li>
+	<li><b>When</b> processed</li>
+	<li><b>Then</b> AlertSkipped is logged at Information level with skipReason: "NonMatchingRejectionReason"</li>
+	<li><b>And</b> no email is sent, EventGridResult.Acknowledge returned</li>
+</ul>
+
+
+<p><b>AC-4: Missing Configured Limit — Skipped</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> a Payment.Debit.Submitted event with status: "Declined", rejectionReason: "TransactionLimitExceeded", but configuredTransactionLimit is null</li>
+	<li><b>When</b> processed</li>
+	<li><b>Then</b> AlertSkipped is logged at Information level with skipReason: "NoConfiguredLimit"</li>
+	<li><b>And</b> no email is sent, EventGridResult.Acknowledge returned</li>
+</ul>
+
+
+<p><b>AC-5: Email Content Fields</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> a limit breach event is processed successfully</li>
+	<li><b>When</b> IEmailContentService.GenerateTransactionLimitExceededContent() is called</li>
+	<li><b>Then</b> the email content includes: merchant name, merchant ID (subMerchantAccountId), configured limit, attempted amount, timestamp, and percentage above limit</li>
+	<li><b>And</b> percentage above limit is calculated as ((amount - configuredLimit) / configuredLimit) * 100</li>
+</ul>
+
+
+<p><b>AC-6: Email Send Failure — AlertFailed, NOT Reject</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> a valid limit breach event is processed</li>
+	<li><b>When</b> email send throws an exception</li>
+	<li><b>Then</b> AlertFailed is logged at Warning level with merchantId, rejectionReason, attemptedAmount, errorMessage</li>
+	<li><b>And</b> EventGridResult.Acknowledge is returned (NOT Reject)</li>
+	<li><b>And</b> no exception propagates to the caller</li>
+</ul>
+
+
+<p><b>AC-7: Email Recipient Configuration</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> the Compliance Monitor application is configured</li>
+	<li><b>When</b> the processor sends an alert email</li>
+	<li><b>Then</b> the recipient is sourced from ComplianceSettings.TransactionLimitAlertRecipient</li>
+	<li><b>And</b> the config value is in appsettings.json under the compliance section</li>
+</ul>
+
+
+<p><b>AC-8: Scoped Logging</b></p>
+<ul class="alternate" type="square">
+	<li><b>Given</b> any event is processed</li>
+	<li><b>When</b> the processor logs any event (AlertSent, AlertSkipped, AlertFailed)</li>
+	<li><b>Then</b> logs include scoped context: Activity = "Process Transaction Limit Alert", MerchantId (subMerchantAccountId), PaymentId</li>
+</ul>
+
+
+<h3><a name="TechnicalRequirements"></a>Technical Requirements</h3>
+<ul class="alternate" type="square">
+	<li>Modify TransactionLimitExceededProcessor.cs to implement full processing logic (replace skeleton)</li>
+	<li>Add GenerateTransactionLimitExceededContent method to IEmailContentService</li>
+	<li>Implement in EmailContentService using existing blob template loading pattern with key "transaction-limit-exceeded"</li>
+	<li>Calculate percentage: ((attemptedAmount - configuredLimit) / configuredLimit) * 100</li>
+	<li>Add TransactionLimitAlertRecipient string property to ComplianceSettings</li>
+	<li>Add TransactionLimitAlertRecipient to appsettings.json compliance section</li>
+	<li>Create placeholder transaction-limit-exceeded.html email template</li>
+	<li>Expand TransactionLimitExceededProcessorTests.cs with tests for all AC scenarios</li>
+</ul>
+
+
+<h3><a name="RequirementsFulfilled"></a>Requirements Fulfilled</h3>
+<p>FR3, FR4, FR5, FR6, FR7, FR8, FR9, FR10, NFR1, NFR2, NFR3</p>
+
+<h3><a name="Relations"></a>Relations</h3>
+<ul class="alternate" type="square">
+	<li>Blocked by: Story 1.1 (
+    <span class="jira-issue-macro resolved" data-jira-key="PAY-3507" >
+                <a href="https://wellfit.atlassian.net/browse/PAY-3507" class="jira-issue-macro-key issue-link"  title="1.1 Event Subscription Wiring, Consumer Event Model &amp; Contract Test Fixture" >
+            <img class="icon" src="https://wellfit.atlassian.net/rest/api/2/universal_avatar/view/type/issuetype/avatar/10315?size=medium" />
+            PAY-3507
+        </a>
+                                                    <span class="aui-lozenge aui-lozenge-subtle aui-lozenge-success jira-macro-single-issue-export-pdf">Closed</span>
+            </span>
+)</li>
+	<li>Related to: Story 2.1, Story 2.2</li>
+	<li>External dependency: Email template content approved by Compliance team (parallel)</li>
+</ul>
+
+            <br/>
+        </td>
+    </tr>
+    </table>
+
+    <br/>
+
+    <table cellpadding="2" cellspacing="0" border="0" width="100%" align="center">
+    <tr>
+        <td bgcolor="#bbbbbb" width="1%" nowrap align="center">
+            &nbsp;<font color="#ffffff"><b>Comments</b></font>&nbsp;
+        </td>
+        <td>&nbsp;</td>
+    </tr>
+    </table>
+
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="grid" style="margin: 0;">
+                <tr id="comment-header-82513"><td bgcolor="#f0f0f0">
+            Comment by  
+                                                    
+                
+        
+            <a class="user-hover" rel="712020:c31907b0-e8a3-4790-8686-3585fdb11873"
+                id="word_commented_712020:c31907b0-e8a3-4790-8686-3585fdb11873"
+                href="https://wellfit.atlassian.net/secure/ViewProfile.jspa?accountId=712020%3Ac31907b0-e8a3-4790-8686-3585fdb11873">
+                    Brett Roy
+                </a>
+
+                                        <font size="-2">
+            [
+                <font color="#336699">01/Jun/26</font>
+
+                            ]
+            </font>
+
+        </td></tr>
+        <tr id="comment-body-82513"><td bgcolor="#ffffff">
+            <p><a href="https://wellfit.atlassian.net/secure/ViewProfile.jspa?accountId=712020%3A56e71a0d-50b6-4231-892c-dac58ac29835" class="user-hover" rel="712020:56e71a0d-50b6-4231-892c-dac58ac29835" data-account-id="712020:56e71a0d-50b6-4231-892c-dac58ac29835" accountid="712020:56e71a0d-50b6-4231-892c-dac58ac29835" rel="noreferrer">Ana Oliva (contractor)</a> <a href="https://wellfit.atlassian.net/secure/ViewProfile.jspa?accountId=5bbba70ba334ec4325196e18" class="user-hover" rel="5bbba70ba334ec4325196e18" data-account-id="5bbba70ba334ec4325196e18" accountid="5bbba70ba334ec4325196e18" rel="noreferrer">Radhika Kandoori</a> <br/>
+I thought I had already added this to the story but clearly not …<br/>
+<span class="nobr"><a href="/rest/api/3/attachment/content/103894" title="PAY-3508-Transaction-Limit-Alert-QA-Testing-Guide (892e52ac-2bdf-4c2f-aa17-0602fa6b1a33).md attached to PAY-3508" data-attachment-type="file" data-attachment-name="PAY-3508-Transaction-Limit-Alert-QA-Testing-Guide (892e52ac-2bdf-4c2f-aa17-0602fa6b1a33).md" data-media-services-type="file" data-media-services-id="892e52ac-2bdf-4c2f-aa17-0602fa6b1a33" rel="noreferrer">PAY-3508-Transaction-Limit-Alert-QA-Testing-Guide (892e52ac-2bdf-4c2f-aa17-0602fa6b1a33).md<sup><img class="rendericon" src="/images/icons/link_attachment_7.gif" height="7" width="7" align="absmiddle" alt="" border="0"/></sup></a></span> </p>
+        </td></tr>
+            </table>
+Generated at Thu Jun 11 00:52:10 UTC 2026 by Christopher Ariel Valenzuela Medina using Jira 1001.0.0-SNAPSHOT#100291-rev:2bc9656aea7910482196643967ec7052f5440ae8.
+
+</body>
+</html>

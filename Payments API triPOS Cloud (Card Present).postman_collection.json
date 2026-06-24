@@ -1,0 +1,1410 @@
+{
+  "info": {
+    "_postman_id": "8c8a1999-1769-4402-9054-4b8cc03dd0de",
+    "name": "Payments API triPOS Cloud (Card Present)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54730134",
+    "_collection_link": "https://go.postman.co/collection/54730134-8c8a1999-1769-4402-9054-4b8cc03dd0de?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authenticate_Get_Lane",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n  //.\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n // \"username\": \"WellfitOnBoardingAPI\",\r\n // \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Get_All_lane(No SubmerchantId)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  //\"password\": \"Test123!\",\r\n  \"username\": \"WellfitOnBoardingAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Get_All_lane(No SubmerchantId) Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  //\"password\": \"Test123!\",\r\n  \"username\": \"WellfitOnBoardingAPI\",\r\n  \"password\": \"Testing12!!L0v3Wellfit\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_ADD_Lane",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"WellfitCustomerServiceAPI\",\r\n  \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  //\"username\": \"WellfitUnifiedPaymentsAPI\",\r\n //\"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Payment_QA",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_Payment-Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Testing123!!W3llf1t1!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Authenticate_FundingBatch_Stage Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Funding-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Funding-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n   \"username\": \"WellfitAutomation\",\r\n  \"password\": \"Testing123!!W3llf1tGr3at!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  //\"password\": \"Test123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/authenticate",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Payment Lane",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 23,\r\n  \"description\": \"Radhika New Lane\",\r\n  \"activationCode\": \"C893741\",\r\n  \"IdleMessage\": \"HI Radhika\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/add-payment-lane",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "add-payment-lane"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Payment Lane -Patterson",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"010122144\",\r\n  \"laneId\": 18,\r\n  \"description\": \"test\",\r\n  \"activationCode\": \"P108649\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/add-payment-lane",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "add-payment-lane"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment Lanes",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "api_key",
+            "value": "V2VsbGZpdFRyZWF0bWVudEFQSTpUZXN0MTIzIQ==",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/get-payment-lanes?subMerchantId=159F2670-1B71-4EF6-AD30-0EBF0991E2CC",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "get-payment-lanes"
+          ],
+          "query": [
+            {
+              "key": "subMerchantId",
+              "value": "159F2670-1B71-4EF6-AD30-0EBF0991E2CC"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All PaymentLanes(without submerchantid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "api_key",
+            "value": "V2VsbGZpdFRyZWF0bWVudEFQSTpUZXN0MTIzIQ==",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n\"eMailAddress\": \"radhika.kandoori@Wellfit.com\",\r\n\"organizationId\": \"5068093D-AA1F-41F8-AC42-1FC85A92B766\",\r\n\"includeROCDevices\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/merchant-device-report",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "merchant-device-report"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Wellfit Device",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"description\": \"Test Wellfit Device\",\r\n  \"deviceId\": \"9fb20000-3a34-000d-a840-08d5528c89d8\",\r\n  \"subMerchantId\": \"01334267\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/add-wellfit-payment-device",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "add-wellfit-payment-device"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Tokenize Credit Card Copy",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"accountNumber\": \"4457010000000009\",\r\n  \"cvv\": \"349\",\r\n  \"processor\": \"Vantiv\",\r\n  \"subMerchantId\": \"01334267\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card/tokenize-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card",
+            "tokenize-card"
+          ]
+        },
+        "description": "Tokenizes a credit card"
+      },
+      "response": []
+    },
+    {
+      "name": "RAW Add Payment Lane",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "tp-application-id",
+            "value": "9843",
+            "type": "text"
+          },
+          {
+            "key": "tp-application-name",
+            "value": "triPOS.Wellfit.Cloud",
+            "type": "text"
+          },
+          {
+            "key": "tp-application-version",
+            "value": "1.0.0",
+            "type": "text"
+          },
+          {
+            "key": "tp-authorization",
+            "value": "Version=2.0",
+            "type": "text"
+          },
+          {
+            "key": "tp-express-acceptor-id",
+            "value": "035617943",
+            "type": "text"
+          },
+          {
+            "key": "tp-express-account-id",
+            "value": "1243914",
+            "type": "text"
+          },
+          {
+            "key": "tp-express-account-token",
+            "value": "DBDF237B02DF39B10CFFF20F8B27FC9FE801D0CB5DAC03C9ECA16F8496334D735635A801",
+            "type": "text"
+          },
+          {
+            "key": "tp-request-id",
+            "value": "EAD570DA-0ED1-461A-824A-EAD982664E23",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"laneId\": 1,\r\n  \"description\": \"Mark Test\",\r\n  \"terminalId\": \"1\",\r\n  \"activationCode\": \"P425005\",\r\n  \"marketCode\": 0,\r\n  \"contactlessMsdEnabled\": \"false\",\r\n  \"contactlessEmvEnabled\": \"true\",\r\n  \"quickChipEnabled\": \"false\",\r\n  \"quickChipDataLifetime\": 30\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://tripos.vantiv.com/cloudapi/v1/lanes",
+          "protocol": "https",
+          "host": [
+            "tripos",
+            "vantiv",
+            "com"
+          ],
+          "path": [
+            "cloudapi",
+            "v1",
+            "lanes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Clone Payment Lanes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"fromSubMerchantId\": \"01334267\",\r\n  \"toSubMerchantId\": \"010122144\",\r\n  \"laneIds\": [23]\r\n}",
+          "options": {
+            "raw": {
+              "language": "javascript"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/clone-payment-lanes",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "clone-payment-lanes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Payment Lane",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 1\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/delete-payment-lane",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "delete-payment-lane"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Set Payment Lane Idle Message",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 1,\r\n  \"idleMessage\": \"Welcome to Wellfit\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/set-payment-lane-idle-message",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "set-payment-lane-idle-message"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Set Payment Lane Idle",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 1\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/set-payment-lane-idle",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "set-payment-lane-idle"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reboot Payment Lane",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 23\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/reboot-payment-lane",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "reboot-payment-lane"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Set Payment Lane Reboot Time",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 1,\r\n  \"rebootTime\": \"2359\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/set-payment-lane-reboot-time",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "set-payment-lane-reboot-time"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment Lane Connection Status",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 98\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/get-payment-lane-connection-status",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "get-payment-lane-connection-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment Lane Connection Status History",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 1\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/get-payment-lane-connection-status-history",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "get-payment-lane-connection-status-history"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment Lane Activation Code",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 23\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/get-payment-lane-activation-code",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "get-payment-lane-activation-code"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment Lane Activation Patterson",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"010122144\",\r\n  \"laneId\": 15\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/get-payment-lane-activation-code",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "get-payment-lane-activation-code"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Card Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 2\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/get-card-token",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "get-card-token"
+          ]
+        },
+        "description": "Use \"transactionId\": \"\" to tokenize a card."
+      },
+      "response": [
+        {
+          "name": "Get Omni Token For Physical Card",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "type": "text",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 15,\r\n  \"transactionId\": \"\"\r\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/credit-card-present/get-omni-token",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "credit-card-present",
+                "get-omni-token"
+              ]
+            }
+          },
+          "_postman_previewlanguage": "Text",
+          "header": [],
+          "cookie": [],
+          "body": ""
+        }
+      ]
+    },
+    {
+      "name": "Charge Card- Simulator",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          },
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"subMerchantId\": \"01334267\",\r\n  \"subMerchantId\": \"CE900000-5DE0-0015-21B9-08D531EC57BE\",\r\n  \"laneId\": 9999,\r\n  \"amount\": 50,\r\n  \"payFacFee\": 0,\r\n  \"orderId\": \"7272\",\r\n // \"ClientIdType\": \"Epictets1\",\r\n \"orderIdType\": \"Testordertype272\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12224\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/charge-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "charge-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Charge Card- Simulator Patterson",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"010122144\",\r\n  \"laneId\": 15,\r\n  \"amount\": 155,\r\n  \"payFacFee\": 0,\r\n  \"orderId\": \"{{OrderId}}\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12224\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/charge-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "charge-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Charge Card Copy",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 15,\r\n  \"amount\": 155,\r\n  \"payFacFee\": 0,\r\n  \"orderId\": \"{{OrderId}}\",\r\n  \"metadata\": \"{\\\"test\\\":\\\"12224\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/charge-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "charge-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Charge Card",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n//  \"subMerchantId\": \"01334270\",\r\n //\"subMerchantId\": \"CE900000-5DE0-0015-21B9-08D531EC57BE\",\r\n \"subMerchantId\": \"1D550000-3A34-000D-889B-08D43C1753A8\",\r\n  \"laneId\": 23,\r\n  \"amount\": 123.00,\r\n  \"orderId\": \"Testin24\"\r\n // \"metadata\": \"{\\“clientData\\“:\\“Test Data\\“}\"\r\n}\r\n"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/charge-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "charge-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Charge Card - with Patterson",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"010122144\",\r\n  \"laneId\": 15,\r\n  \"amount\": 89,\r\n  \"payFacFee\": 0,\r\n  \"orderId\": \"WellfitTreatmentAPI.22dba\",\r\n // \"orderIdType\": \r\n  \"metadata\": \"{\\\"test\\\":\\\"1233\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/charge-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "charge-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Charge Card Use Disbursement-101821",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 9999,\r\n  \"amount\": 902,\r\n  \"payFacFee\": 0,\r\n  \"orderId\": \"{{OrderId}}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/charge-card",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "charge-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Card Non-Financial Data",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"{{SUBMERCHANT_ID}}\",\r\n  \"laneId\": 1\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/identification/get-card-non-financial-data",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "identification",
+            "get-card-non-financial-data"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get EMV Receipt Data",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/get-emv-receipt-data?transactionId=10697817",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "get-emv-receipt-data"
+          ],
+          "query": [
+            {
+              "key": "transactionId",
+              "value": "10697817"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Void Transaction",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"orderId\": \"{{OrderId}}\",\r\n  \"originalTransactionId\": \"83991033862632872\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/void-transaction",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "void-transaction"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Refund Transaction",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var uuid = require(\"uuid\");\r",
+              "var orderId = uuid.v4().replace(/\\-/g, '').substring(0, 25);\r",
+              "postman.setEnvironmentVariable(\"OrderId\", orderId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"amount\": 100,\r\n  \"orderId\": \"{{OrderId}}\",\r\n  \"originalTransactionId\": \"189137988-685\",\r\n   \"metadata\": \"{\\\"test\\\":\\\"1234\\\"}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{URL}}/refund-transaction",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "refund-transaction"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Payment Lanes Copy",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{URL}}/credit-card-present/lanes/get-payment-lanes?subMerchantId={{SUBMERCHANT_ID}}",
+          "host": [
+            "{{URL}}"
+          ],
+          "path": [
+            "credit-card-present",
+            "lanes",
+            "get-payment-lanes"
+          ],
+          "query": [
+            {
+              "key": "subMerchantId",
+              "value": "{{SUBMERCHANT_ID}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "URL",
+      "value": "localhost:1225"
+    },
+    {
+      "key": "SUBMERCHANT_ID",
+      "value": "01334267"
+    }
+  ]
+}

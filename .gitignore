@@ -1,0 +1,8 @@
+# Postman environments may contain client secrets — keep local only
+*postman_environment*.json
+*Environment.postman_environment.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

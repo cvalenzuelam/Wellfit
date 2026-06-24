@@ -1,0 +1,565 @@
+{
+  "info": {
+    "_postman_id": "27e03c45-3aea-4152-b134-ba9e2ee11c2f",
+    "name": "Paypages",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54730134",
+    "_collection_link": "https://go.postman.co/collection/54730134-27e03c45-3aea-4152-b134-ba9e2ee11c2f?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get PayPageRegistrationId-VISA",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+              "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Host",
+            "value": "request.eprotect.vantivprelive.com",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "paypageId",
+              "value": "XhybNHfFjYF3aTRR",
+              "type": "text"
+            },
+            {
+              "key": "reportGroup",
+              "value": "Default",
+              "type": "text"
+            },
+            {
+              "key": "orderId",
+              "value": "TestOrder.653489774",
+              "type": "text"
+            },
+            {
+              "key": "id",
+              "value": "1111111111222222222222222",
+              "type": "text"
+            },
+            {
+              "key": "accountNumber",
+              "value": "5592106621450897",
+              "type": "text"
+            },
+            {
+              "key": "cvv",
+              "value": "349",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+          "protocol": "https",
+          "host": [
+            "request",
+            "eprotect",
+            "vantivprelive",
+            "com"
+          ],
+          "path": [
+            "eProtect",
+            "paypage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get PayPageRegistrationId-Master",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+              "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Host",
+            "value": "request.eprotect.vantivprelive.com",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "paypageId",
+              "value": "XhybNHfFjYF3aTRR",
+              "type": "text"
+            },
+            {
+              "key": "reportGroup",
+              "value": "Default",
+              "type": "text"
+            },
+            {
+              "key": "orderId",
+              "value": "TestOrder.653489774",
+              "type": "text"
+            },
+            {
+              "key": "id",
+              "value": "1111111111222222222222222",
+              "type": "text"
+            },
+            {
+              "key": "accountNumber",
+              "value": "5454545454545454",
+              "type": "text"
+            },
+            {
+              "key": "cvv",
+              "value": "123",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+          "protocol": "https",
+          "host": [
+            "request",
+            "eprotect",
+            "vantivprelive",
+            "com"
+          ],
+          "path": [
+            "eProtect",
+            "paypage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get PayPageRegistrationId-AMEX",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+              "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Host",
+            "value": "request.eprotect.vantivprelive.com",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "paypageId",
+              "value": "XhybNHfFjYF3aTRR",
+              "type": "text"
+            },
+            {
+              "key": "reportGroup",
+              "value": "Default",
+              "type": "text"
+            },
+            {
+              "key": "orderId",
+              "value": "TestOrder.653489776",
+              "type": "text"
+            },
+            {
+              "key": "id",
+              "value": "1111111111222222222222222",
+              "type": "text"
+            },
+            {
+              "key": "accountNumber",
+              "value": "375000026600004",
+              "type": "text"
+            },
+            {
+              "key": "cvv",
+              "value": "1234",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+          "protocol": "https",
+          "host": [
+            "request",
+            "eprotect",
+            "vantivprelive",
+            "com"
+          ],
+          "path": [
+            "eProtect",
+            "paypage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get PayPageRegistrationId-VISA-0006",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+              "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Host",
+            "value": "request.eprotect.vantivprelive.com",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "paypageId",
+              "value": "XhybNHfFjYF3aTRR",
+              "type": "text"
+            },
+            {
+              "key": "reportGroup",
+              "value": "Default",
+              "type": "text"
+            },
+            {
+              "key": "orderId",
+              "value": "TestOrder.653489776",
+              "type": "text"
+            },
+            {
+              "key": "id",
+              "value": "1111111111222222222222222",
+              "type": "text"
+            },
+            {
+              "key": "accountNumber",
+              "value": "4457000400000006",
+              "type": "text"
+            },
+            {
+              "key": "cvv",
+              "value": "586",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+          "protocol": "https",
+          "host": [
+            "request",
+            "eprotect",
+            "vantivprelive",
+            "com"
+          ],
+          "path": [
+            "eProtect",
+            "paypage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get PayPageRegistrationId-Discover",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+              "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Host",
+            "value": "request.eprotect.vantivprelive.com",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "paypageId",
+              "value": "XhybNHfFjYF3aTRR",
+              "type": "text"
+            },
+            {
+              "key": "reportGroup",
+              "value": "Default",
+              "type": "text"
+            },
+            {
+              "key": "orderId",
+              "value": "TestOrder.653489776",
+              "type": "text"
+            },
+            {
+              "key": "id",
+              "value": "1111111111222222222222222",
+              "type": "text"
+            },
+            {
+              "key": "accountNumber",
+              "value": "6011010140000004",
+              "type": "text"
+            },
+            {
+              "key": "cvv",
+              "value": "988",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+          "protocol": "https",
+          "host": [
+            "request",
+            "eprotect",
+            "vantivprelive",
+            "com"
+          ],
+          "path": [
+            "eProtect",
+            "paypage"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get PayPageRegistrationId-VISA-0009",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+              "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Host",
+            "value": "request.eprotect.vantivprelive.com",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "paypageId",
+              "value": "XhybNHfFjYF3aTRR",
+              "type": "text"
+            },
+            {
+              "key": "reportGroup",
+              "value": "Default",
+              "type": "text"
+            },
+            {
+              "key": "orderId",
+              "value": "TestOrder.653489775",
+              "type": "text"
+            },
+            {
+              "key": "id",
+              "value": "1111111111222222222222222",
+              "type": "text"
+            },
+            {
+              "key": "accountNumber",
+              "value": "4457010000000009",
+              "type": "text"
+            },
+            {
+              "key": "cvv",
+              "value": "349",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+          "protocol": "https",
+          "host": [
+            "request",
+            "eprotect",
+            "vantivprelive",
+            "com"
+          ],
+          "path": [
+            "eProtect",
+            "paypage"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

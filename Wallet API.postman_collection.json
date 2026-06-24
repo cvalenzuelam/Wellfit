@@ -1,0 +1,1549 @@
+{
+  "info": {
+    "_postman_id": "41b249ea-7bc9-44a8-a242-579b00761996",
+    "name": "Wallet API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32666628",
+    "_collection_link": "https://go.postman.co/collection/32666628-41b249ea-7bc9-44a8-a242-579b00761996?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "PayPage",
+      "item": [
+        {
+          "name": "Get PayPageRegistrationId-VISA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489774",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4242424242424242",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-Master",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489774",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "5454545454545454",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-AMEX",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489776",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "375000026600004",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "1234",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-Discover",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489776",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "6011010140000004",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-VISA-0008",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489776",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "375000026600004",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "1234",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-VISA-0009",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489775",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4457010000000009",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "349",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-InsuffiecentFunds",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489778",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4457010100000008",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "213",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId-Master-ExpiredCard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489776",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "5112001900000003",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Authenticate-QA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "pm.environment.set(\"Payment-Bearer-Token\", jsonData.accessToken);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Payments}}/authenticate",
+              "host": [
+                "{{Payments}}"
+              ],
+              "path": [
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Authenticate -Stage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "pm.environment.set(\"Payment-Bearer-Token\", jsonData.accessToken);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Testing123!!W3llf1t1!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/authenticate",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "authenticate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Wallet Operations",
+      "item": [
+        {
+          "name": "Get wallet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Wallet API}}/v1/wallet/get?returnAllTokens=false&walletId=5DB90000-3A5D-000D-CA4D-08DD6CAE742E",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "wallet",
+                "get"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "test_user123",
+                  "disabled": true
+                },
+                {
+                  "key": "returnAllTokens",
+                  "value": "false"
+                },
+                {
+                  "key": "walletId",
+                  "value": "5DB90000-3A5D-000D-CA4D-08DD6CAE742E"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete wallet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"walletId\": \"06940000-BD01-6045-07C8-08DD761331FF\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/v1/wallet/delete",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "wallet",
+                "delete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create new wallet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer{{Payment-Bearer-Token}}",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"userId\": \"RadWallet1026\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/v1/wallet/add",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "wallet",
+                "add"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get PayPageRegistrationId Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();\r",
+                  "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                  "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                  "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "XhybNHfFjYF3aTRR",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489774",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4242424242424242",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+              "protocol": "https",
+              "host": [
+                "request",
+                "eprotect",
+                "vantivprelive",
+                "com"
+              ],
+              "path": [
+                "eProtect",
+                "paypage"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Token Operations",
+      "item": [
+        {
+          "name": "Add token to wallet",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"walletId\": \"9fba0000-8d3d-7ced-5f36-08deaacf7e55\",\r\n  \"setAsDefault\": true,\r\n // \"subMerchantId\": \"1D550000-3A34-000D-889B-08D43C1753A8\", //QA -11\r\n   \"subMerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\", //stage -11\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": \"0\",\r\n  \"cvv\": \"147\",\r\n  \"expirationMonth\": 12,\r\n  \"expirationYear\": 2027,\r\n \"zipCode\": \"21325\",\r\n  \"addressLine\": \"{{$randomStreetAddress}}\",\r\n  \"orderId\": \"{{$randomBankAccount}}\",\r\n  \"merchantInitiated\": false,\r\n  \"metadata\": \"\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/v1/token/tokenize",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "token",
+                "tokenize"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add token to wallet- new-No Aithentication",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"walletId\": \"32850000-8d3c-7ced-8a26-08dd97d5cf58\",\r\n  \"setAsDefault\": true,\r\n  //wellfit token guid\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": \"token\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/v1/token/tokenize",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "token",
+                "tokenize"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get wallet token details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{Wallet API}}/v1/token/get?walletId=5DB90000-3A5D-000D-CA4D-08DD6CAE742E&tokenId=EB290000-4808-0022-62C1-08DD6C8BDBD1",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "token",
+                "get"
+              ],
+              "query": [
+                {
+                  "key": "walletId",
+                  "value": "5DB90000-3A5D-000D-CA4D-08DD6CAE742E"
+                },
+                {
+                  "key": "tokenId",
+                  "value": "EB290000-4808-0022-62C1-08DD6C8BDBD1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update token details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"walletId\": \"06940000-bd01-6045-07c8-08dd761331ff\",\r\n  \"tokenId\": \"06940000-BD01-6045-AA0B-08DD67DA37E5\",\r\n  \"tokenName\": \"RAd\",\r\n  \"isActive\": false,\r\n  \"isDefault\": false\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/v1/token/update",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "token",
+                "update"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"walletId\": \"5DB90000-3A5D-000D-CA4D-08DD6CAE742E\",\r\n  \"tokenId\": \"412A0000-4804-0022-B85B-08DD6C8C9960\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Wallet API}}/v1/token/delete",
+              "host": [
+                "{{Wallet API}}"
+              ],
+              "path": [
+                "v1",
+                "token",
+                "delete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "v2/cnp/charge Copy",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                  "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                  "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Token exists and has value\", function () {\r",
+                  "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Approval Number exists and has value\", function () {\r",
+                  "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                  "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                  "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                  "});\r",
+                  "\r",
+                  "pm.execution.setNextRequest(null);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-wf-dev-force-error",
+                "value": "true",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"amount\": \"188\",\r\n    \"cvv\": \"349\",\r\n    \"expirationMonth\": 10,\r\n    \"expirationYear\": 2030,\r\n   // \"orderId\": \"{{random-order-id}}\",\r\n    //\"subMerchantId\": \"1D550000-3A34-000D-889B-08D43C1753A8\", //QA -11\r\n    \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n    // \"token\": \"{{paypage-registration-id}}\", //if it's a paypage for this ,tokentype should be 0 and if it's a token tokentype should be 1\r\n    //\"tokenType\": 0, \r\n    // \"token\": \"1111000394260009\", //if it's a paypage for this ,tokentype should be 0 and if it's a token tokentype should be 1 - get token from v2/cnp/quthorize endpoint\r\n    \"token\": \"06940000-BD01-6045-AA0B-08DD67DA37E5\", // wellfitguid - Take id from /add-token(add new token) response\r\n    \"tokenType\": 1,\r\n    \"zipCode\": \"01803\",\r\n    \"metadata\": \"{\\\"Product\\\":\\\"WellfitPay\\\",\\\"ClientId\\\":\\\"1234133\\\",\\\"PracticeId\\\":\\\"ef440000-3a5a-000d-c301-08dd099d90b8\\\"}\",\r\n    \"orderId\": \"WF1743186069949\",\r\n    \"orderIdType\": \"ClientIdTimeBased\",\r\n    \"source\": \"WellfitPay\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{Payments}}/v2/cnp/charge",
+              "host": [
+                "{{Payments}}"
+              ],
+              "path": [
+                "v2",
+                "cnp",
+                "charge"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation Scenarios",
+      "item": [
+        {
+          "name": "01 - Create Wallet",
+          "item": [
+            {
+              "name": "1 - Authenticate",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();\r",
+                      "pm.environment.set(\"bearer-token\", jsonData.accessToken);\r",
+                      "\r",
+                      "pm.execution.setNextRequest(\"2 - Create new wallet\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Test123!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Wallet API}}/authenticate",
+                  "host": [
+                    "{{Wallet API}}"
+                  ],
+                  "path": [
+                    "authenticate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2 - Create new wallet",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test for HTTP response status\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Test for responseCode value in JSON body\r",
+                      "pm.test(\"Check responseCode value\", function () {\r",
+                      "    pm.expect(pm.response.json().responseCode).to.equal(\"200\");\r",
+                      "});\r",
+                      "\r",
+                      "// Test for response.wallet not being null\r",
+                      "pm.test(\"Check response.wallet is not null\", function () {\r",
+                      "    pm.expect(pm.response.json().response.wallet).to.not.be.null;\r",
+                      "});\r",
+                      "\r",
+                      "var jsonData = pm.response.json();\r",
+                      "pm.collectionVariables.set(\"wallet-id\", jsonData.response.wallet.id);\r",
+                      "\r",
+                      "pm.execution.setNextRequest(\"2 - Get wallet by id\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"userId\": \"{{$randomUserName}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Wallet API}}/v1/wallet/add",
+                  "host": [
+                    "{{Wallet API}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "wallet",
+                    "add"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3 - Get wallet by id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// Test for HTTP response status\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});\r",
+                      "\r",
+                      "// Test for responseCode value in JSON body\r",
+                      "pm.test(\"Check responseCode value\", function () {\r",
+                      "    pm.expect(pm.response.json().responseCode).to.equal(\"200\");\r",
+                      "});\r",
+                      "\r",
+                      "// Test for response.wallet not being null\r",
+                      "pm.test(\"Check response.wallet is not null\", function () {\r",
+                      "    pm.expect(pm.response.json().response.wallet).to.not.be.null;\r",
+                      "});\r",
+                      "\r",
+                      "// Test for matching wallet-id collection variable with response.wallet.id value\r",
+                      "pm.test(\"Check if wallet-id matches response.wallet.id\", function () {\r",
+                      "    pm.expect(pm.collectionVariables.get(\"wallet-id\")).to.equal(pm.response.json().response.wallet.id);\r",
+                      "});\r",
+                      "\r",
+                      "// Test for response.wallet.tokens to be an empty array\r",
+                      "pm.test(\"Check if response.wallet.tokens is an empty array\", function () {\r",
+                      "    pm.expect(pm.response.json().response.wallet.tokens).to.be.an('array').that.is.empty;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{Wallet API}}/v1/wallet/get?walletId={{wallet-id}}",
+                  "host": [
+                    "{{Wallet API}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "wallet",
+                    "get"
+                  ],
+                  "query": [
+                    {
+                      "key": "walletId",
+                      "value": "{{wallet-id}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{Wallet API}}/health",
+          "host": [
+            "{{Wallet API}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "wallet-id",
+      "value": ""
+    }
+  ]
+}

@@ -1,0 +1,867 @@
+{
+  "info": {
+    "_postman_id": "dc32c67e-5610-4c71-8c09-66abd3e73913",
+    "name": "Merchant Provisioning",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32666628",
+    "_collection_link": "https://go.postman.co/collection/32666628-dc32c67e-5610-4c71-8c09-66abd3e73913?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "MP authenticate-mp Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set(\"Payments-Bearer-Token\", \"\");",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"Payments-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true,
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"WellfitOnBoardingAPI\",\r\n    \"password\": \"Testing12!!L0v3Wellfit\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/authenticate",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP - authenticate-obp Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set(\"Payments-Bearer-Token\", \"\");",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"Payments-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true,
+        "followAuthorizationHeader": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"WellfitOnBoardingAPI\",\r\n    \"password\": \"Testing12!!L0v3Wellfit\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/authenticate",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP create - Cloud Card Present - Tap to Pay Copy 3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"wellfit-submerchant-id\", json.wellfitSubMerchantId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.globals.set('randomTaxId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomPspMechantId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn2', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn3', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "\r",
+              "// Get the current date and time\r",
+              "const now = new Date();\r",
+              "\r",
+              "// Format the date as YYYYMMDD\r",
+              "const year = now.getFullYear();\r",
+              "const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so we add 1\r",
+              "const day = String(now.getDate()).padStart(2, '0');\r",
+              "const datePart = `${year}${month}${day}`;\r",
+              "\r",
+              "// Format the time as HHMM (24-hour)\r",
+              "const hours = String(now.getHours()).padStart(2, '0');\r",
+              "const minutes = String(now.getMinutes()).padStart(2, '0');\r",
+              "const timePart = `${hours}${minutes}`;\r",
+              "\r",
+              "// Combine the parts into the final string\r",
+              "const finalString = `PAT-Test-${datePart}-${timePart}`;\r",
+              "\r",
+              "// Set the Postman global variable\r",
+              "pm.globals.set('pspMerchantIdOverride', finalString);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"LegalEntity\": {\r\n        \"Name\": \"PDCO Location AC\",\r\n        \"DoingBusinessAs\": \"Alternate Business Name\",\r\n        \"Type\": \"LIMITED_LIABILITY_COMPANY\",\r\n        \"OwnershipType\": \"PRIVATE\",\r\n        \"TaxId\": \"100742245\",\r\n        \"AnnualCreditCardSalesVolume\": 500000,\r\n        \"HasAcceptedCreditCards\": true,\r\n        \"YearsInBusiness\": 0,\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"800 Address St\",\r\n            \"StreetAddress2\": \"Apartment 800\",\r\n            \"City\": \"Boston\",\r\n            \"State\": \"MA\",\r\n            \"PostalCode\": \"01970\"\r\n        },\r\n        \"Phone\": \"7817659800\",\r\n        \"Principals\": [\r\n            {\r\n                \"Title\": \"owner1\",\r\n                \"Ssn\": \"100453716\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 51,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first\",\r\n                \"LastName\": \"p last\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest@Primary.com\"\r\n            },\r\n            {\r\n                \"Title\": \"owner2\",\r\n                \"Ssn\": \"100453717\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 49,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first 2\",\r\n                \"LastName\": \"p last 2\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St 2\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest2@Primary.com\"\r\n            }\r\n        ]\r\n    },\r\n    \"SubMerchant\": {\r\n        \"Name\": \"Merchant Name AC\",\r\n        \"Url\": \"randomurl.com\",\r\n        \"BankRoutingNumber\": \"211370545\",\r\n        \"BankAccountNumber\": \"84012312415\",\r\n        \"BankAccountType\": \"Checking\",\r\n        \"PspMerchantId\": \"100046043\",\r\n        \"PspMerchantIdOverride\": \"PAT-Test-20260521-1425\",\r\n        \"BillingDescriptor\": \"PDS*Sample\",\r\n        \"MerchantCategoryCode\": \"8021\",\r\n        \"MerchantCategoryDetail\": \"8021 Detail\",\r\n        \"MaxTransactionAmount\": 123,\r\n        \"IsRevenueBoostEnabled\": false,\r\n        \"ECheck\": {\r\n            \"BillingDescription\": \"123\",\r\n            \"CompanyName\": \"123\",\r\n            \"Enabled\": true\r\n        },\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"811 PrimaryContact St\",\r\n            \"StreetAddress2\": \"Apartment 811\",\r\n            \"City\": \"Carpenter\",\r\n            \"State\": \"TX\",\r\n            \"PostalCode\": \"01811\"\r\n        },\r\n        \"Phone\": \"7817652345\",\r\n        \"PrimaryContact\": {\r\n            \"FirstName\": \"pc first\",\r\n            \"LastName\": \"pc last\",\r\n            \"Address\": null,\r\n            \"Phone\": \"7817653456\",\r\n            \"Email\": \"pc@pc.org\"\r\n        },\r\n        \"OrganizationId\": \"5068093d-aa1f-41f8-ac42-1fc85a92b766\",\r\n        \"SubMerchantEnabled\": true,\r\n        \"FundingEnabled\": true,\r\n        \"AccountState\": 2\r\n    },\r\n    \"SubMerchantAccounts\": [\r\n        {\r\n            \"PaymentProcessor\": 0,\r\n            \"AccountState\": 1\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/create-sub-merchant",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "provisioning",
+            "create-sub-merchant"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP update - Cloud Card Present - Tap to Pay Copy 4",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"wellfit-submerchant-id\", json.wellfitSubMerchantId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.globals.set('randomTaxId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomPspMechantId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn2', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn3', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "\r",
+              "// Get the current date and time\r",
+              "const now = new Date();\r",
+              "\r",
+              "// Format the date as YYYYMMDD\r",
+              "const year = now.getFullYear();\r",
+              "const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so we add 1\r",
+              "const day = String(now.getDate()).padStart(2, '0');\r",
+              "const datePart = `${year}${month}${day}`;\r",
+              "\r",
+              "// Format the time as HHMM (24-hour)\r",
+              "const hours = String(now.getHours()).padStart(2, '0');\r",
+              "const minutes = String(now.getMinutes()).padStart(2, '0');\r",
+              "const timePart = `${hours}${minutes}`;\r",
+              "\r",
+              "// Combine the parts into the final string\r",
+              "const finalString = `PAT-Test-${datePart}-${timePart}`;\r",
+              "\r",
+              "// Set the Postman global variable\r",
+              "pm.globals.set('pspMerchantIdOverride', finalString);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"LegalEntity\": {\r\n        \"Name\": \"PDCO Location AC Upd\",\r\n        \"DoingBusinessAs\": \"Alternate Business Name\",\r\n        \"Type\": \"LIMITED_LIABILITY_COMPANY\",\r\n        \"OwnershipType\": \"PRIVATE\",\r\n        \"TaxId\": \"100742245\",\r\n        \"AnnualCreditCardSalesVolume\": 500000,\r\n        \"HasAcceptedCreditCards\": true,\r\n        \"YearsInBusiness\": 0,\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"800 Address St\",\r\n            \"StreetAddress2\": \"Apartment 800\",\r\n            \"City\": \"Boston\",\r\n            \"State\": \"MA\",\r\n            \"PostalCode\": \"01970\"\r\n        },\r\n        \"Phone\": \"7817659800\",\r\n        \"Principals\": [\r\n            {\r\n                \"Title\": \"owner1\",\r\n                \"Ssn\": \"100453716\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 51,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first\",\r\n                \"LastName\": \"p last\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest@Primary.com\"\r\n            },\r\n            {\r\n                \"Title\": \"owner2\",\r\n                \"Ssn\": \"100453717\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 49,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first 2\",\r\n                \"LastName\": \"p last 2\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St 2\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest2@Primary.com\"\r\n            }\r\n        ]\r\n    },\r\n    \"SubMerchant\": {\r\n        \"Name\": \"Merchant Name AC Upd\",\r\n        \"Url\": \"randomurl.com\",\r\n        \"BankRoutingNumber\": \"211370545\",\r\n        \"BankAccountNumber\": \"84012312415\",\r\n        \"BankAccountType\": \"Checking\",\r\n        \"PspMerchantId\": \"100046043\",\r\n        \"PspMerchantIdOverride\": \"PAT-Test-20260521-1425\",\r\n        \"BillingDescriptor\": \"PDS*Sample\",\r\n        \"MerchantCategoryCode\": \"8021\",\r\n        \"MerchantCategoryDetail\": \"8021 Detail\",\r\n        \"MaxTransactionAmount\": 123,\r\n        \"IsRevenueBoostEnabled\": false,\r\n        \"ECheck\": {\r\n            \"BillingDescription\": \"123\",\r\n            \"CompanyName\": \"123\",\r\n            \"Enabled\": true\r\n        },\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"811 PrimaryContact St\",\r\n            \"StreetAddress2\": \"Apartment 811\",\r\n            \"City\": \"Carpenter\",\r\n            \"State\": \"TX\",\r\n            \"PostalCode\": \"01811\"\r\n        },\r\n        \"Phone\": \"7817652345\",\r\n        \"PrimaryContact\": {\r\n            \"FirstName\": \"pc first\",\r\n            \"LastName\": \"pc last\",\r\n            \"Address\": null,\r\n            \"Phone\": \"7817653456\",\r\n            \"Email\": \"pc@pc.org\"\r\n        },\r\n        \"OrganizationId\": \"5068093d-aa1f-41f8-ac42-1fc85a92b766\",\r\n        \"SubMerchantEnabled\": true,\r\n        \"FundingEnabled\": true,\r\n        \"AccountState\": 2\r\n    },\r\n    \"SubMerchantAccounts\": [\r\n        {\r\n            \"PaymentProcessor\": 0,\r\n            \"AccountState\": 1\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/create-sub-merchant",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "provisioning",
+            "create-sub-merchant"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP - create sm single processor 0,2 Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"wellfit-submerchant-id\", json.wellfitSubMerchantId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.globals.set('randomTaxId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomPspMechantId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn2', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn3', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "\r",
+              "// Get the current date and time\r",
+              "const now = new Date();\r",
+              "\r",
+              "// Format the date as YYYYMMDD\r",
+              "const year = now.getFullYear();\r",
+              "const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so we add 1\r",
+              "const day = String(now.getDate()).padStart(2, '0');\r",
+              "const datePart = `${year}${month}${day}`;\r",
+              "\r",
+              "// Format the time as HHMM (24-hour)\r",
+              "const hours = String(now.getHours()).padStart(2, '0');\r",
+              "const minutes = String(now.getMinutes()).padStart(2, '0');\r",
+              "const timePart = `${hours}${minutes}`;\r",
+              "\r",
+              "// Combine the parts into the final string\r",
+              "const finalString = `PAT-Test-${datePart}-${timePart}`;\r",
+              "\r",
+              "// Set the Postman global variable\r",
+              "pm.globals.set('pspMerchantIdOverride', finalString);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"LegalEntity\": {\r\n        \"Name\": \"PDCO Location 26-05\",\r\n        \"DoingBusinessAs\": \"Alternate Business Name\",\r\n        \"Type\": \"LIMITED_LIABILITY_COMPANY\",\r\n        \"OwnershipType\": \"PRIVATE\",\r\n        \"TaxId\": \"{{randomTaxId}}\",\r\n        \"AnnualCreditCardSalesVolume\": 500000,\r\n        \"HasAcceptedCreditCards\": true,\r\n        \"YearsInBusiness\": 0,\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"800 Address St\",\r\n            \"StreetAddress2\": \"Apartment 800\",\r\n            \"City\": \"Boston\",\r\n            \"State\": \"MA\",\r\n            \"PostalCode\": \"01970\"\r\n        },\r\n        \"Phone\": \"7817659800\",\r\n        \"Principals\": [\r\n            {\r\n                \"Title\": \"owner1\",\r\n                \"Ssn\": \"{{randomSsn}}\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 51,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first\",\r\n                \"LastName\": \"p last\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest@Primary.com\"\r\n            },\r\n            {\r\n                \"Title\": \"owner2\",\r\n                \"Ssn\": \"{{randomSsn2}}\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 49,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first 2\",\r\n                \"LastName\": \"p last 2\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St 2\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest2@Primary.com\"\r\n            }\r\n        ]\r\n    },\r\n    \"SubMerchant\": {\r\n        \"Name\": \"Merchant Name ZZ\",\r\n        \"Url\": \"{{$randomUrl}}\",\r\n        \"BankRoutingNumber\": \"211370545\",\r\n        \"BankAccountNumber\": \"84012312415\",\r\n        \"BankAccountType\": \"Checking\",\r\n        \"PspMerchantId\": \"{{randomPspMechantId}}\",\r\n        \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\r\n        \"BillingDescriptor\": \"PDS*Sample\",\r\n        \"MerchantCategoryCode\": \"8021\",\r\n        \"MerchantCategoryDetail\": \"8021 Detail\",\r\n        \"MaxTransactionAmount\": 5000,\r\n        \"IsRevenueBoostEnabled\": false,\r\n        \"ECheck\": {\r\n            \"BillingDescription\": \"123\",\r\n            \"CompanyName\": \"123\",\r\n            \"Enabled\": true\r\n        },\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"811 PrimaryContact St\",\r\n            \"StreetAddress2\": \"Apartment 811\",\r\n            \"City\": \"Carpenter\",\r\n            \"State\": \"TX\",\r\n            \"PostalCode\": \"01811\"\r\n        },\r\n        \"Phone\": \"7817652345\",\r\n        \"PrimaryContact\": {\r\n            \"FirstName\": \"pc first\",\r\n            \"LastName\": \"pc last\",\r\n            \"Address\": null,\r\n            \"Phone\": \"7817653456\",\r\n            \"Email\": \"pc@pc.org\"\r\n        },\r\n        \"OrganizationId\": \"5068093d-aa1f-41f8-ac42-1fc85a92b766\",\r\n        \"SubMerchantEnabled\": true,\r\n        \"FundingEnabled\": true,\r\n        \"AccountState\": 2\r\n    },\r\n    \"SubMerchantAccounts\": [\r\n        { \"PaymentProcessor\": 0,\r\n            \"AccountState\": 2\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/create-sub-merchant",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "provisioning",
+            "create-sub-merchant"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP - create sm 2 processors - automatically added processor 3 in req res Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"wellfit-submerchant-id\", json.wellfitSubMerchantId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.globals.set('randomTaxId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomPspMechantId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn2', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn3', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "\r",
+              "// Get the current date and time\r",
+              "const now = new Date();\r",
+              "\r",
+              "// Format the date as YYYYMMDD\r",
+              "const year = now.getFullYear();\r",
+              "const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so we add 1\r",
+              "const day = String(now.getDate()).padStart(2, '0');\r",
+              "const datePart = `${year}${month}${day}`;\r",
+              "\r",
+              "// Format the time as HHMM (24-hour)\r",
+              "const hours = String(now.getHours()).padStart(2, '0');\r",
+              "const minutes = String(now.getMinutes()).padStart(2, '0');\r",
+              "const timePart = `${hours}${minutes}`;\r",
+              "\r",
+              "// Combine the parts into the final string\r",
+              "const finalString = `PAT-Test-${datePart}-${timePart}`;\r",
+              "\r",
+              "// Set the Postman global variable\r",
+              "pm.globals.set('pspMerchantIdOverride', finalString);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"LegalEntity\": {\r\n        \"Name\": \"PDCO Location 26-05\",\r\n        \"DoingBusinessAs\": \"Alternate Business Name\",\r\n        \"Type\": \"LIMITED_LIABILITY_COMPANY\",\r\n        \"OwnershipType\": \"PRIVATE\",\r\n        \"TaxId\": \"{{randomTaxId}}\",\r\n        \"AnnualCreditCardSalesVolume\": 500000,\r\n        \"HasAcceptedCreditCards\": true,\r\n        \"YearsInBusiness\": 0,\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"800 Address St\",\r\n            \"StreetAddress2\": \"Apartment 800\",\r\n            \"City\": \"Boston\",\r\n            \"State\": \"MA\",\r\n            \"PostalCode\": \"01970\"\r\n        },\r\n        \"Phone\": \"7817659800\",\r\n        \"Principals\": [\r\n            {\r\n                \"Title\": \"owner1\",\r\n                \"Ssn\": \"{{randomSsn}}\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 51,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first\",\r\n                \"LastName\": \"p last\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest@Primary.com\"\r\n            },\r\n            {\r\n                \"Title\": \"owner2\",\r\n                \"Ssn\": \"{{randomSsn2}}\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 49,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first 2\",\r\n                \"LastName\": \"p last 2\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St 2\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest2@Primary.com\"\r\n            }\r\n        ]\r\n    },\r\n    \"SubMerchant\": {\r\n        \"Name\": \"Merchant Name ZZ\",\r\n        \"Url\": \"{{$randomUrl}}\",\r\n        \"BankRoutingNumber\": \"211370545\",\r\n        \"BankAccountNumber\": \"84012312415\",\r\n        \"BankAccountType\": \"Checking\",\r\n        \"PspMerchantId\": \"{{randomPspMechantId}}\",\r\n        \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\r\n        \"BillingDescriptor\": \"PDS*Sample\",\r\n        \"MerchantCategoryCode\": \"8021\",\r\n        \"MerchantCategoryDetail\": \"8021 Detail\",\r\n        \"MaxTransactionAmount\": 5000,\r\n        \"IsRevenueBoostEnabled\": false,\r\n        \"ECheck\": {\r\n            \"BillingDescription\": \"123\",\r\n            \"CompanyName\": \"123\",\r\n            \"Enabled\": true\r\n        },\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"811 PrimaryContact St\",\r\n            \"StreetAddress2\": \"Apartment 811\",\r\n            \"City\": \"Carpenter\",\r\n            \"State\": \"TX\",\r\n            \"PostalCode\": \"01811\"\r\n        },\r\n        \"Phone\": \"7817652345\",\r\n        \"PrimaryContact\": {\r\n            \"FirstName\": \"pc first\",\r\n            \"LastName\": \"pc last\",\r\n            \"Address\": null,\r\n            \"Phone\": \"7817653456\",\r\n            \"Email\": \"pc@pc.org\"\r\n        },\r\n        \"OrganizationId\": \"5068093d-aa1f-41f8-ac42-1fc85a92b766\",\r\n        \"SubMerchantEnabled\": true,\r\n        \"FundingEnabled\": true,\r\n        \"AccountState\": 2\r\n    },\r\n    \"SubMerchantAccounts\": [\r\n        {\r\n            \"PaymentProcessor\": 0,\r\n            \"AccountState\": 2\r\n        },\r\n        {\r\n            \"PaymentProcessor\": 1,\r\n            \"AccountState\": 2\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/create-sub-merchant",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "provisioning",
+            "create-sub-merchant"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP - create sm 3 processors Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"wellfit-submerchant-id\", json.wellfitSubMerchantId);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.globals.set('randomTaxId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomPspMechantId', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn2', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "pm.globals.set('randomSsn3', Math.floor(Math.random() * 900000) + 100000000);\r",
+              "\r",
+              "// Get the current date and time\r",
+              "const now = new Date();\r",
+              "\r",
+              "// Format the date as YYYYMMDD\r",
+              "const year = now.getFullYear();\r",
+              "const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so we add 1\r",
+              "const day = String(now.getDate()).padStart(2, '0');\r",
+              "const datePart = `${year}${month}${day}`;\r",
+              "\r",
+              "// Format the time as HHMM (24-hour)\r",
+              "const hours = String(now.getHours()).padStart(2, '0');\r",
+              "const minutes = String(now.getMinutes()).padStart(2, '0');\r",
+              "const timePart = `${hours}${minutes}`;\r",
+              "\r",
+              "// Combine the parts into the final string\r",
+              "const finalString = `PAT-Test-${datePart}-${timePart}`;\r",
+              "\r",
+              "// Set the Postman global variable\r",
+              "pm.globals.set('pspMerchantIdOverride', finalString);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"LegalEntity\": {\r\n        \"Name\": \"PDCO Location 26-05\",\r\n        \"DoingBusinessAs\": \"Alternate Business Name\",\r\n        \"Type\": \"LIMITED_LIABILITY_COMPANY\",\r\n        \"OwnershipType\": \"PRIVATE\",\r\n        \"TaxId\": \"{{randomTaxId}}\",\r\n        \"AnnualCreditCardSalesVolume\": 500000,\r\n        \"HasAcceptedCreditCards\": true,\r\n        \"YearsInBusiness\": 0,\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"800 Address St\",\r\n            \"StreetAddress2\": \"Apartment 800\",\r\n            \"City\": \"Boston\",\r\n            \"State\": \"MA\",\r\n            \"PostalCode\": \"01970\"\r\n        },\r\n        \"Phone\": \"7817659800\",\r\n        \"Principals\": [\r\n            {\r\n                \"Title\": \"owner1\",\r\n                \"Ssn\": \"{{randomSsn}}\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 51,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first\",\r\n                \"LastName\": \"p last\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest@Primary.com\"\r\n            },\r\n            {\r\n                \"Title\": \"owner2\",\r\n                \"Ssn\": \"{{randomSsn2}}\",\r\n                \"DateOfBirth\": \"1980-10-12\",\r\n                \"StakePercent\": 49,\r\n                \"Order\": 0,\r\n                \"FirstName\": \"p first 2\",\r\n                \"LastName\": \"p last 2\",\r\n                \"Address\": {\r\n                    \"StreetAddress1\": \"711 Princ 01 St 2\",\r\n                    \"StreetAddress2\": \"Apartment 711\",\r\n                    \"City\": \"Wylie\",\r\n                    \"State\": \"TX\",\r\n                    \"PostalCode\": \"01811\"\r\n                },\r\n                \"Phone\": \"7817659800\",\r\n                \"Email\": \"createtest2@Primary.com\"\r\n            }\r\n        ]\r\n    },\r\n    \"SubMerchant\": {\r\n        \"Name\": \"Merchant Name ZZ\",\r\n        \"Url\": \"{{$randomUrl}}\",\r\n        \"BankRoutingNumber\": \"211370545\",\r\n        \"BankAccountNumber\": \"84012312415\",\r\n        \"BankAccountType\": \"Checking\",\r\n        \"PspMerchantId\": \"{{randomPspMechantId}}\",\r\n        \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\r\n        \"BillingDescriptor\": \"PDS*Sample\",\r\n        \"MerchantCategoryCode\": \"8021\",\r\n        \"MerchantCategoryDetail\": \"8021 Detail\",\r\n        \"MaxTransactionAmount\": 5000,\r\n        \"IsRevenueBoostEnabled\": false,\r\n        \"ECheck\": {\r\n            \"BillingDescription\": \"123\",\r\n            \"CompanyName\": \"123\",\r\n            \"Enabled\": true\r\n        },\r\n        \"Address\": {\r\n            \"StreetAddress1\": \"811 PrimaryContact St\",\r\n            \"StreetAddress2\": \"Apartment 811\",\r\n            \"City\": \"Carpenter\",\r\n            \"State\": \"TX\",\r\n            \"PostalCode\": \"01811\"\r\n        },\r\n        \"Phone\": \"7817652345\",\r\n        \"PrimaryContact\": {\r\n            \"FirstName\": \"pc first\",\r\n            \"LastName\": \"pc last\",\r\n            \"Address\": null,\r\n            \"Phone\": \"7817653456\",\r\n            \"Email\": \"pc@pc.org\"\r\n        },\r\n        \"OrganizationId\": \"5068093d-aa1f-41f8-ac42-1fc85a92b766\",\r\n        \"SubMerchantEnabled\": true,\r\n        \"FundingEnabled\": true,\r\n        \"AccountState\": 2\r\n    },\r\n    \"SubMerchantAccounts\": [\r\n        {\r\n            \"PaymentProcessor\": 0,\r\n            \"AccountState\": 2\r\n        },\r\n        {\r\n            \"PaymentProcessor\": 1,\r\n            \"AccountState\": 2\r\n        },\r\n        {\r\n            \"PaymentProcessor\": 3,\r\n            \"AccountState\": 2\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/create-sub-merchant",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "provisioning",
+            "create-sub-merchant"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MP - read sm Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/retrieve-sub-merchant?wellfitSubMerchantId=2cb90000-3a37-000d-42d1-08deaa17798a",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "provisioning",
+            "retrieve-sub-merchant"
+          ],
+          "query": [
+            {
+              "key": "wellfitSubMerchantId",
+              "value": "2cb90000-3a37-000d-42d1-08deaa17798a"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MCC - read Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/merchant-category-codes",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "merchant-category-codes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MCC - create Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"code\": \"1504\",\r\n    \"description\": \"Test Code\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/merchant-category-codes",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "merchant-category-codes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MCC - delete Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/merchant-category-codes?code=1504",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "merchant-category-codes"
+          ],
+          "query": [
+            {
+              "key": "code",
+              "value": "1504"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "MCC - read Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "followOriginalHttpMethod": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payments-Bearer-Token}}"
+          }
+        ],
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/merchant-category-codes",
+          "protocol": "https",
+          "host": [
+            "stage-wf-merchantprovisioning-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "merchant-category-codes"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "info": {
+    "_postman_id": "092fd9c8-7111-4c20-ac1f-33da5af9aae3",
+    "name": "TokenVault API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54730134",
+    "_collection_link": "https://go.postman.co/collection/54730134-092fd9c8-7111-4c20-ac1f-33da5af9aae3?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authenticate_Payment-Stage",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n // \"username\": \"WellfitTreatmentAPI\",\r\n // \"password\": \"Test123!\"\r\n  // \"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  \"password\": \"Testing123!!W3llf1t1!\"\r\n  // \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n  //\"password\": \"Testing123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://sbox-platform.wellfit.com/payments/authenticate",
+          "protocol": "https",
+          "host": [
+            "sbox-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Tokenize a card",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"token\", json.processorToken);\r",
+              "pm.execution.setNextRequest(\"v2/cnp/charge\")"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n //\"subMerchantId\": \"1D550000-3A34-000D-889B-08D43C1753A8\",//QA -11\r\n   \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n  \"token\": \"{{paypage-registration-id}}\", //token12345\r\n //\"token\": \"token12366\",\r\n  \"tokenType\": \"page\",\r\n  \"cvv\": \"213\",\r\n  \"integrityCheck\": null,\r\n  \"expirationMonth\": 10,\r\n  \"expirationYear\": 2026,\r\n  //\"zipCode\": \"92625\",\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"merchantInitiated\": false,\r\n  \"metadata\": null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{TokenVault API}}/tokenize-card",
+          "host": [
+            "{{TokenVault API}}"
+          ],
+          "path": [
+            "tokenize-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Retokenize existing payment token",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"subMerchantId\": \"1D550000-3A34-000D-889B-08D43C1753A8\",\r\n  \"token\": \"bb2d0000-480b-0022-21a2-08dd68d37d93\",\r\n  \"tokenType\": \"token\",\r\n  \"cvv\": \"123\",\r\n  \"integrityCheck\": null,\r\n  \"expirationMonth\": 5,\r\n  \"expirationYear\": 2030,\r\n  \"zipCode\": \"00093\",\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"merchantInitiated\": true,\r\n  \"metadata\": null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{TokenVault API}}/tokenize-card",
+          "host": [
+            "{{TokenVault API}}"
+          ],
+          "path": [
+            "tokenize-card"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Token Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response body is a valid JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "let responseJson = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Response object exists\", function () {\r",
+              "    pm.expect(responseJson).to.have.property('response');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"response.processorToken exists\", function () {\r",
+              "    pm.expect(responseJson.response).to.have.property('processorToken');\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{TokenVault API}}/get-token-details?tokenId=bb2d0000-480b-0022-21a2-08dd68d37d93",
+          "host": [
+            "{{TokenVault API}}"
+          ],
+          "path": [
+            "get-token-details"
+          ],
+          "query": [
+            {
+              "key": "tokenId",
+              "value": "bb2d0000-480b-0022-21a2-08dd68d37d93"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add new token",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{Payment-Bearer-Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id\": \"{{$guid}}\",\r\n  //\"processorToken\": \"1112000332035454\", //5454 Master Card - get token from /v2/cnp/authorize   1111000394260009\r\n   //\"processorToken\": \"1111000394260009\", // 0009 Visa Card get token from /v2/cnp/authorize  111300261500004\r\n   \"processorToken\": \"6510004177830828\", // 004 Amex Card get token from /v2/cnp/authorize  111300261500004  1111000269940008\r\n     // \"processorToken\": \"1111000269940008\", // 004 Visa Card - Insufficent Funds get token from /v2/cnp/authorize   1111000269940008  2072288273320003\r\n    //  \"processorToken\": \"1111000269940008\", // 004 Master Card - Expired Card get token from /v2/cnp/authorize   1111000269940008  2072288273320003\r\n // \"cardLastFour\": \"5454\", //Master\r\n   // \"cardLastFour\": \"4242\" //Visa\r\n  // \"cardLastFour\": \"0004\", //Amex\r\n      // \"cardLastFour\": \"0008\", //Visa \r\n         \"cardLastFour\": \"0828\", //Discover\r\n//\"cardBrand\": \"Master\",\r\n // \"cardBrand\": \"VISA\",\r\n  //\"cardBrand\": \"AMEX\",\r\n    \"cardBrand\": \"DISCOVER\",\r\n  \"cardExpirationMonth\": 5,\r\n  \"cardExpirationYear\": 2026,\r\n  \"cardZipCode\": \"33333\" //need to test with and with out zipcode\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{TokenVault API}}/add-token",
+          "host": [
+            "{{TokenVault API}}"
+          ],
+          "path": [
+            "add-token"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Query Token Vault",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{TokenVault API}}/query?processorToken=1111000317034242",
+          "host": [
+            "{{TokenVault API}}"
+          ],
+          "path": [
+            "query"
+          ],
+          "query": [
+            {
+              "key": "processorToken",
+              "value": "1111000317034242"
+            },
+            {
+              "key": "cardLastFour",
+              "value": "4242",
+              "disabled": true
+            },
+            {
+              "key": "cardBrand",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "cardExpirationMonth",
+              "value": "",
+              "disabled": true
+            },
+            {
+              "key": "cardExpirationYear",
+              "value": "2029",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "health",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{Payment-Bearer-Token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{TokenVault API}}/health",
+          "host": [
+            "{{TokenVault API}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "TokenVault API",
+      "value": ""
+    },
+    {
+      "key": "URL",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

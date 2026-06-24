@@ -1,0 +1,516 @@
+{
+  "info": {
+    "_postman_id": "pay3627-qa-session-collection",
+    "name": "PAY-3627 QA Session — ACH Limit -> Worldpay MaxTransactionAmount",
+    "description": "Postman collection for the PAY-3627 QA validation session. Validates AC1, AC2, AC3, AC4, and AC9 (PAY-3610 regression). Source of truth: PAY-3627-AchLimit-Worldpay-MaxTransactionAmount-Testing-Guide.md in the same folder.\n\nSession order: 00 -> 01 -> 02 -> 03 -> 04 -> 05 -> 06 -> 07 -> 08 -> 99.\n\nPrerequisite env vars to set manually before running:\n  - SUB_MERCHANT_ID (fresh SubMerchant from pre-flight)\n  - MP_CLIENT_SECRET (Azure KV: kv-ops-common-westus3 / Identity-MerchantProvisioning-ClientSecret)\n  - EG_TOKEN (run: az account get-access-token --resource https://eventgrid.azure.net --query accessToken -o tsv)\n\nBASELINE_MAX, NEW_ACH_LIMIT, NOW, EVENT_ID, etc. are set automatically by pre-request / test scripts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 - Setup",
+      "item": [
+        {
+          "name": "Get MP_TOKEN (merchant-provisioning read)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('MP_TOKEN', json.access_token);",
+                  "console.log('MP_TOKEN captured. Expires in', json.expires_in, 'seconds.');",
+                  "pm.test('Token returned', () => pm.expect(json.access_token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "{{MP_CLIENT_ID}}", "type": "text" },
+                { "key": "client_secret", "value": "{{MP_CLIENT_SECRET}}", "type": "text" },
+                { "key": "scope", "value": "WellfitMerchantProvisioningAPI.ReadAccess", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{IDENTITY_URL}}/connect/token",
+              "host": ["{{IDENTITY_URL}}"],
+              "path": ["connect", "token"]
+            },
+            "description": "Fetches an OAuth2 client_credentials token for WellfitMerchantProvisioningAPI. Used to read Vantiv state via merchant-provisioning-ms. Token expires in ~1 hour; re-run if you start getting 401s."
+          }
+        },
+        {
+          "name": "Get PV2_TOKEN (Payments V2 — AC9 only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('PV2_TOKEN', json.access_token);",
+                  "console.log('PV2_TOKEN captured. Expires in', json.expires_in, 'seconds.');",
+                  "pm.test('Token returned', () => pm.expect(json.access_token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "{{PV2_CLIENT_ID}}", "type": "text" },
+                { "key": "client_secret", "value": "{{PV2_CLIENT_SECRET}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{IDENTITY_URL}}/connect/token",
+              "host": ["{{IDENTITY_URL}}"],
+              "path": ["connect", "token"]
+            },
+            "description": "Fetches an OAuth2 client_credentials token for WellfitUnifiedPaymentsAPI. Only needed for AC9 (the ACH payment submission that proves PAY-3610 stays fixed)."
+          }
+        },
+        {
+          "name": "How to set EG_TOKEN (read-only — no request)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Postman cannot run 'az'. Run this in a terminal and paste the output into env var EG_TOKEN:",
+                  "//",
+                  "//   az account get-access-token --resource \"https://eventgrid.azure.net\" --query accessToken -o tsv",
+                  "//",
+                  "// The token lasts ~1 hour. If EG publish starts returning 401, refresh it.",
+                  "console.log('See script body — this request is a placeholder for documentation. Do not Send.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "about:blank", "host": ["about"], "path": ["blank"] },
+            "description": "DOCUMENTATION ONLY. Open this request and read the pre-request script to learn how to get EG_TOKEN. Do not Send."
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Pre-flight",
+      "item": [
+        {
+          "name": "Pre-flight reminder (read description)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Pre-flight is handled by your existing SubMerchant build/retrieve Postman scripts.",
+                  "// Drop those requests into this folder, then set SUB_MERCHANT_ID in the environment.",
+                  "// Do not proceed until 'retrieve-sub-merchant?includeProcessorData=true' returns a paymentProcessor=0 entry with a non-null maxTransactionAmount."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "about:blank", "host": ["about"], "path": ["blank"] },
+            "description": "Use your existing team Postman scripts to create or pick a fresh SubMerchant. Confirm full Vantiv provisioning before continuing. Set SUB_MERCHANT_ID in the environment manually."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Baseline (Step 2) — captures BASELINE_MAX",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.test('Vantiv provider response present', () => {",
+              "  pm.expect(json.providerResponses).to.be.an('array').that.is.not.empty;",
+              "});",
+              "const vantiv = json.providerResponses.find(p => p.paymentProcessor === 0);",
+              "pm.test('paymentProcessor=0 entry exists (Vantiv/Worldpay)', () => {",
+              "  pm.expect(vantiv, 'paymentProcessor=0 entry missing — SubMerchant is not fully provisioned. Pick a fresh SubMerchant.').to.exist;",
+              "});",
+              "const max = vantiv && vantiv.metadataAsProvisioningBase && vantiv.metadataAsProvisioningBase.subMerchant && vantiv.metadataAsProvisioningBase.subMerchant.maxTransactionAmount;",
+              "pm.test('maxTransactionAmount is a number', () => pm.expect(max).to.be.a('number'));",
+              "pm.environment.set('BASELINE_MAX', max);",
+              "pm.environment.set('CURRENT_MAX', max);",
+              "console.log('BASELINE_MAX captured:', max);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{MP_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{MP_API}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{SUB_MERCHANT_ID}}&includeProcessorData=true",
+          "host": ["{{MP_API}}"],
+          "path": ["provisioning", "retrieve-sub-merchant"],
+          "query": [
+            { "key": "wellfitSubMerchantId", "value": "{{SUB_MERCHANT_ID}}" },
+            { "key": "includeProcessorData", "value": "true" }
+          ]
+        },
+        "description": "Reads the current Vantiv MaxTransactionAmount for the SubMerchant. Captures it into env var BASELINE_MAX. Re-run any time you want to check current state — it always updates CURRENT_MAX."
+      }
+    },
+    {
+      "name": "03 - AC1 — Publish AchLimit Raise event",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseInt(pm.environment.get('BASELINE_MAX'));",
+              "if (isNaN(baseline)) {",
+              "  throw new Error('BASELINE_MAX not set. Run \"02 - Baseline\" first.');",
+              "}",
+              "const newAch = baseline + 1000;",
+              "pm.environment.set('NEW_ACH_LIMIT', newAch);",
+              "pm.environment.set('DAILY_LIMIT', newAch * 3);",
+              "pm.environment.set('PREV_MAX', baseline);",
+              "pm.environment.set('NEW_MAX', newAch);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('EVENT_ID', `qa-ac1-raise-${Date.now()}`);",
+              "console.log(`AC1 raise: baseline=${baseline}, newAchLimit=${newAch}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('EG publish returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC1 event published. Now re-run \"04 - Verify\" every 15s for up to 2 min — expect Vantiv MAX to flip to', pm.environment.get('NEW_ACH_LIMIT'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{EG_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/cloudevents-batch+json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[{\n  \"specversion\": \"1.0\",\n  \"type\": \"SubMerchant.AchLimitConfig.Updated\",\n  \"source\": \"accounts\",\n  \"id\": \"{{EVENT_ID}}\",\n  \"time\": \"{{NOW}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n    \"newPerTransactionLimit\": {{NEW_ACH_LIMIT}},\n    \"newDailyLimit\": {{DAILY_LIMIT}},\n    \"subMerchantTransactionLimit\": {{BASELINE_MAX}},\n    \"previousMaxTransactionAmount\": {{PREV_MAX}},\n    \"newMaxTransactionAmount\": {{NEW_MAX}},\n    \"maxTransactionAmountChanged\": true,\n    \"effectiveDate\": \"{{NOW}}\",\n    \"lastModifiedBy\": \"qa-manual-test\",\n    \"lastModifiedUtc\": \"{{NOW}}\"\n  }\n}]"
+        },
+        "url": {
+          "raw": "{{EG_DOMAIN}}",
+          "host": ["{{EG_DOMAIN}}"]
+        },
+        "description": "Publishes a SubMerchant.AchLimitConfig.Updated CloudEvent that raises the ACH per-transaction limit to BASELINE_MAX + 1000. The handler should pick this up via Service Bus and call Vantiv to update MaxTransactionAmount. Asynchronous — verify via request 04, give it up to 2 minutes."
+      }
+    },
+    {
+      "name": "04 - AC1 — Verify Vantiv MAX (re-run until updated)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "const vantiv = json.providerResponses.find(p => p.paymentProcessor === 0);",
+              "const max = vantiv.metadataAsProvisioningBase.subMerchant.maxTransactionAmount;",
+              "pm.environment.set('CURRENT_MAX', max);",
+              "const baseline = parseInt(pm.environment.get('BASELINE_MAX'));",
+              "const expected = parseInt(pm.environment.get('NEW_ACH_LIMIT'));",
+              "console.log(`Current Vantiv MAX: ${max} | baseline=${baseline} | expected after AC1=${expected}`);",
+              "if (max === expected) {",
+              "  console.log('Vantiv MAX matches NEW_ACH_LIMIT — AC1 happy path passed.');",
+              "} else if (max === baseline) {",
+              "  console.log('Vantiv MAX still at baseline — handler has not run yet (or short-circuited). Wait 15s and re-run.');",
+              "} else {",
+              "  console.log('Unexpected MAX value — investigate.');",
+              "}",
+              "pm.test('AC1 — Vantiv MAX updated to NEW_ACH_LIMIT', () => pm.expect(max).to.equal(expected));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{MP_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{MP_API}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{SUB_MERCHANT_ID}}&includeProcessorData=true",
+          "host": ["{{MP_API}}"],
+          "path": ["provisioning", "retrieve-sub-merchant"],
+          "query": [
+            { "key": "wellfitSubMerchantId", "value": "{{SUB_MERCHANT_ID}}" },
+            { "key": "includeProcessorData", "value": "true" }
+          ]
+        },
+        "description": "Same call as 02-Baseline, used as a verification step after publishing an event. The Tests script logs what changed vs. baseline and asserts Vantiv MAX equals NEW_ACH_LIMIT (AC1 pass condition)."
+      }
+    },
+    {
+      "name": "05 - AC9 — Submit ACH payment above BASELINE_MAX (PAY-3610 regression)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseInt(pm.environment.get('BASELINE_MAX'));",
+              "if (isNaN(baseline)) {",
+              "  throw new Error('BASELINE_MAX not set. Run \"02 - Baseline\" first.');",
+              "}",
+              "pm.environment.set('TEST_AMOUNT', baseline + 1);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('ORDER_ID', `QA-PAY3627-${Date.now()}`);",
+              "pm.environment.set('IDEMPOTENCY_KEY', `qa-pay3627-${Date.now()}`);",
+              "console.log(`AC9 payment: amount=${baseline + 1} (BASELINE_MAX + 1). Before PAY-3627 this would have been rejected by Worldpay.`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC9 — Worldpay accepts ACH payment > BASELINE_MAX (PAY-3610 fixed)', () => {",
+              "  pm.expect(pm.response.code).to.be.within(200, 299);",
+              "});",
+              "if (pm.response.code === 422) {",
+              "  console.log('422 received. If body mentions per-transaction-limit, this is the SubMerchant API layer, NOT Worldpay. PAY-3627 (Worldpay layer) is still proven by AC1. Raise the SubMerchant ACH limit in SubMerchant API and retry.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{PV2_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "{{IDEMPOTENCY_KEY}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n  \"transactionType\": \"Sale\",\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"USD\",\n  \"orderId\": \"{{ORDER_ID}}\",\n  \"orderIdType\": \"Invoice\",\n  \"paymentMethod\": {\n    \"type\": \"Ach\",\n    \"ach\": {\n      \"accountNumber\": \"1234567890\",\n      \"routingNumber\": \"011000015\",\n      \"accountType\": \"Checking\",\n      \"secCode\": \"WEB\",\n      \"accountFirstName\": \"QA\",\n      \"accountLastName\": \"Tester\",\n      \"authorization\": {\n        \"authorizationType\": \"ELECTRONIC\",\n        \"authorizationDate\": \"{{NOW}}\",\n        \"authorizationReference\": \"QA-PAY3627-AUTH\",\n        \"signedAuthorizationOnFile\": true\n      }\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "{{PV2_API}}/api/v1/payments",
+          "host": ["{{PV2_API}}"],
+          "path": ["api", "v1", "payments"]
+        },
+        "description": "Submits an ACH payment for BASELINE_MAX + 1 dollars. Before PAY-3627, Worldpay's MaxTransactionAmount was static and this payment would have been rejected (= PAY-3610). After AC1 raised Vantiv MAX, this payment should succeed (2xx)."
+      }
+    },
+    {
+      "name": "06 - AC2 — Short-circuit (maxTransactionAmountChanged=false)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseInt(pm.environment.get('BASELINE_MAX'));",
+              "const newAch = parseInt(pm.environment.get('NEW_ACH_LIMIT'));",
+              "if (isNaN(newAch)) {",
+              "  throw new Error('NEW_ACH_LIMIT not set. Run AC1 first.');",
+              "}",
+              "pm.environment.set('DAILY_LIMIT', baseline * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('EVENT_ID', `qa-ac2-shortcircuit-${Date.now()}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('EG publish returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC2 short-circuit event published. Wait 30s, then run \"04 - Verify\". Vantiv MAX should STAY at NEW_ACH_LIMIT (no change).');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{EG_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/cloudevents-batch+json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[{\n  \"specversion\": \"1.0\",\n  \"type\": \"SubMerchant.AchLimitConfig.Updated\",\n  \"source\": \"accounts\",\n  \"id\": \"{{EVENT_ID}}\",\n  \"time\": \"{{NOW}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n    \"newPerTransactionLimit\": {{BASELINE_MAX}},\n    \"newDailyLimit\": {{DAILY_LIMIT}},\n    \"subMerchantTransactionLimit\": {{NEW_ACH_LIMIT}},\n    \"previousMaxTransactionAmount\": {{NEW_ACH_LIMIT}},\n    \"newMaxTransactionAmount\": {{NEW_ACH_LIMIT}},\n    \"maxTransactionAmountChanged\": false,\n    \"effectiveDate\": \"{{NOW}}\",\n    \"lastModifiedBy\": \"qa-manual-test\",\n    \"lastModifiedUtc\": \"{{NOW}}\"\n  }\n}]"
+        },
+        "url": {
+          "raw": "{{EG_DOMAIN}}",
+          "host": ["{{EG_DOMAIN}}"]
+        },
+        "description": "Publishes an event with maxTransactionAmountChanged=false. The handler should skip the Vantiv PUT entirely. Verify via 04-Verify after 30s — MAX should remain at NEW_ACH_LIMIT."
+      }
+    },
+    {
+      "name": "07 - AC3 — Short-circuit (ACH = card limit)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const newAch = parseInt(pm.environment.get('NEW_ACH_LIMIT'));",
+              "if (isNaN(newAch)) {",
+              "  throw new Error('NEW_ACH_LIMIT not set. Run AC1 first.');",
+              "}",
+              "pm.environment.set('DAILY_LIMIT', newAch * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('EVENT_ID', `qa-ac3-equallimit-${Date.now()}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('EG publish returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC3 event published — newPerTransactionLimit equals current MAX. Wait 30s, run \"04 - Verify\". MAX should still equal NEW_ACH_LIMIT.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{EG_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/cloudevents-batch+json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[{\n  \"specversion\": \"1.0\",\n  \"type\": \"SubMerchant.AchLimitConfig.Updated\",\n  \"source\": \"accounts\",\n  \"id\": \"{{EVENT_ID}}\",\n  \"time\": \"{{NOW}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n    \"newPerTransactionLimit\": {{NEW_ACH_LIMIT}},\n    \"newDailyLimit\": {{DAILY_LIMIT}},\n    \"subMerchantTransactionLimit\": {{NEW_ACH_LIMIT}},\n    \"previousMaxTransactionAmount\": {{NEW_ACH_LIMIT}},\n    \"newMaxTransactionAmount\": {{NEW_ACH_LIMIT}},\n    \"maxTransactionAmountChanged\": false,\n    \"effectiveDate\": \"{{NOW}}\",\n    \"lastModifiedBy\": \"qa-manual-test\",\n    \"lastModifiedUtc\": \"{{NOW}}\"\n  }\n}]"
+        },
+        "url": {
+          "raw": "{{EG_DOMAIN}}",
+          "host": ["{{EG_DOMAIN}}"]
+        },
+        "description": "Publishes an event where ACH limit equals the current Worldpay MAX. The handler should skip the Vantiv PUT. Verify via 04-Verify after 30s."
+      }
+    },
+    {
+      "name": "08 - AC4 — Idempotency (re-publish AC1 event)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseInt(pm.environment.get('BASELINE_MAX'));",
+              "const newAch = parseInt(pm.environment.get('NEW_ACH_LIMIT'));",
+              "if (isNaN(newAch)) {",
+              "  throw new Error('NEW_ACH_LIMIT not set. Run AC1 first.');",
+              "}",
+              "pm.environment.set('DAILY_LIMIT', newAch * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('EVENT_ID', `qa-ac4-idempotency-${Date.now()}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('EG publish returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC4 event published (re-run of AC1 payload). Wait 30s, run \"04 - Verify\". MAX should still equal NEW_ACH_LIMIT — stable, no double-update, no error in App Insights.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{EG_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/cloudevents-batch+json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[{\n  \"specversion\": \"1.0\",\n  \"type\": \"SubMerchant.AchLimitConfig.Updated\",\n  \"source\": \"accounts\",\n  \"id\": \"{{EVENT_ID}}\",\n  \"time\": \"{{NOW}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n    \"newPerTransactionLimit\": {{NEW_ACH_LIMIT}},\n    \"newDailyLimit\": {{DAILY_LIMIT}},\n    \"subMerchantTransactionLimit\": {{BASELINE_MAX}},\n    \"previousMaxTransactionAmount\": {{BASELINE_MAX}},\n    \"newMaxTransactionAmount\": {{NEW_ACH_LIMIT}},\n    \"maxTransactionAmountChanged\": true,\n    \"effectiveDate\": \"{{NOW}}\",\n    \"lastModifiedBy\": \"qa-manual-test\",\n    \"lastModifiedUtc\": \"{{NOW}}\"\n  }\n}]"
+        },
+        "url": {
+          "raw": "{{EG_DOMAIN}}",
+          "host": ["{{EG_DOMAIN}}"]
+        },
+        "description": "Re-publishes the AC1 raise event. The handler should remain stable — no double-update, no exception. This validates idempotency."
+      }
+    },
+    {
+      "name": "99 - Cleanup — Reset Vantiv MAX to BASELINE_MAX",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseInt(pm.environment.get('BASELINE_MAX'));",
+              "const newAch = parseInt(pm.environment.get('NEW_ACH_LIMIT'));",
+              "if (isNaN(baseline) || isNaN(newAch)) {",
+              "  throw new Error('BASELINE_MAX and NEW_ACH_LIMIT must both be set. Run baseline + AC1 first.');",
+              "}",
+              "pm.environment.set('DAILY_LIMIT', baseline * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('EVENT_ID', `qa-cleanup-${Date.now()}`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('EG publish returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('Cleanup event published. Wait ~30s, run \"04 - Verify\". MAX should drop back to BASELINE_MAX.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{EG_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/cloudevents-batch+json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[{\n  \"specversion\": \"1.0\",\n  \"type\": \"SubMerchant.AchLimitConfig.Updated\",\n  \"source\": \"accounts\",\n  \"id\": \"{{EVENT_ID}}\",\n  \"time\": \"{{NOW}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n    \"newPerTransactionLimit\": {{BASELINE_MAX}},\n    \"newDailyLimit\": {{DAILY_LIMIT}},\n    \"subMerchantTransactionLimit\": {{NEW_ACH_LIMIT}},\n    \"previousMaxTransactionAmount\": {{NEW_ACH_LIMIT}},\n    \"newMaxTransactionAmount\": {{BASELINE_MAX}},\n    \"maxTransactionAmountChanged\": true,\n    \"effectiveDate\": \"{{NOW}}\",\n    \"lastModifiedBy\": \"qa-cleanup\",\n    \"lastModifiedUtc\": \"{{NOW}}\"\n  }\n}]"
+        },
+        "url": {
+          "raw": "{{EG_DOMAIN}}",
+          "host": ["{{EG_DOMAIN}}"]
+        },
+        "description": "Resets Vantiv MAX back to BASELINE_MAX so the SubMerchant is in a known state for future test runs. Verify via 04-Verify after 30s."
+      }
+    }
+  ]
+}

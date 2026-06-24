@@ -1,0 +1,525 @@
+{
+  "info": {
+    "_postman_id": "pay3627-stage-put-driven-collection",
+    "name": "PAY-3627 STAGE — ACH Limit -> Worldpay MAX (PUT-driven, no synthetic publish)",
+    "description": "STAGE QA collection for PAY-3627. Unlike the DEV collection, this NEVER publishes a synthetic CloudEvent to Event Grid (STAGE QA does not have EventGrid Data Sender and we are not opening that up). Instead every AC is driven through the real SubMerchant API write endpoint:\n\n    PUT {{SUBMERCHANT_API}}/api/submerchants/{id}/ach-limits   (policy: ach-limits-admin)\n\nThe handler (UpdateAchLimitConfigHandler) upserts AchLimitConfig + audit log, then publishes the real SubMerchant.AchLimitConfig.Updated event. The publisher itself computes prev/new Worldpay MAX = MAX(card limit, ACH limit) and the maxTransactionAmountChanged hint, so QA never hand-crafts the event payload. merchant-provisioning-ms consumes the event and pushes MAX to Vantiv.\n\nSTAGE Identity (verified 2026-06-22): scope WellfitSubMerchantAPI.AchLimitsAdmin EXISTS and is granted to client WellfitUnifiedPaymentsAPI. IMPORTANT: that client holds AchLimitsAdmin but NOT WellfitSubMerchantAPI.Read — so (a) request ONLY AchLimitsAdmin in the token (adding .Read makes the client_credentials call fail with invalid_scope), and (b) you cannot GET the SubMerchant with this client. The card limit is therefore derived from BASELINE_MAX on a FRESH SubMerchant (BASELINE_MAX == card when no ACH config exists). Use a fresh SubMerchant.\n\nWhy the AC order differs from DEV: on the PUT path you induce maxTransactionAmountChanged via DATA (the ACH value relative to the card limit), not by setting a flag. So the short-circuit ACs (AC2/AC3) must run from a clean baseline (ACH <= card) BEFORE AC1 raises the MAX. Session order: 00 -> 01 -> 02 -> 03(AC3) -> 04(AC2) -> 05(AC1) -> 06(Verify) -> 07(AC9) -> 08(AC4) -> 99(Cleanup).\n\nSet manually before running (see PAY-3627-STAGE-Environment):\n  - SM_CLIENT_SECRET — STAGE secret for WellfitUnifiedPaymentsAPI (per-env, from Key Vault — NOT Test123!)\n  - MP_CLIENT_SECRET — for the Vantiv ground-truth read\n  - PV2_CLIENT_SECRET — for AC9 payment submission (WellfitUnifiedPaymentsAPI also covers PV2)\n  - SUB_MERCHANT_ID — a fresh, fully-provisioned STAGE SubMerchant\n\nSource of truth: PAY-3627-STAGE-PUT-Path-Runbook-Addendum.md (same folder).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 - Setup",
+      "item": [
+        {
+          "name": "Get SM_TOKEN (AchLimitsAdmin only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Token returned', () => pm.expect(json.access_token, 'no access_token — likely invalid_scope. The client must hold WellfitSubMerchantAPI.AchLimitsAdmin and you must request ONLY that scope (SM_SCOPE). Do NOT add .Read — WellfitUnifiedPaymentsAPI does not have it and the request will fail.').to.be.a('string'));",
+                  "if (json.access_token) {",
+                  "  pm.environment.set('SM_TOKEN', json.access_token);",
+                  "  console.log('SM_TOKEN captured. Expires in', json.expires_in, 'seconds. Granted scope:', json.scope);",
+                  "  pm.test('AchLimitsAdmin scope granted', () => pm.expect(json.scope || '').to.include('AchLimitsAdmin'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "{{SM_CLIENT_ID}}", "type": "text" },
+                { "key": "client_secret", "value": "{{SM_CLIENT_SECRET}}", "type": "text" },
+                { "key": "scope", "value": "{{SM_SCOPE}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{IDENTITY_URL}}/connect/token",
+              "host": ["{{IDENTITY_URL}}"],
+              "path": ["connect", "token"]
+            },
+            "description": "Fetches the token used for the ACH-limits PUT. SM_SCOPE must be exactly 'WellfitSubMerchantAPI.AchLimitsAdmin' (the write scope behind the ach-limits-admin policy). STAGE Identity (verified 2026-06-22) grants this scope to WellfitUnifiedPaymentsAPI — but that client does NOT hold WellfitSubMerchantAPI.Read, so requesting both scopes returns invalid_scope. This is the one STAGE permission that replaces the DEV EventGrid Data Sender role; the 'AchLimitsAdmin scope granted' test confirms the token carries it."
+          }
+        },
+        {
+          "name": "Get MP_TOKEN (merchant-provisioning read)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('MP_TOKEN', json.access_token);",
+                  "console.log('MP_TOKEN captured. Expires in', json.expires_in, 'seconds.');",
+                  "pm.test('Token returned', () => pm.expect(json.access_token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "{{MP_CLIENT_ID}}", "type": "text" },
+                { "key": "client_secret", "value": "{{MP_CLIENT_SECRET}}", "type": "text" },
+                { "key": "scope", "value": "WellfitMerchantProvisioningAPI.ReadAccess", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{IDENTITY_URL}}/connect/token",
+              "host": ["{{IDENTITY_URL}}"],
+              "path": ["connect", "token"]
+            },
+            "description": "Token for reading the live Vantiv MaxTransactionAmount via merchant-provisioning-ms (the ground-truth verification). If MP read is not available to QA in STAGE, use the SQL fallback in the runbook addendum (SubMerchantDetails.MaxTransactionAmount) instead and skip this request."
+          }
+        },
+        {
+          "name": "Get PV2_TOKEN (Payments V2 — AC9 only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('PV2_TOKEN', json.access_token);",
+                  "console.log('PV2_TOKEN captured. Expires in', json.expires_in, 'seconds.');",
+                  "pm.test('Token returned', () => pm.expect(json.access_token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "{{PV2_CLIENT_ID}}", "type": "text" },
+                { "key": "client_secret", "value": "{{PV2_CLIENT_SECRET}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{IDENTITY_URL}}/connect/token",
+              "host": ["{{IDENTITY_URL}}"],
+              "path": ["connect", "token"]
+            },
+            "description": "Token for the AC9 ACH payment submission (proves PAY-3610 stays fixed). No scope requested → token carries all of the client's scopes (WellfitUnifiedPaymentsAPI covers PaymentsV2). Only needed for request 07."
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Pre-flight",
+      "item": [
+        {
+          "name": "Pre-flight reminder (read description)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Use your existing SubMerchant build/retrieve scripts to create or pick a FRESH, fully-provisioned STAGE SubMerchant.",
+                  "// Set SUB_MERCHANT_ID in the environment.",
+                  "// FRESH MATTERS: a fresh SubMerchant has NO AchLimitConfig row, so BASELINE_MAX == the card limit.",
+                  "// This collection treats BASELINE_MAX as the card limit (the SubMerchant GET is unavailable —",
+                  "// the STAGE token client WellfitUnifiedPaymentsAPI lacks WellfitSubMerchantAPI.Read). On a fresh",
+                  "// SubMerchant that equivalence is exact, which is what makes the AC2/AC3 short-circuit requests work.",
+                  "console.log('Pre-flight: set SUB_MERCHANT_ID to a FRESH, fully-provisioned STAGE SubMerchant, then run 02 - Baseline.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "about:blank", "host": ["about"], "path": ["blank"] },
+            "description": "DOCUMENTATION ONLY — do not Send. Create/pick a FRESH, fully-provisioned STAGE SubMerchant and set SUB_MERCHANT_ID. Confirm it is provisioned to Vantiv (02 returns a paymentProcessor=0 entry with a non-null maxTransactionAmount). Fresh is required: this collection derives the card limit from BASELINE_MAX, which only equals the card limit when no ACH config exists yet. If you must use a non-fresh SubMerchant, read its card limit via SQL ([Payments].[SubMerchants].TransactionLimit) and set CARD_LIMIT manually after step 02."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Baseline — Read Vantiv MAX (capture BASELINE_MAX + CARD_LIMIT)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.test('Vantiv provider response present', () => pm.expect(json.providerResponses).to.be.an('array').that.is.not.empty);",
+              "const vantiv = json.providerResponses.find(p => p.paymentProcessor === 0);",
+              "pm.test('paymentProcessor=0 entry exists (Vantiv/Worldpay)', () => pm.expect(vantiv, 'paymentProcessor=0 entry missing — SubMerchant not fully provisioned. Pick a fresh SubMerchant.').to.exist);",
+              "const max = vantiv && vantiv.metadataAsProvisioningBase && vantiv.metadataAsProvisioningBase.subMerchant && vantiv.metadataAsProvisioningBase.subMerchant.maxTransactionAmount;",
+              "pm.test('maxTransactionAmount is a number', () => pm.expect(max).to.be.a('number'));",
+              "pm.environment.set('BASELINE_MAX', max);",
+              "pm.environment.set('CURRENT_MAX', max);",
+              "pm.environment.set('CARD_LIMIT', max);",
+              "console.log(`BASELINE_MAX captured: ${max}. Treating CARD_LIMIT = ${max} (valid on a fresh SubMerchant where ACH is unconfigured). If this SubMerchant is NOT fresh, override CARD_LIMIT manually from SQL before running AC2/AC3.`);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{MP_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{MP_API}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{SUB_MERCHANT_ID}}&includeProcessorData=true",
+          "host": ["{{MP_API}}"],
+          "path": ["provisioning", "retrieve-sub-merchant"],
+          "query": [
+            { "key": "wellfitSubMerchantId", "value": "{{SUB_MERCHANT_ID}}" },
+            { "key": "includeProcessorData", "value": "true" }
+          ]
+        },
+        "description": "Reads the live Vantiv MaxTransactionAmount and captures BASELINE_MAX. Also sets CARD_LIMIT = BASELINE_MAX, which is exact on a fresh SubMerchant (no ACH config → MAX = card limit). CARD_LIMIT drives the AC2/AC3 short-circuit values. The SubMerchant GET is intentionally not used here because the STAGE token client lacks WellfitSubMerchantAPI.Read."
+      }
+    },
+    {
+      "name": "03 - AC3 — PUT ACH = card limit (short-circuit, no MAX move)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const card = parseFloat(pm.environment.get('CARD_LIMIT'));",
+              "if (isNaN(card)) { throw new Error('CARD_LIMIT not set. Run 02 - Baseline first.'); }",
+              "pm.environment.set('PUT_PER_TX', card);",
+              "pm.environment.set('PUT_DAILY', card * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "console.log(`AC3: PUT ACH per-tx = card limit (${card}). Publisher computes MAX(card, card)=card => maxTransactionAmountChanged=false => consumer short-circuits. Vantiv MAX should STAY at BASELINE_MAX.`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('PUT returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC3 PUT accepted. Wait ~30s, then run 06 - Verify. Expect CURRENT_MAX to remain == BASELINE_MAX (no move).');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{SM_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"perTransactionLimit\": {{PUT_PER_TX}},\n  \"dailyLimit\": {{PUT_DAILY}}\n}"
+        },
+        "url": {
+          "raw": "{{SUBMERCHANT_API}}/api/submerchants/{{SUB_MERCHANT_ID}}/ach-limits",
+          "host": ["{{SUBMERCHANT_API}}"],
+          "path": ["api", "submerchants", "{{SUB_MERCHANT_ID}}", "ach-limits"]
+        },
+        "description": "AC3 — ACH limit equals the card limit. The publisher computes newMax = MAX(card, card) = card = prevMax, so maxTransactionAmountChanged=false and the consumer (AchLimitConfigChangedHandler) returns without calling Vantiv. Verify via 06: MAX unchanged. NOTE: this PUT DOES write AchLimitConfig + an audit row — that is expected on the API path (it is NOT the synthetic-path 'AchLimitConfig must be unchanged' assertion)."
+      }
+    },
+    {
+      "name": "04 - AC2 — PUT ACH below card limit (short-circuit, no MAX move)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const card = parseFloat(pm.environment.get('CARD_LIMIT'));",
+              "if (isNaN(card)) { throw new Error('CARD_LIMIT not set. Run 02 - Baseline first.'); }",
+              "const perTx = Math.max(0, card - 100);",
+              "pm.environment.set('PUT_PER_TX', perTx);",
+              "pm.environment.set('PUT_DAILY', perTx * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "console.log(`AC2: PUT ACH per-tx = ${perTx} (below card limit ${card}). Publisher computes MAX(card, ach)=card => maxTransactionAmountChanged=false => short-circuit. Vantiv MAX should STAY at BASELINE_MAX.`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('PUT returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC2 PUT accepted. Wait ~30s, then run 06 - Verify. Expect CURRENT_MAX to remain == BASELINE_MAX (no move).');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{SM_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"perTransactionLimit\": {{PUT_PER_TX}},\n  \"dailyLimit\": {{PUT_DAILY}}\n}"
+        },
+        "url": {
+          "raw": "{{SUBMERCHANT_API}}/api/submerchants/{{SUB_MERCHANT_ID}}/ach-limits",
+          "host": ["{{SUBMERCHANT_API}}"],
+          "path": ["api", "submerchants", "{{SUB_MERCHANT_ID}}", "ach-limits"]
+        },
+        "description": "AC2 — ACH limit below the card limit. newMax = MAX(card, ach) = card = prevMax, so maxTransactionAmountChanged=false and the consumer short-circuits. This is the maxTransactionAmountChanged=false path the DEV synthetic AC2 hand-set; here it is induced by data. Verify via 06: MAX unchanged."
+      }
+    },
+    {
+      "name": "05 - AC1 — PUT ACH above card limit (raise MAX) [headline]",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseFloat(pm.environment.get('BASELINE_MAX'));",
+              "if (isNaN(baseline)) { throw new Error('BASELINE_MAX not set. Run 02 - Baseline first.'); }",
+              "const newAch = baseline + 1000;",
+              "pm.environment.set('NEW_ACH_LIMIT', newAch);",
+              "pm.environment.set('PUT_PER_TX', newAch);",
+              "pm.environment.set('PUT_DAILY', newAch * 3);",
+              "pm.environment.set('DAILY_LIMIT', newAch * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "console.log(`AC1: PUT ACH per-tx = ${newAch} (BASELINE_MAX + 1000, guaranteed > card). Publisher computes newMax = ${newAch} > prevMax = ${baseline} => maxTransactionAmountChanged=true => consumer pushes ${newAch} to Vantiv.`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('PUT returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC1 PUT accepted. Now run 06 - Verify every ~15s for up to 2 min — expect Vantiv MAX to flip to', pm.environment.get('NEW_ACH_LIMIT'), '. If it never moves, see the runbook addendum: check the SubMerchant API publish telemetry (AchLimitConfigChangedPublished) — a best-effort publish failure still returns 200 here.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{SM_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"perTransactionLimit\": {{PUT_PER_TX}},\n  \"dailyLimit\": {{PUT_DAILY}}\n}"
+        },
+        "url": {
+          "raw": "{{SUBMERCHANT_API}}/api/submerchants/{{SUB_MERCHANT_ID}}/ach-limits",
+          "host": ["{{SUBMERCHANT_API}}"],
+          "path": ["api", "submerchants", "{{SUB_MERCHANT_ID}}", "ach-limits"]
+        },
+        "description": "AC1 happy path — raises the ACH per-transaction limit to BASELINE_MAX + 1000. Because BASELINE_MAX is already MAX(card, currentAch), the new ACH exceeds the card limit, so the publisher emits maxTransactionAmountChanged=true and merchant-provisioning-ms pushes the new MAX to Vantiv. Asynchronous — verify via 06, allow up to 2 minutes."
+      }
+    },
+    {
+      "name": "06 - Verify Vantiv MAX (re-run until updated)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "const vantiv = json.providerResponses.find(p => p.paymentProcessor === 0);",
+              "const max = vantiv.metadataAsProvisioningBase.subMerchant.maxTransactionAmount;",
+              "pm.environment.set('CURRENT_MAX', max);",
+              "const baseline = parseFloat(pm.environment.get('BASELINE_MAX'));",
+              "const expectedRaise = parseFloat(pm.environment.get('NEW_ACH_LIMIT'));",
+              "console.log(`CURRENT_MAX: ${max} | BASELINE_MAX: ${baseline} | NEW_ACH_LIMIT (after AC1): ${expectedRaise}`);",
+              "if (max === expectedRaise) {",
+              "  console.log('MAX == NEW_ACH_LIMIT  -> matches AC1 (raised state).');",
+              "} else if (max === baseline) {",
+              "  console.log('MAX == BASELINE_MAX  -> matches AC2/AC3 (no move) or pre-AC1 / post-cleanup state.');",
+              "} else {",
+              "  console.log('MAX is some other value — check which step you just ran (or wait, the handler may not have run yet).');",
+              "}",
+              "pm.test('CURRENT_MAX is numeric (informational verify — interpret per the AC you just ran)', () => pm.expect(max).to.be.a('number'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{MP_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "{{MP_API}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{SUB_MERCHANT_ID}}&includeProcessorData=true",
+          "host": ["{{MP_API}}"],
+          "path": ["provisioning", "retrieve-sub-merchant"],
+          "query": [
+            { "key": "wellfitSubMerchantId", "value": "{{SUB_MERCHANT_ID}}" },
+            { "key": "includeProcessorData", "value": "true" }
+          ]
+        },
+        "description": "Shared verification — reads the live Vantiv MAX and logs it against BASELINE_MAX and NEW_ACH_LIMIT. Intentionally only asserts CURRENT_MAX is numeric; the pass/fail meaning depends on which AC you just ran (raise => expect NEW_ACH_LIMIT; short-circuit/cleanup => expect BASELINE_MAX). The runbook addendum's sign-off table is the source of pass criteria."
+      }
+    },
+    {
+      "name": "07 - AC9 — Submit ACH payment above BASELINE_MAX (PAY-3610 regression)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const baseline = parseFloat(pm.environment.get('BASELINE_MAX'));",
+              "if (isNaN(baseline)) { throw new Error('BASELINE_MAX not set. Run 02 - Baseline first.'); }",
+              "pm.environment.set('TEST_AMOUNT', baseline + 1);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "pm.environment.set('ORDER_ID', `QA-PAY3627-STAGE-${Date.now()}`);",
+              "pm.environment.set('IDEMPOTENCY_KEY', `qa-pay3627-stage-${Date.now()}`);",
+              "console.log(`AC9 payment: amount = ${baseline + 1} (BASELINE_MAX + 1). Run this AFTER AC1 raised the Vantiv MAX. Before PAY-3627 Worldpay would have rejected this.`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC9 — Worldpay accepts ACH payment > BASELINE_MAX (PAY-3610 fixed)', () => {",
+              "  pm.expect(pm.response.code).to.be.within(200, 299);",
+              "});",
+              "if (pm.response.code === 422) {",
+              "  console.log('422 received. If the body mentions per-transaction-limit, that is the SubMerchant API enforcement layer, NOT Worldpay. PAY-3627 (Worldpay MAX) is still proven by AC1. To re-run AC9: ensure the SubMerchant ACH per-transaction limit is >= TEST_AMOUNT (it is, after AC1 raised it to BASELINE_MAX+1000) and that enforcement feature flag state is as expected.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{PV2_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "{{IDEMPOTENCY_KEY}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"subMerchantId\": \"{{SUB_MERCHANT_ID}}\",\n  \"transactionType\": \"Sale\",\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"USD\",\n  \"orderId\": \"{{ORDER_ID}}\",\n  \"orderIdType\": \"Invoice\",\n  \"paymentMethod\": {\n    \"type\": \"Ach\",\n    \"ach\": {\n      \"accountNumber\": \"1234567890\",\n      \"routingNumber\": \"011000015\",\n      \"accountType\": \"Checking\",\n      \"secCode\": \"WEB\",\n      \"accountFirstName\": \"QA\",\n      \"accountLastName\": \"Tester\",\n      \"authorization\": {\n        \"authorizationType\": \"ELECTRONIC\",\n        \"authorizationDate\": \"{{NOW}}\",\n        \"authorizationReference\": \"QA-PAY3627-AUTH\",\n        \"signedAuthorizationOnFile\": true\n      }\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "{{PV2_API}}/api/v1/payments",
+          "host": ["{{PV2_API}}"],
+          "path": ["api", "v1", "payments"]
+        },
+        "description": "Submits an ACH payment for BASELINE_MAX + 1. After AC1 raised the Vantiv MAX, Worldpay should accept it (2xx). This is the long-term confirmation that PAY-3610 stays fixed. Unchanged from the DEV collection — AC9 is environment-agnostic."
+      }
+    },
+    {
+      "name": "08 - AC4 — Idempotency (re-PUT the AC1 value)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const newAch = parseFloat(pm.environment.get('NEW_ACH_LIMIT'));",
+              "if (isNaN(newAch)) { throw new Error('NEW_ACH_LIMIT not set. Run AC1 (05) first.'); }",
+              "pm.environment.set('PUT_PER_TX', newAch);",
+              "pm.environment.set('PUT_DAILY', newAch * 3);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "console.log(`AC4: re-PUT the AC1 value (${newAch}). No field changes => publisher computes prevMax == newMax => maxTransactionAmountChanged=false => consumer short-circuits. Vantiv MAX should STAY at NEW_ACH_LIMIT, no double-write, no exception.`);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('PUT returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('AC4 PUT accepted. Wait ~30s, run 06 - Verify. Expect CURRENT_MAX to remain == NEW_ACH_LIMIT (stable). NOTE: each PUT stamps a fresh lastModifiedUtc, so this proves convergent repeat-safety (re-applying the same MAX is stable). Literal at-least-once duplicate-delivery dedup is covered by the consumer unit tests (AchLimitConfigChangedHandlerTests) — see runbook addendum.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{SM_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"perTransactionLimit\": {{PUT_PER_TX}},\n  \"dailyLimit\": {{PUT_DAILY}}\n}"
+        },
+        "url": {
+          "raw": "{{SUBMERCHANT_API}}/api/submerchants/{{SUB_MERCHANT_ID}}/ach-limits",
+          "host": ["{{SUBMERCHANT_API}}"],
+          "path": ["api", "submerchants", "{{SUB_MERCHANT_ID}}", "ach-limits"]
+        },
+        "description": "AC4 idempotency — re-PUTs the AC1 value. The consumer is idempotent by convergence (SyncByIdAsync sets an ABSOLUTE MAX; there is no dedup store), so re-applying the same MAX leaves Vantiv stable with no double-update and no exception. Verify via 06: MAX still == NEW_ACH_LIMIT."
+      }
+    },
+    {
+      "name": "99 - Cleanup — PUT ACH back to baseline (reset MAX to card limit)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Fresh SubMerchant had no ACH config, so reset perTx to 0 → MAX(card, 0) = card = BASELINE_MAX.",
+              "// If you used a non-fresh SubMerchant, set PUT_PER_TX to its original ACH per-tx limit instead.",
+              "pm.environment.set('PUT_PER_TX', 0);",
+              "pm.environment.set('PUT_DAILY', 0);",
+              "pm.environment.set('NOW', new Date().toISOString());",
+              "console.log('Cleanup: PUT ACH per-tx = 0. newMax = MAX(card, 0) = card => lowers from the raised state => Vantiv MAX returns to BASELINE_MAX.');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('PUT returned 200', () => pm.expect(pm.response.code).to.equal(200));",
+              "console.log('Cleanup PUT accepted. Wait ~30s, run 06 - Verify. Expect CURRENT_MAX to return to BASELINE_MAX (= card limit).');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{SM_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"perTransactionLimit\": {{PUT_PER_TX}},\n  \"dailyLimit\": {{PUT_DAILY}}\n}"
+        },
+        "url": {
+          "raw": "{{SUBMERCHANT_API}}/api/submerchants/{{SUB_MERCHANT_ID}}/ach-limits",
+          "host": ["{{SUBMERCHANT_API}}"],
+          "path": ["api", "submerchants", "{{SUB_MERCHANT_ID}}", "ach-limits"]
+        },
+        "description": "Resets the ACH limit to 0 (a fresh SubMerchant's original state), lowering MAX(card, ach) back to the card limit, so Vantiv MAX returns to BASELINE_MAX — a known state for the next run. For a non-fresh SubMerchant, set PUT_PER_TX to the original ACH per-tx limit instead. Verify via 06."
+      }
+    }
+  ]
+}

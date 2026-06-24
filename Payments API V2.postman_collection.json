@@ -1,0 +1,2374 @@
+{
+  "info": {
+    "_postman_id": "4d8ccee1-f56d-49b4-8300-7ce19e43cdb7",
+    "name": "Payments API V2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32666628",
+    "_collection_link": "https://go.postman.co/collection/32666628-4d8ccee1-f56d-49b4-8300-7ce19e43cdb7?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Vantiv CNP API Certification",
+      "item": [
+        {
+          "name": "Approved Scenario VISA",
+          "item": [
+            {
+              "name": "Authenticate_Payment_QA",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+                      "var jsonData = JSON.parse(responseBody);",
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    //QA\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   \"password\": \"Test123!\"\r\n   //\"username\": \"WellfitTreatmentAPI\",\r\n   //\"password\": \"Test123!\"\r\n   //\"username\": \"WellfitAutomation\",\r\n   //\"password\": \"Test123!\"\r\n   //\"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   //\"password\": \"Testing123!!W3llf1t1!\"\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API QA}}/authenticate",
+                  "host": [
+                    "{{Payments API QA}}"
+                  ],
+                  "path": [
+                    "authenticate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authenticate_Payment-Stage",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+                      "var jsonData = JSON.parse(responseBody);",
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  //Stage\r\n  //\"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n  //\"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   \"password\": \"Testing123!!W3llf1t1!\"\r\n\r\n  // \"username\": \"WellfitCustomerServiceAPI\",\r\n  //\"password\": \"Testing123!!W3llfit\"\r\n\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  // \"password\": \"Testing123!!W3llf1tIsthegreatest\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/authenticate",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "authenticate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_paypage_id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489774",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "4457010000000009",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "349",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/authorize",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2026,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n // \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"01803\",\r\n  \"amount\" : \"50\"\r\n  //\"source\": \"Android\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/authorize",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "authorize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPP Epic Transaction - Capture Trasnaction",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"e_transactiontype\": \"postauth\",\r\n    \"e_gatewayidentifier1\": \"\",\r\n    \"e_gatewayidentifier8\": \"Epic::Test123!\",\r\n    \"e_referencetransactionid\": \"83997827527814617\",\r\n    \"e_amount\": \"15.00\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://stage-platform.wellfit.com/unifiedpayments/epic-gateway/transaction",
+                  "protocol": "https",
+                  "host": [
+                    "stage-platform",
+                    "wellfit",
+                    "com"
+                  ],
+                  "path": [
+                    "unifiedpayments",
+                    "epic-gateway",
+                    "transaction"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/charge",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Approval Number exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                      "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-wf-dev-force-error",
+                    "value": "true",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"amount\": \"4340\",\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2030,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n  //\"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{Token}}\",\r\n  \"tokenType\": 1,\r\n  \"zipCode\": \"01803\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/charge",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "charge"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Expired Card",
+          "item": [
+            {
+              "name": "Authenticate_Payment_QA",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+                      "var jsonData = JSON.parse(responseBody);",
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    //QA\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   \"password\": \"Test123!\"\r\n   //\"username\": \"WellfitTreatmentAPI\",\r\n   //\"password\": \"Test123!\"\r\n   //\"username\": \"WellfitAutomation\",\r\n   //\"password\": \"Test123!\"\r\n   //\"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   //\"password\": \"Testing123!!W3llf1t1!\"\r\n\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API QA}}/authenticate",
+                  "host": [
+                    "{{Payments API QA}}"
+                  ],
+                  "path": [
+                    "authenticate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Authenticate_Payment-Stage",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+                      "var jsonData = JSON.parse(responseBody);",
+                      "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.bearerToken);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  //Stage\r\n  //\"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n  //\"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   \"password\": \"Testing123!!W3llf1t1!\"\r\n\r\n  // \"username\": \"WellfitCustomerServiceAPI\",\r\n  //\"password\": \"Testing123!!W3llfit\"\r\n\r\n   // \"username\": \"WellfitTreatmentAPI\",\r\n  // \"password\": \"Testing123!!W3llf1tIsthegreatest\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/authenticate",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "authenticate"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "get_paypage_id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489774",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "5445840176552850",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "154",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/authorize",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2026,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n // \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"14788\",\r\n  \"amount\" : \"120\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/authorize",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "authorize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPP Epic Transaction - Capture Trasnaction",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"e_transactiontype\": \"postauth\",\r\n    \"e_gatewayidentifier1\": \"\",\r\n    \"e_gatewayidentifier8\": \"Epic::Test123!\",\r\n    \"e_referencetransactionid\": \"83997827553146389\",\r\n    \"e_amount\": \"120.00\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://stage-platform.wellfit.com/unifiedpayments/epic-gateway/transaction",
+                  "protocol": "https",
+                  "host": [
+                    "stage-platform",
+                    "wellfit",
+                    "com"
+                  ],
+                  "path": [
+                    "unifiedpayments",
+                    "epic-gateway",
+                    "transaction"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/charge",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Approval Number exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                      "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-wf-dev-force-error",
+                    "value": "true",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"amount\": \"4340\",\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2030,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n // \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n  \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{Token}}\",\r\n  \"tokenType\": 1,\r\n  \"zipCode\": \"01803\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/charge",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "charge"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Approved Scenario Discover",
+          "item": [
+            {
+              "name": "get_paypage_id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489774",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "6011010140000004",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "111",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/authorize",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"token\", json.response.token);\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2026,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n // \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"56891\",\r\n  \"amount\" : \"80.99\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/authorize",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "authorize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/charge",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Approval Number exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                      "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-wf-dev-force-error",
+                    "value": "true",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"amount\": \"101.00\",\r\n  \"cvv\": \"758\",\r\n  \"expirationMonth\": 3,\r\n  \"expirationYear\": 2050,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"EBD941F3-E725-463D-ADBD-0F61280EBCAD\",\r\n  \"token\": \"{{token}}\",\r\n  \"tokenType\": 1,\r\n  \"zipCode\": \"06002\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API}}/v2/cnp/charge",
+                  "host": [
+                    "{{Payments API}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "charge"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPP Epic Transaction - Capture Trasnaction",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"e_transactiontype\": \"postauth\",\r\n    \"e_gatewayidentifier1\": \"\",\r\n    \"e_gatewayidentifier8\": \"Epic::Test123!\",\r\n    \"e_referencetransactionid\": \"83997827527865494\",\r\n    \"e_amount\": \"10\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://stage-platform.wellfit.com/unifiedpayments/epic-gateway/transaction",
+                  "protocol": "https",
+                  "host": [
+                    "stage-platform",
+                    "wellfit",
+                    "com"
+                  ],
+                  "path": [
+                    "unifiedpayments",
+                    "epic-gateway",
+                    "transaction"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Approved Scenario Amex",
+          "item": [
+            {
+              "name": "get_paypage_id-don'tuse",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489774",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222 ",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "375000026600004",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "1548",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/authorize",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"token\", json.response.token);\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"cvv\": \"1234\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2026,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n // \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"56891\",\r\n  \"amount\" : \"220\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/authorize",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "authorize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/charge",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Approval Number exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                      "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-wf-dev-force-error",
+                    "value": "true",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"amount\": \"101.00\",\r\n  \"cvv\": \"758\",\r\n  \"expirationMonth\": 3,\r\n  \"expirationYear\": 2050,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"EBD941F3-E725-463D-ADBD-0F61280EBCAD\",\r\n  \"token\": \"{{token}}\",\r\n  \"tokenType\": 1,\r\n  \"zipCode\": \"06002\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API}}/v2/cnp/charge",
+                  "host": [
+                    "{{Payments API}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "charge"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPP Epic Transaction - Capture Trasnaction",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"e_transactiontype\": \"postauth\",\r\n    \"e_gatewayidentifier1\": \"\",\r\n    \"e_gatewayidentifier8\": \"Epic::Test123!\",\r\n    \"e_referencetransactionid\": \"84085815229917607\",\r\n    \"e_amount\": \"220\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://stage-platform.wellfit.com/unifiedpayments/epic-gateway/transaction",
+                  "protocol": "https",
+                  "host": [
+                    "stage-platform",
+                    "wellfit",
+                    "com"
+                  ],
+                  "path": [
+                    "unifiedpayments",
+                    "epic-gateway",
+                    "transaction"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get PayPageRegistrationId-AMEX",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.environment.set(\"paypage-last-four\", json.lastFour);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489776",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "375000026600004",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "1234",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Insufficient Funds VI",
+          "item": [
+            {
+              "name": "get_paypage_id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489774",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "4457010100000008",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "992",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/authorize",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"token\", json.response.token);\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2026,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n // \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"56891\",\r\n  \"amount\" : \"80.99\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/authorize",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "authorize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/charge",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Approval Number exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                      "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-wf-dev-force-error",
+                    "value": "true",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"amount\": \"101.00\",\r\n  \"cvv\": \"992\",\r\n  \"expirationMonth\": 6,\r\n  \"expirationYear\": 2050,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"EBD941F3-E725-463D-ADBD-0F61280EBCAD\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"03038\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API}}/v2/cnp/charge",
+                  "host": [
+                    "{{Payments API}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "charge"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPP Epic Transaction - Capture Trasnaction",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"e_transactiontype\": \"postauth\",\r\n    \"e_gatewayidentifier1\": \"\",\r\n    \"e_gatewayidentifier8\": \"Epic::Test123!\",\r\n    \"e_referencetransactionid\": \"83997827527814617\",\r\n    \"e_amount\": \"15.00\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://stage-platform.wellfit.com/unifiedpayments/epic-gateway/transaction",
+                  "protocol": "https",
+                  "host": [
+                    "stage-platform",
+                    "wellfit",
+                    "com"
+                  ],
+                  "path": [
+                    "unifiedpayments",
+                    "epic-gateway",
+                    "transaction"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Invalid Account Number MC",
+          "item": [
+            {
+              "name": "get_paypage_id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"paypage-registration-id\", json.paypageRegistrationId);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/authorize\");"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Host",
+                    "value": "request.eprotect.vantivprelive.com",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "paypageId",
+                      "value": "XhybNHfFjYF3aTRR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "reportGroup",
+                      "value": "Default",
+                      "type": "text"
+                    },
+                    {
+                      "key": "orderId",
+                      "value": "TestOrder.653489774",
+                      "type": "text"
+                    },
+                    {
+                      "key": "id",
+                      "value": "1111111111222222222222222",
+                      "type": "text"
+                    },
+                    {
+                      "key": "accountNumber",
+                      "value": "5112010100000002",
+                      "type": "text"
+                    },
+                    {
+                      "key": "cvv",
+                      "value": "251",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+                  "protocol": "https",
+                  "host": [
+                    "request",
+                    "eprotect",
+                    "vantivprelive",
+                    "com"
+                  ],
+                  "path": [
+                    "eProtect",
+                    "paypage"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/authorize",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.environment.set(\"token\", json.response.token);\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"cvv\": \"349\",\r\n  \"expirationMonth\": 1,\r\n  \"expirationYear\": 2026,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\", //Redhill stage\r\n // \"subMerchantId\": \"1d550000-3a34-000d-889b-08d43c1753a8\", //Redhill qa\r\n  //\"subMerchantId\": \"159f2670-1b71-4ef6-ad30-0ebf0991e2cc\",\r\n  \"token\": \"{{paypage-registration-id}}\",\r\n  \"tokenType\": 0,\r\n  \"zipCode\": \"18455\",\r\n  \"amount\" : \"40\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API Stage}}/v2/cnp/authorize",
+                  "host": [
+                    "{{Payments API Stage}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "authorize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "v2/cnp/charge",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Transaction ID exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.transactionId).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Billing Descriptor exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.billingDescriptor).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.token).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Approval Number exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.approvalNumber).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Expiration Date exists and has value\", function () {\r",
+                      "    pm.expect(pm.response.json().response.expirationMonth).to.exist;\r",
+                      "    pm.expect(pm.response.json().response.expirationYear).to.exist;\r",
+                      "});\r",
+                      "\r",
+                      "pm.execution.setNextRequest(null);\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer-token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-wf-dev-force-error",
+                    "value": "true",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"amount\": \"101.00\",\r\n  \"cvv\": \"251\",\r\n  \"expirationMonth\": 7,\r\n  \"expirationYear\": 2050,\r\n  \"orderId\": \"{{random-order-id}}\",\r\n  \"subMerchantId\": \"EBD941F3-E725-463D-ADBD-0F61280EBCAD\",\r\n  \"token\": \"{{token}}\",\r\n  \"tokenType\": 1,\r\n  \"zipCode\": \"01913\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{Payments API}}/v2/cnp/charge",
+                  "host": [
+                    "{{Payments API}}"
+                  ],
+                  "path": [
+                    "v2",
+                    "cnp",
+                    "charge"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "UPP Epic Transaction - Capture Trasnaction",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();\r",
+                      "pm.test(\"TransactionId is present\", function () {\r",
+                      "    pm.expect(json.response.transactionId).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"Token is present\", function () {\r",
+                      "    pm.expect(json.response.token).to.exist;\r",
+                      "});\r",
+                      "pm.test(\"CardType is present\", function () {\r",
+                      "    pm.expect(json.response.cardType).to.exist;\r",
+                      "});\r",
+                      "pm.environment.set(\"Token\", json.response.token);\r",
+                      "pm.execution.setNextRequest(\"v2/cnp/charge\");\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{Payment-Bearer-Token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"e_transactiontype\": \"postauth\",\r\n    \"e_gatewayidentifier1\": \"\",\r\n    \"e_gatewayidentifier8\": \"Epic::Test123!\",\r\n    \"e_referencetransactionid\": \"83997855703224210\",\r\n    \"e_amount\": \"15.00\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://stage-platform.wellfit.com/unifiedpayments/epic-gateway/transaction",
+                  "protocol": "https",
+                  "host": [
+                    "stage-platform",
+                    "wellfit",
+                    "com"
+                  ],
+                  "path": [
+                    "unifiedpayments",
+                    "epic-gateway",
+                    "transaction"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "Payments API Stage",
+      "value": ""
+    },
+    {
+      "key": "Upp",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
