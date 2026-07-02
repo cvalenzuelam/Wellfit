@@ -28,6 +28,14 @@ When the user asks for **test cases** for this project:
 - Generate **manual QA test cases** only for acceptance criteria that QA executes in an environment (API, DB, App Insights, email).
 - **Do not** create test cases for ACs covered exclusively by **unit tests, contract tests, or CI** (routing dispatch, fixture deserialization, etc.) — note those in Jira or link dev CI evidence instead.
 
+## Volume & granularity (Wellfit QA convention)
+
+- Target **8–10 manual test cases per ticket** unless the user asks for a different count.
+- **Split by verification action**, not only by AC — one case can map to one AC, but the suite should reflect discrete QA work: API auth/smoke, endpoint calls, SQL setup/assertions, Azure/config changes, email verification, App Insights/log queries, service health, recovery/teardown.
+- A single E2E run may satisfy several cases in sequence; that is fine — each case should still be **independently executable and reportable** in Testmo.
+- Do **not** inflate with fake scenarios (e.g. do not add a manual case for AC covered only by unit tests); use the 8–10 count by decomposing **real** env steps the QA engineer performs.
+- When the ticket has fewer ACs, reach 8–10 by separating setup, trigger, and evidence checks (before SQL, after SQL, inbox, logs, health, cleanup).
+
 ## Tone
 
 - **Middle ground**: professional QA English, easy to scan, not robotic legalese, not informal slang.
