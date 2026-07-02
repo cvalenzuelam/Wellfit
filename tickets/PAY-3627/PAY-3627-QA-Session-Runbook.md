@@ -1,9 +1,9 @@
 # PAY-3627 QA Session Walkthrough
 
 **For:** Facilitator running the live QA validation session
-**Companion files (same folder):**
-- `PAY-3627-QA-Session.postman_collection.json` — Postman has every request body/header
-- `PAY-3627-Dev-Environment.postman_environment.json` — Postman env vars
+**Companion files:**
+- `postman/collections/PAY-3627-QA-Session.postman_collection.json` — Postman has every request body/header
+- `postman/environments/PAY-3627-Dev-Environment.postman_environment.json` — Postman env vars
 - `PAY-3627-AchLimit-Worldpay-MaxTransactionAmount-Testing-Guide.md` — original cURL guide
 
 **Read this top-to-bottom during the session. Postman has the request internals. SQL and App Insights queries are inline below.**

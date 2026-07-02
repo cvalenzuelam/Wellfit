@@ -9,7 +9,7 @@ Wellfit/
 ├── .cursor/rules/          # Cursor QA rules
 ├── postman/
 │   ├── collections/        # Postman collections (.json)
-│   └── environments/       # Postman environments (.json)
+│   └── environments/       # Postman environments (.json) — may contain secrets
 ├── tickets/                # Jira exports, runbooks, and QA docs by ticket
 │   ├── PAY-3508/
 │   ├── PAY-3509/
@@ -18,9 +18,22 @@ Wellfit/
 │   ├── PAY-3683/
 │   ├── PAY-3791/
 │   └── PAY-3821/           # Treasury funding-batch send error handling
-├── docs/                   # Cross-cutting reference docs (PDFs, guides)
+├── docs/
+│   └── guides/             # Cross-cutting reference (PDFs, shared guides)
 └── assets/screenshots/     # QA screenshots
 ```
+
+## Quick links
+
+| What | Where |
+|------|--------|
+| Postman collections | `postman/collections/` |
+| Postman environments | `postman/environments/` |
+| Ticket runbooks & Jira XML | `tickets/PAY-XXXX/` |
+| Treasury funding guide (PDF) | `docs/guides/Treasury_Settlement_Funding_Guide.pdf` |
+| PAY-3821 QA walkthrough (Chris) | `tickets/PAY-3821/PAY-3821-STAGE-QA-Walkthrough_Chris.md` |
+
+When asking Cursor for help, `@`-mention the exact file — e.g. `@tickets/PAY-3627/PAY-3627-QA-Session-Runbook.md`.
 
 ## Sync (Windows ↔ Mac)
 
@@ -37,7 +50,7 @@ Import collections from `postman/collections/` and environments from `postman/en
 
 Recent additions:
 
-- **PAY-3821** — `postman/collections/PAY-3821-treasury-funding-send.postman_collection.json`
+- **PAY-3821** — `PAY-3821-treasury-funding-send.postman_collection.json`, `PAY-3821-STAGE-Get-Treasury-Token.postman_collection.json`
 - **MyChart UPP** — `wellfit_upp-MyChart*.json` in the same folders
 
-Ticket context for PAY-3821 lives in `tickets/PAY-3821/` (`analysis.md`, `solution.md`, `e2e-test-plan.md`, `qa-verification.md`, `PAY-3821.xml`).
+Ticket context for PAY-3821: `tickets/PAY-3821/` (`analysis.md`, `solution.md`, `e2e-test-plan.md`, `qa-verification.md`, `PAY-3821.xml`).

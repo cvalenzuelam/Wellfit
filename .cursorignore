@@ -1,0 +1,16 @@
+# Heavy binaries — use @path when explicitly needed
+assets/screenshots/
+*.png
+*.pdf
+*.doc
+
+# Jira XML exports — large; @tickets/PAY-XXXX/PAY-XXXX.xml when needed
+tickets/**/PAY-*.xml
+
+# Postman environments may contain secrets
+postman/environments/
+
+# Test artifacts
+**/node_modules/
+**/playwright-report/
+**/test-results/

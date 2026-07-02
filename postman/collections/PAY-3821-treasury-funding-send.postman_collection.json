@@ -2,12 +2,12 @@
   "info": {
     "name": "PAY-3821 Treasury funding-batch send error handling",
     "_postman_id": "pay3821-treasury-funding-send-e2e",
-    "description": "HTTP companion for the PAY-3821 E2E/QA test plan (e2e-test-plan.md, same folder).\n\nWHAT THIS COVERS (HTTP-driveable slices only):\n- Health check (GET /health) -> 200\n- Trigger the funding-batch send (POST /send-funding-batch) -> 202 + captures correlationId\n- Re-trigger after config restore (recovery / idempotent retry)\n- OPTIONAL: App Insights data-plane query by correlationId (needs separate AAD token + App ID)\n\nWHAT THIS DOES NOT COVER (do manually per the plan):\n- Staging FundingBatches rows (SQL)\n- Inducing the SFTP failure (env config change)\n- Asserting RequestSentTimeStamp (SQL)\n- Asserting ACTUAL email delivery (SendGrid Activity + inbox/M365 quarantine)\n\nSETUP: set the `baseUrl` and `bearerToken` collection variables for the target env (Dev/SBOX).\nThe send is async on a background coordinator: 202 means ENQUEUED, not sent. Use the captured\ncorrelationId to find the async outcome in App Insights after a short settle delay.",
+    "description": "HTTP companion for the PAY-3821 E2E/QA test plan (e2e-test-plan.md, same folder).\n\nWHAT THIS COVERS (HTTP-driveable slices only):\n- Health check (GET /health) -> 200\n- Trigger the funding-batch send (POST /send-funding-batch) -> 202 + captures correlationId\n- Re-trigger after config restore (recovery / idempotent retry)\n- OPTIONAL: App Insights data-plane query by correlationId (needs separate AAD token + App ID)\n\nWHAT THIS DOES NOT COVER (do manually per the plan):\n- Staging FundingBatches rows (SQL)\n- Inducing the SFTP failure (env config change)\n- Asserting RequestSentTimeStamp (SQL)\n- Asserting ACTUAL email delivery (SendGrid Activity + inbox/M365 quarantine)\n\nSTAGE SETUP (verified): `baseUrl` = https://stage-platform.wellfit.com/treasury and header `api_key` (not Bearer). Same as the Treasury API collection. Postman environment = **No environment**.\n\nThe send is async on a background coordinator: 202 means ENQUEUED, not sent. Use the captured\ncorrelationId to find the async outcome in App Insights after a short settle delay.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "https://<treasury-api-host>", "type": "string" },
-    { "key": "bearerToken", "value": "<paste fundingPolicy JWT here>", "type": "string" },
+    { "key": "baseUrl", "value": "https://stage-platform.wellfit.com/treasury", "type": "string" },
+    { "key": "apiKey", "value": "V2VsbGZpdEF1dG9tYXRpb246VGVzdDEyMyE=", "type": "string" },
     { "key": "correlationId", "value": "", "type": "string" },
     { "key": "appInsightsAppId", "value": "<App Insights Application ID>", "type": "string" },
     { "key": "appInsightsApiKey", "value": "<App Insights API key OR use AAD bearer>", "type": "string" }
@@ -74,12 +74,12 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+          { "key": "api_key", "value": "{{apiKey}}" },
           { "key": "Content-Type", "value": "application/json" }
         ],
         "body": { "mode": "raw", "raw": "" },
         "url": { "raw": "{{baseUrl}}/send-funding-batch", "host": ["{{baseUrl}}"], "path": ["send-funding-batch"] },
-        "description": "POST, [Authorize] Policy=fundingPolicy, no body. Returns 202 + {correlationId, stage:'Send'} (enqueued) or 503 (queue full). Used to trigger TC-02 (single-batch failure) and TC-03 (multi-batch) — stage rows + apply the failure trigger BEFORE calling this."
+        "description": "STAGE: use header `api_key` (Treasury API collection pattern), not Bearer. Returns 202 + {correlationId, stage:'Send'} (enqueued) or 503 (queue full). Stage SQL rows + failure trigger BEFORE calling this for AC tests."
       }
     },
     {
@@ -105,7 +105,7 @@
       "request": {
         "method": "POST",
         "header": [
-          { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+          { "key": "api_key", "value": "{{apiKey}}" },
           { "key": "Content-Type", "value": "application/json" }
         ],
         "body": { "mode": "raw", "raw": "" },

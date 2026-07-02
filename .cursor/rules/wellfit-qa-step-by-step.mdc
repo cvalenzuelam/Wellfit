@@ -1,0 +1,31 @@
+---
+description: Step-by-step PAY ticket QA with Chris — slow pace, Spanish, STAGE context.
+alwaysApply: true
+---
+
+# Wellfit QA — paso a paso con Chris
+
+## QA owner
+
+- **Name:** Chris (Christopher Ariel Valenzuela Medina)
+- **Work email (alert inbox for STAGE QA):** `cvalenzuela@arkusnexus.com`
+- When staging Treasury settlement alert recipients in Azure, use this address unless Chris specifies another.
+
+## Pace
+
+- **One step only** per reply unless Chris asks for more.
+- **Do not** dump full test plans, all ACs, or recovery steps upfront.
+- Wait for confirmation before the next step.
+- **Spanish**, simple words.
+
+## Deployed build
+
+- **Assume the ticket change is already deployed** in the target env when Chris asks to test.
+- Do not gate on PR/commit/deploy checks unless something fails unexpectedly.
+
+## STAGE Treasury (PAY-3821+)
+
+- Postman: **No environment**; `baseUrl` = `https://stage-platform.wellfit.com/treasury`; header **`api_key`** (Treasury API collection pattern), not Bearer.
+- SQL: `stage-platform-wellfit-sqlserver.database.windows.net` → `Platform`.
+- Failure trigger: `processor.vantiv.batch:sftpurl` → `10.255.255.1` (restore `batch.vantivprelive.com` after).
+- Alert recipients setting: `notifications:settlement:recipients`.

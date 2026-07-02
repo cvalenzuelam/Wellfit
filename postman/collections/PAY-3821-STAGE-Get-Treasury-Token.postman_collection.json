@@ -1,0 +1,144 @@
+{
+  "info": {
+    "name": "PAY-3821 STAGE — Get Treasury token",
+    "_postman_id": "pay3821-stage-get-treasury-token",
+    "description": "STAGE auth + trigger helper for PAY-3821.\n\n**Important:** set Postman environment to **No environment** (Payments V2 QA Env can override URLs and cause 404).\n\nFlow:\n1. **Get token — Payments authenticate (STAGE)** → saves `bearerToken`.\n2. **Trigger send — Treasury API (STAGE)** → this is the PAY-3821 target (use request 2, not Payments).\n3. Request 3 is a legacy Payments send fallback only if dev confirms that path still exists in STAGE.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "PAYMENTS_AUTH_URL",
+      "value": "https://stage-platform.wellfit.com/payments",
+      "type": "string"
+    },
+    {
+      "key": "PAYMENTS_SEND_URL",
+      "value": "https://stage-wf-payments-api.azurewebsites.net",
+      "type": "string"
+    },
+    {
+      "key": "TREASURY_URL",
+      "value": "https://stage-wf-treasury-api.azurewebsites.net",
+      "type": "string"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get token — Payments authenticate (STAGE)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "",
+              "pm.test('Token returned (200)', function () {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(json.bearerToken, 'no bearerToken — check username/password').to.be.a('string');",
+              "});",
+              "",
+              "if (json.bearerToken) {",
+              "    pm.collectionVariables.set('bearerToken', json.bearerToken);",
+              "    console.log('bearerToken saved. Next: run request 2 (Treasury trigger).');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"WellfitUnifiedPaymentsAPI\",\n  \"password\": \"Testing123!!W3llf1t1!\"\n}"
+        },
+        "url": {
+          "raw": "{{PAYMENTS_AUTH_URL}}/authenticate",
+          "host": ["{{PAYMENTS_AUTH_URL}}"],
+          "path": ["authenticate"]
+        },
+        "description": "Legacy STAGE funding auth. Authorization = **No Auth**. Hover `{{PAYMENTS_AUTH_URL}}` — must resolve to `https://stage-platform.wellfit.com/payments`."
+      }
+    },
+    {
+      "name": "2. Trigger send — Treasury API (STAGE)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 202, 401, 403, or 503', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([202, 401, 403, 503]);",
+              "});",
+              "if (pm.response.code === 202) {",
+              "    const body = pm.response.json();",
+              "    console.log('Accepted. correlationId:', body.correlationId);",
+              "} else if (pm.response.code === 403 || pm.response.code === 401) {",
+              "    console.log('Auth rejected on Treasury — token may not be valid for treasury-ms. Ask dev for Treasury Identity scope.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "" },
+        "url": {
+          "raw": "{{TREASURY_URL}}/send-funding-batch",
+          "host": ["{{TREASURY_URL}}"],
+          "path": ["send-funding-batch"]
+        },
+        "description": "PAY-3821 target endpoint (treasury-ms). Empty body. 202 = enqueued. 403 = token not accepted by Treasury — escalate to dev for Identity scope."
+      }
+    },
+    {
+      "name": "3. (Fallback) Trigger send — Payments API direct",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns 202, 404, or 503', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([202, 404, 503]);",
+              "});",
+              "if (pm.response.code === 404) {",
+              "    console.log('404 — endpoint not on this host in STAGE. Use request 2 (Treasury) instead.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"processor\": \"vantiv\"\n}"
+        },
+        "url": {
+          "raw": "{{PAYMENTS_SEND_URL}}/send-funding-batch",
+          "host": ["{{PAYMENTS_SEND_URL}}"],
+          "path": ["send-funding-batch"]
+        },
+        "description": "Legacy Payments path (direct App Service, not platform gateway). Use only if dev confirms STAGE still exposes funding send here."
+      }
+    }
+  ]
+}

@@ -248,7 +248,7 @@ Structure: Title → `### Description` (AC Linked, AC Description) → **Precond
 ## Related repo files
 
 - `postman/collections/Payments API V2.postman_collection.json`
-- `Payments V2 Env.postman_environment.json`
+- `postman/environments/Payments V2 Env.postman_environment.json`
 - `.cursor/rules/wellfit-qa-test-cases.mdc` — test case format rules
 - `PAY-3627-QA-Session-Runbook.md` — App Insights query patterns (different service, same KQL approach)
 
