@@ -1,0 +1,156 @@
+{
+  "info": {
+    "name": "PAY-3821 Treasury funding-batch send error handling",
+    "_postman_id": "pay3821-treasury-funding-send-e2e",
+    "description": "HTTP companion for the PAY-3821 E2E/QA test plan (e2e-test-plan.md, same folder).\n\nWHAT THIS COVERS (HTTP-driveable slices only):\n- Health check (GET /health) -> 200\n- Trigger the funding-batch send (POST /send-funding-batch) -> 202 + captures correlationId\n- Re-trigger after config restore (recovery / idempotent retry)\n- OPTIONAL: App Insights data-plane query by correlationId (needs separate AAD token + App ID)\n\nWHAT THIS DOES NOT COVER (do manually per the plan):\n- Staging FundingBatches rows (SQL)\n- Inducing the SFTP failure (env config change)\n- Asserting RequestSentTimeStamp (SQL)\n- Asserting ACTUAL email delivery (SendGrid Activity + inbox/M365 quarantine)\n\nSETUP: set the `baseUrl` and `bearerToken` collection variables for the target env (Dev/SBOX).\nThe send is async on a background coordinator: 202 means ENQUEUED, not sent. Use the captured\ncorrelationId to find the async outcome in App Insights after a short settle delay.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://<treasury-api-host>", "type": "string" },
+    { "key": "bearerToken", "value": "<paste fundingPolicy JWT here>", "type": "string" },
+    { "key": "correlationId", "value": "", "type": "string" },
+    { "key": "appInsightsAppId", "value": "<App Insights Application ID>", "type": "string" },
+    { "key": "appInsightsApiKey", "value": "<App Insights API key OR use AAD bearer>", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Health check (GET /health)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('TC-01 step1 / TC-02 step8: health is 200 OK', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('body is \"Ok\"', function () {",
+              "    pm.expect(pm.response.text()).to.include('Ok');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+        "description": "Public, no auth. Confirms the service is alive — used as the baseline (TC-01) and as the post-failure liveness check (TC-02/03 step 8: no host-loop death)."
+      }
+    },
+    {
+      "name": "2. Trigger send (POST /send-funding-batch)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Endpoint enqueues a Send work item: 202 on success, 503 if the coordinator queue is full.",
+              "pm.test('returns 202 Accepted (enqueued) or 503 (queue full)', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([202, 503]);",
+              "});",
+              "",
+              "if (pm.response.code === 202) {",
+              "    var body = pm.response.json();",
+              "    pm.test('202 body has correlationId + stage=Send', function () {",
+              "        pm.expect(body).to.have.property('correlationId');",
+              "        pm.expect(body).to.have.property('stage', 'Send');",
+              "    });",
+              "    pm.collectionVariables.set('correlationId', body.correlationId);",
+              "    console.log('Captured correlationId = ' + body.correlationId + '  -> use this to query App Insights');",
+              "} else {",
+              "    console.log('503 queue full — retry shortly (runbook retry-storm protection).');",
+              "}",
+              "",
+              "// REMINDER: 202 != send succeeded. The SFTP send + PAY-3821 failure handling run async on",
+              "// IFundingBatchCoordinator. After a settle delay (~connect timeout, 20s+), verify the real",
+              "// outcome via App Insights (request 4), DB (RequestSentTimeStamp), and email delivery (SendGrid",
+              "// Activity + inbox)."
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "" },
+        "url": { "raw": "{{baseUrl}}/send-funding-batch", "host": ["{{baseUrl}}"], "path": ["send-funding-batch"] },
+        "description": "POST, [Authorize] Policy=fundingPolicy, no body. Returns 202 + {correlationId, stage:'Send'} (enqueued) or 503 (queue full). Used to trigger TC-02 (single-batch failure) and TC-03 (multi-batch) — stage rows + apply the failure trigger BEFORE calling this."
+      }
+    },
+    {
+      "name": "3. Re-trigger after restore (recovery)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('TC-04: recovery re-trigger accepted (202)', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([202, 503]);",
+              "});",
+              "if (pm.response.code === 202) {",
+              "    pm.collectionVariables.set('correlationId', pm.response.json().correlationId);",
+              "}",
+              "// After this, verify in DB that the previously-stranded rows now have RequestSentTimeStamp SET",
+              "// (idempotent retry intact). Restore config to good values BEFORE running this request."
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "" },
+        "url": { "raw": "{{baseUrl}}/send-funding-batch", "host": ["{{baseUrl}}"], "path": ["send-funding-batch"] },
+        "description": "Identical to request 2; separated for the TC-04 recovery leg. Run AFTER restoring config — confirms stranded batches send + stamp normally."
+      }
+    },
+    {
+      "name": "4. (Optional) App Insights query by correlationId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// OPTIONAL / ADVANCED. Requires App Insights Application ID + an API key (or swap to AAD bearer).",
+              "// Adjust the table (traces/exceptions) and timespan to your env. This is a convenience only —",
+              "// the plan's primary evidence is the App Insights portal view filtered by correlationId.",
+              "pm.test('App Insights query returned 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('a failure record references the correlationId', function () {",
+              "    pm.expect(pm.response.text()).to.include(pm.collectionVariables.get('correlationId'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-api-key", "value": "{{appInsightsApiKey}}" }
+        ],
+        "url": {
+          "raw": "https://api.applicationinsights.io/v1/apps/{{appInsightsAppId}}/query?timespan=PT30M&query=union traces, exceptions | where customDimensions.CorrelationId == '{{correlationId}}' or operation_Id == '{{correlationId}}' | where message has 'Funding batch send' or type contains 'Exception' | project timestamp, message, severityLevel, customDimensions | order by timestamp desc",
+          "protocol": "https",
+          "host": ["api", "applicationinsights", "io"],
+          "path": ["v1", "apps", "{{appInsightsAppId}}", "query"],
+          "query": [
+            { "key": "timespan", "value": "PT30M" },
+            { "key": "query", "value": "union traces, exceptions | where customDimensions.CorrelationId == '{{correlationId}}' or operation_Id == '{{correlationId}}' | where message has 'Funding batch send' or type contains 'Exception' | project timestamp, message, severityLevel, customDimensions | order by timestamp desc" }
+          ]
+        },
+        "description": "OPTIONAL. App Insights data-plane REST query (KQL) to pull the async failure log by the captured correlationId. Needs the Application ID + an API key, OR replace x-api-key with an AAD bearer token (Authorization: Bearer <aad-token> for api://api.applicationinsights.io). Verify the column name carrying the correlation id (operation_Id vs a custom dimension) in your env and adjust the KQL."
+      }
+    }
+  ]
+}

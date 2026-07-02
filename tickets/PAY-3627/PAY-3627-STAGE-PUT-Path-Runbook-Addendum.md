@@ -1,7 +1,7 @@
 # PAY-3627 — STAGE PUT-Driven Testing (Runbook Addendum)
 
 **Companion to:** `PAY-3627-QA-Session-Runbook.md` and `PAY-3627-AchLimit-Worldpay-MaxTransactionAmount-Testing-Guide.md` (same folder)
-**Postman:** `PAY-3627-STAGE-PUT-Driven.postman_collection.json` + `PAY-3627-STAGE-Environment.postman_environment.json`
+**Postman:** `postman/collections/PAY-3627-STAGE-PUT-Driven.postman_collection.json` + `postman/environments/PAY-3627-STAGE-Environment.postman_environment.json`
 **Date:** 2026-06-22
 
 ---

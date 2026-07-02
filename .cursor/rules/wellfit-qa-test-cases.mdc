@@ -69,4 +69,4 @@ When the user asks for **test cases** for this project:
 
 ## References in repo
 
-- Postman: `Payments API eCommerce (Card Not Present).postman_collection.json`, `Paypages.postman_collection.json`, `Payments API triPOS Cloud (Card Present).postman_collection.json`.
+- Postman (under `postman/collections/`): `Payments API eCommerce (Card Not Present).postman_collection.json`, `Paypages.postman_collection.json`, `Payments API triPOS Cloud (Card Present).postman_collection.json`, `Payments API V2.postman_collection.json`.

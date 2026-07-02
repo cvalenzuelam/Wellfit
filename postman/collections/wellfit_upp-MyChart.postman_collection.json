@@ -1,0 +1,70 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "wellfit_upp-MyChart",
+    "description": "UPP MyChart API — authentication and downstream requests.\n\nEnvironment: set `base-url` (e.g. from `wellfit_upp_test_qa` in Postman). Run `authenticate-mychart` first; the test script stores `MyChart-Bearer-Token` for later requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "authentication",
+      "item": [
+        {
+          "name": "authenticate-mychart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test('bearerToken is present', () => {",
+                  "    pm.expect(json.bearerToken).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.environment.set('MyChart-Bearer-Token', json.bearerToken);",
+                  "console.log('MyChart-Bearer-Token captured.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"MyChart\",\r\n  \"password\": \"Test123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base-url}}/authenticate",
+              "host": [
+                "{{base-url}}"
+              ],
+              "path": [
+                "authenticate"
+              ]
+            },
+            "description": "Obtains a bearer token for the MyChart UPP client.\n\n**Request:** POST `{base-url}/authenticate` with JSON body `username` / `password`.\n\n**Success:** HTTP 200 with `bearerToken` in the response body. The test script saves it to env var `MyChart-Bearer-Token`.\n\nUse that token on subsequent requests: `Authorization: Bearer {{MyChart-Bearer-Token}}`."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
