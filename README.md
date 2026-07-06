@@ -13,6 +13,7 @@ Wellfit/
 ├── tickets/                # Jira exports, runbooks, and QA docs by ticket
 │   ├── PAY-3508/
 │   ├── PAY-3509/
+│   ├── PAY-3605/           # Unmatched settlement transaction alerts
 │   ├── PAY-3609/
 │   ├── PAY-3627/
 │   ├── PAY-3683/
@@ -50,7 +51,11 @@ Import collections from `postman/collections/` and environments from `postman/en
 
 Recent additions:
 
+- **PAY-3605** — `PAY-3605-Unmatched-Settlement-Alert.postman_collection.json`, `PAY-3605-Unmatched-Settlement-Alert-DEV.postman_environment.json`
 - **PAY-3821** — `PAY-3821-treasury-funding-send.postman_collection.json`, `PAY-3821-STAGE-Get-Treasury-Token.postman_collection.json`
 - **MyChart UPP** — `wellfit_upp-MyChart*.json` in the same folders
 
-Ticket context for PAY-3821: `tickets/PAY-3821/` (`analysis.md`, `solution.md`, `e2e-test-plan.md`, `qa-verification.md`, `PAY-3821.xml`).
+Ticket context:
+
+- **PAY-3605** — `tickets/PAY-3605/` (`PAY-3605-Story-1.1-E2E-Unmatched-Settlement-Alert-Runbook.md`, `PAY-3605.xml`)
+- **PAY-3821** — `tickets/PAY-3821/` (`analysis.md`, `solution.md`, `e2e-test-plan.md`, `qa-verification.md`, `PAY-3821.xml`)

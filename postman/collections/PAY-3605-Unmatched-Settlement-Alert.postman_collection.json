@@ -1,0 +1,151 @@
+{
+  "info": {
+    "_postman_id": "3a9f1c4e-3605-4b2a-9d1e-unmatchedalert01",
+    "name": "PAY-3605 Unmatched Settlement Alert (Treasury)",
+    "description": "E2E driver for the Unmatched Settlement Transaction Alert feature (treasury-ms).\n\nThe alert has NO UI and NO dedicated endpoint — it fires internally during a funding-batch run. This collection drives the only HTTP lever: POST /create-funding-batch.\n\nUSAGE\n1. Import this collection AND an environment file (see PAY-3605-*.postman_environment.json). Select the DEV environment.\n2. Fill `clientSecret` in the environment (from Key Vault) — do NOT commit it.\n3. The collection-level pre-request script auto-mints a client_credentials token and caches it until ~60s before expiry, so you can just hit '2. Trigger' repeatedly across Scenarios A/B/C/D.\n4. Verify in App Insights (KQL) + SendGrid Activity Feed + inbox — telemetry alone does NOT prove delivery.\n\nThe runbook (PAY-3605-Story-1.1-E2E-Unmatched-Settlement-Alert-Runbook.md) is the source of truth for scenarios, seed SQL, and pass criteria.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-mint a client_credentials token if missing or within 60s of expiry.",
+          "// Lets you click '2. Trigger' over and over without re-running the token request.",
+          "const now = Date.now();",
+          "const exp = Number(pm.environment.get('accessTokenExpiry') || pm.collectionVariables.get('accessTokenExpiry') || 0);",
+          "const have = pm.environment.get('accessToken') || pm.collectionVariables.get('accessToken');",
+          "if (have && now < exp) { return; }",
+          "",
+          "const identityUrl = pm.environment.get('identityUrl') || pm.collectionVariables.get('identityUrl');",
+          "const clientId = pm.environment.get('clientId') || pm.collectionVariables.get('clientId');",
+          "const clientSecret = pm.environment.get('clientSecret') || pm.collectionVariables.get('clientSecret');",
+          "const scope = pm.environment.get('scope') || pm.collectionVariables.get('scope');",
+          "",
+          "if (!clientSecret) { console.warn('clientSecret is empty — set it in the environment before triggering.'); }",
+          "",
+          "pm.sendRequest({",
+          "  url: identityUrl,",
+          "  method: 'POST',",
+          "  header: { 'Content-Type': 'application/x-www-form-urlencoded' },",
+          "  body: { mode: 'urlencoded', urlencoded: [",
+          "    { key: 'grant_type', value: 'client_credentials' },",
+          "    { key: 'client_id', value: clientId },",
+          "    { key: 'client_secret', value: clientSecret },",
+          "    { key: 'scope', value: scope }",
+          "  ]}",
+          "}, function (err, res) {",
+          "  if (err) { console.error('Token mint failed:', err); return; }",
+          "  if (res.code !== 200) { console.error('Token mint HTTP ' + res.code + ': ' + res.text()); return; }",
+          "  const j = res.json();",
+          "  const ttl = (j.expires_in || 3600) * 1000;",
+          "  pm.environment.set('accessToken', j.access_token);",
+          "  pm.environment.set('accessTokenExpiry', Date.now() + ttl - 60000);",
+          "  console.log('Token minted; expires_in=' + (j.expires_in || 'n/a') + 's');",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get Token (manual / debug)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.environment.set('accessToken', j.access_token);",
+              "pm.environment.set('accessTokenExpiry', Date.now() + ((j.expires_in||3600)*1000) - 60000);",
+              "pm.test('token carries DynamicFunding scope', () => {",
+              "  pm.expect((j.scope||'')).to.include('WellfitPaymentsAPI.DynamicFunding');",
+              "});",
+              "console.log('scope =', j.scope);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/x-www-form-urlencoded" } ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "client_credentials" },
+            { "key": "client_id", "value": "{{clientId}}" },
+            { "key": "client_secret", "value": "{{clientSecret}}" },
+            { "key": "scope", "value": "{{scope}}" }
+          ]
+        },
+        "url": { "raw": "{{identityUrl}}", "host": [ "{{identityUrl}}" ] },
+        "description": "Optional. The collection pre-request script already mints a token automatically. Use this only to debug auth (e.g. confirm the returned `scope` includes WellfitPaymentsAPI.DynamicFunding). A 401/invalid_client here means wrong clientId/secret; a token without the scope means the client isn't granted DynamicFunding (check [Identity].[ClientScopes])."
+      }
+    },
+    {
+      "name": "2. Trigger - create-funding-batch  (CLICK PER SCENARIO)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('202 Accepted (run enqueued)', () => pm.response.to.have.status(202));",
+              "if (pm.response.code === 503) { console.warn('503 — coordinator queue full. Re-send.'); }",
+              "if (pm.response.code === 401) { console.error('401 — token missing/!DynamicFunding. Run \"1. Get Token\" to inspect.'); }",
+              "try { const j = pm.response.json(); console.log('correlationId =', j.correlationId, '| stage =', j.stage); } catch (e) {}",
+              "console.log('Now wait ~15-60s, then run the App Insights verify query. 202 != done — the orchestrator runs on the background coordinator.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{treasuryHost}}/create-funding-batch",
+          "host": [ "{{treasuryHost}}" ],
+          "path": [ "create-funding-batch" ]
+        },
+        "description": "Fires a funding-batch run. Returns 202 immediately with { correlationId, stage }. The unmatched-settlement orchestrator runs seconds later on the coordinator.\n\nPer scenario (seed the DB first per the runbook Appendix A):\n- A: 4 seeded rows  -> one email + UnmatchedAlertSent\n- B: empty table    -> no email + UnmatchedAlertSuppressed\n- C: re-seed, send TWICE without deleting -> two emails (re-alert-until-cleared, D2)\n- D: kill-switch OFF (+restart) -> no email, no telemetry at all\n\n503 = queue full (retry). 401 = token problem."
+      }
+    },
+    {
+      "name": "3. Verify - App Insights alert events (optional)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [ { "key": "token", "value": "{{aiBearer}}", "type": "string" } ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.applicationinsights.io/v1/apps/{{appInsightsAppId}}/query?query=customEvents | where timestamp > ago(30m) | where name in ('UnmatchedAlertSent','UnmatchedAlertSuppressed','UnmatchedAlertSendFailed') | project timestamp, name, customDimensions | order by timestamp desc",
+          "protocol": "https",
+          "host": [ "api", "applicationinsights", "io" ],
+          "path": [ "v1", "apps", "{{appInsightsAppId}}", "query" ],
+          "query": [
+            { "key": "query", "value": "customEvents | where timestamp > ago(30m) | where name in ('UnmatchedAlertSent','UnmatchedAlertSuppressed','UnmatchedAlertSendFailed') | project timestamp, name, customDimensions | order by timestamp desc" }
+          ]
+        },
+        "description": "OPTIONAL data-plane query of App Insights (avoids the portal).\n\nSet two env vars first:\n- appInsightsAppId:  az monitor app-insights component show -g dev-rg-plat-api-wus3 -a dev-platform-treasury --subscription 22d04286-db4f-411f-bfa5-da1aea40c19e --query appId -o tsv\n- aiBearer:          az account get-access-token --resource https://api.applicationinsights.io --query accessToken -o tsv\n\nNOTE: telemetry only proves the alert was ATTEMPTED/accepted. UnmatchedAlertSent != delivered. Confirm delivery in the SendGrid Activity Feed + M365 quarantine."
+      }
+    }
+  ],
+  "variable": [
+    { "key": "identityUrl", "value": "https://dev-platform.wellfit.com/identity/connect/token", "type": "string" },
+    { "key": "treasuryHost", "value": "https://dev-app-treasury.azurewebsites.net", "type": "string" },
+    { "key": "clientId", "value": "WellfitAutomation", "type": "string" },
+    { "key": "scope", "value": "WellfitPaymentsAPI.DynamicFunding", "type": "string" }
+  ]
+}
