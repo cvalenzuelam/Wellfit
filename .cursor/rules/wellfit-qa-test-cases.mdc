@@ -55,7 +55,7 @@ When the user asks for **test cases** for this project:
 - **`network`**: **VI** / **AMEX code** / **Discover code** / **MC** per internal spec when not Pay Page.
 - Happy-path API check: **200 OK**; response may include **`transactionId`**, **`approvalNumber`**, **`billingDescriptor`**, **`token`**, **`expirationDate`** (align with latest Postman/screenshots).
 - **`PaymentTypeMethod`** on **`[Payments].[Payments]`**: **2** = CNP token; **1** = Pay Page. Full mapping: 0 eCheck default, 1 Pay Page, 2 CNP token, 3 Apple Pay, 4 Google Pay, 5 CP device.
-- DB checks use **`[Payments].[Payments]`**, **`[Payments].[Refunds]`**, **`[Payments].[Voids]`** as the user specifies; example query pattern: `SELECT * FROM [Payments].[Payments] WHERE transactionId = '<id>'`.
+- DB checks use **`[Payments].[Payments]`** (PK **`Id`**, time **`TimeStamp`** — see rule `wellfit-qa-payments-sql.mdc`), **`[Payments].[Refunds]`**, **`[Payments].[Voids]`**; example: `SELECT * FROM [Payments].[Payments] WHERE TransactionId = '<id>'`.
 
 ## CNP — Pay Page (“Wellfit GUID”) flow
 

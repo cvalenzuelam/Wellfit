@@ -1,0 +1,1542 @@
+{
+  "info": {
+    "_postman_id": "dbf7a9c3-4e9f-4d4b-879f-ec4504c76dff",
+    "name": "PAY-2452 ACH Refunds — QA Test Collection",
+    "description": "Test collection for ACH Refund epic (PAY-2452).\n\n## Setup\n1. Run `postman/seed-refund-test-data.sql` against your Payments database to create test transactions\n2. Set `payments-management-api` variable to your environment (e.g., `https://localhost:5001`)\n3. Set `access-token` in your Postman environment (inherited via Authorization header)\n4. Collection variables are pre-populated with seed script transaction IDs\n\n## Workflow Order\nRun folders top-to-bottom:\n1. **Prereq** — verify test transaction exists\n2. **Happy Path** — full and partial refunds\n3. **Eligibility Validation** — all error scenarios\n4. **Idempotency** — duplicate handling\n5. **Status Verification** — query refund status and history\n6. **Blocking Rule** — RETURNED child blocks further refunds\n\n## Key Changes in v2 Epic\n- Partial refund → original status PARTIALLY_REFUNDED (18)\n- Full refund → original status REFUNDED (10)\n- Refund credit return → refund txn RETURNED (7), original conditional\n- Blocking rule: any child RETURNED blocks ALL future refunds\n- Event name: `Payment.Refund.Submitted` (singular)\n- Refundable amount calc: only APPROVED, FUNDED, SETTLED count",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32666628",
+    "_collection_link": "https://go.postman.co/collection/32666628-dbf7a9c3-4e9f-4d4b-879f-ec4504c76dff?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "0. Setup",
+      "item": [
+        {
+          "name": "authenticate-paymentManagementAPI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+                  "var jsonData = JSON.parse(responseBody);",
+                  "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.access_token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials",
+                  "type": "text",
+                  "uuid": "a1724fbd-89b1-4930-aeda-ce5cb1aedeb7"
+                },
+                {
+                  "key": "client_id",
+                  "value": "WellfitPaymentManagementAPI",
+                  "type": "text",
+                  "uuid": "a35fedf2-366d-47ab-916b-3fcab7e80021"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "Test123!",
+                  "type": "text",
+                  "uuid": "ff560797-85b1-4324-bffa-380f58f57a45"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://stage-wf-identity-api.azurewebsites.net/connect/token",
+              "protocol": "https",
+              "host": [
+                "stage-wf-identity-api",
+                "azurewebsites",
+                "net"
+              ],
+              "path": [
+                "connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Prereq — Verify Test Transaction",
+      "item": [
+        {
+          "name": "Get settled ACH transaction (verify exists)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Transaction found', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Transaction is ACH rail', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.rail).to.eql('ACH');",
+                  "});",
+                  "",
+                  "pm.test('Transaction is SETTLED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('SETTLED');",
+                  "});",
+                  "",
+                  "pm.test('Store transaction amount', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('originalAmount', json.amount);",
+                  "    console.log('Original amount: ' + json.amount);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId}}",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{settledAchTransactionId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Happy Path — Partial Refund",
+      "item": [
+        {
+          "name": "Submit partial refund ($40 of $100)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 202 Accepted', function() {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('Status is APPROVED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('APPROVED');",
+                  "});",
+                  "",
+                  "pm.test('RefundType is PARTIAL', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundType).to.eql('PARTIAL');",
+                  "});",
+                  "",
+                  "pm.test('Amount matches request', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.amount).to.eql(40.00);",
+                  "});",
+                  "",
+                  "pm.test('RefundTransactionId starts with REFUND-', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundTransactionId).to.match(/^REFUND-/);",
+                  "});",
+                  "",
+                  "pm.test('Store refund transaction ID', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('refundTransactionId', json.refundTransactionId);",
+                  "    console.log('Refund txn ID: ' + json.refundTransactionId);",
+                  "});",
+                  "",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "token-035",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"token-027token-027token-n-027tken027token027token027token027token027token027token027token027token027token027token027token027token027token027token027token027tokentoken-027token-027token-n-027tken027token027token02token-027token-027token-n-jkljldsjlkajaldjlh\",\n    \"amount\": 12.00,\n    \"reason\": \"QA test - partial refund\"\n    //\"originUserId\": \"qa_test\",\n    //\"originSystem\": \"Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify original → PARTIALLY_REFUNDED (18)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Transaction found', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Original status is PARTIALLY_REFUNDED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('PARTIALLY_REFUNDED');",
+                  "});",
+                  "",
+                  "pm.test('Related refund transactions visible', function() {",
+                  "    var json = pm.response.json();",
+                  "    // Check for related/child transactions if the response includes them",
+                  "    console.log('Full response: ' + JSON.stringify(json));",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId}}",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{settledAchTransactionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify refund transaction details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Refund transaction found', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('RefundType is PARTIAL', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundType).to.eql('PARTIAL');",
+                  "});",
+                  "",
+                  "pm.test('Status is APPROVED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('APPROVED');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/v1/transactions/{{refundTransactionId}}",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{refundTransactionId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Happy Path — Second Partial Refund",
+      "item": [
+        {
+          "name": "Submit second partial refund ($30 more)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 202 Accepted', function() {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('RefundType is PARTIAL', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundType).to.eql('PARTIAL');",
+                  "});",
+                  "",
+                  "pm.test('Amount is 30', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.amount).to.eql(30.00);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 50.00,\n    \"reason\": \"QA test - second partial refund\",\n    \"originUserId\": \"qa_tester\",\n    \"originSystem\": \"Postman-QA\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify original stays PARTIALLY_REFUNDED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Original still PARTIALLY_REFUNDED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('PARTIALLY_REFUNDED');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId}}",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{settledAchTransactionId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Happy Path — Full Refund",
+      "item": [
+        {
+          "name": "Submit full refund (second transaction)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 202 Accepted', function() {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('RefundType is FULL', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundType).to.eql('FULL');",
+                  "});",
+                  "",
+                  "pm.test('Status is APPROVED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('APPROVED');",
+                  "});",
+                  "",
+                  "pm.test('Store full refund txn ID', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('fullRefundTransactionId', json.refundTransactionId);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "token-033",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"token-033\",\n    \"amount\": 90.00,\n    \"reason\": \"QA test - full refund\",\n    \"originUserId\": \"qa_tester\",\n    \"originSystem\": \"Postman-QA\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId2}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId2}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify original → REFUNDED (10)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Original status is REFUNDED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('REFUNDED');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId2}}",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{settledAchTransactionId2}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Eligibility Validation — Error Scenarios",
+      "item": [
+        {
+          "name": "ERR_REFUND_RAIL_NOT_SUPPORTED (non-ACH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is ERR_REFUND_RAIL_NOT_SUPPORTED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.title || json.type).to.include('ERR_REFUND_RAIL_NOT_SUPPORTED');",
+                  "});",
+                  "",
+                  "pm.test('RFC 7807 ProblemDetails format', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('status');",
+                  "    pm.expect(json).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 50.00,\n    \"reason\": \"QA test - rail validation\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{nonAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{nonAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ERR_REFUND_NOT_ELIGIBLE (wrong status)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is ERR_REFUND_NOT_ELIGIBLE', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.title || json.type).to.include('ERR_REFUND_NOT_ELIGIBLE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 50.00,\n    \"reason\": \"QA test - status validation\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{pendingTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{pendingTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ERR_REFUND_WINDOW_EXPIRED (>6 months)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is ERR_REFUND_WINDOW_EXPIRED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.title || json.type).to.include('ERR_REFUND_WINDOW_EXPIRED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 50.00,\n    \"reason\": \"QA test - window validation\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{oldTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{oldTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ERR_REFUND_AMOUNT_EXCEEDED (over balance)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error code is ERR_REFUND_AMOUNT_EXCEEDED', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.title || json.type).to.include('ERR_REFUND_AMOUNT_EXCEEDED');",
+                  "});",
+                  "",
+                  "pm.test('Response includes refundableAmount', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundableAmount || (json.extensions && json.extensions.refundableAmount)).to.not.be.undefined;",
+                  "    console.log('Refundable amount: ' + JSON.stringify(json));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 999999.99,\n    \"reason\": \"QA test - amount exceeded\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ERR_REFUND_AMOUNT_EXCEEDED (zero amount)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error mentions amount', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.title || json.type).to.include('ERR_REFUND_AMOUNT_EXCEEDED');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "token1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"token1\",\n    \"amount\": 0,\n    \"reason\": \"QA test - zero amount\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ERR_TRANSACTION_NOT_FOUND (bad ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 404 Not Found', function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 50.00,\n    \"reason\": \"QA test - not found\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/txn_does_not_exist_99999/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "txn_does_not_exist_99999",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Idempotency",
+      "item": [
+        {
+          "name": "Submit refund with fixed idempotency key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 202 Accepted', function() {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('Store refund ID for replay', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('idempotentRefundId', json.refundTransactionId);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "qa-idempotency-test-fixed-key-01",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"req-idem-01\",\n    \"amount\": 5.00,\n    \"reason\": \"QA test - idempotency first call\",\n    \"originUserId\": \"qa_tester\",\n    \"originSystem\": \"Postman-QA\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Replay same idempotency key (should return existing)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK (idempotency hit)', function() {",
+                  "    // Idempotency hit may return 200 or 202 depending on implementation",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 202]);",
+                  "});",
+                  "",
+                  "pm.test('Same refund ID returned', function() {",
+                  "    var json = pm.response.json();",
+                  "    var expectedId = pm.collectionVariables.get('idempotentRefundId');",
+                  "    pm.expect(json.refundTransactionId).to.eql(expectedId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "qa-idempotency-test-fixed-key-001",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"req-idem-001\",\n    \"amount\": 5.00,\n    \"reason\": \"QA test - idempotency replay\",\n    \"originUserId\": \"qa_tester\",\n    \"originSystem\": \"Postman-QA\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. Status Verification — History & Queries",
+      "item": [
+        {
+          "name": "Get refund transaction history (audit trail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('History entries exist', function() {",
+                  "    var json = pm.response.json();",
+                  "    var entries = Array.isArray(json) ? json : (json.items || json.history || []);",
+                  "    pm.expect(entries.length).to.be.greaterThan(0);",
+                  "    console.log('History entries: ' + JSON.stringify(entries));",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{refundTransactionId}}/history",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{refundTransactionId}}",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get original transaction history (should show status changes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('History shows status transitions', function() {",
+                  "    var json = pm.response.json();",
+                  "    console.log('Original txn history: ' + JSON.stringify(json));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/history",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List transactions filtered by REFUND type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 200 OK', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Results contain refund transactions', function() {",
+                  "    var json = pm.response.json();",
+                  "    console.log('Refund list: ' + JSON.stringify(json).substring(0, 500));",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{Payment-Bearer-Token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{payments-management-api}}/api/v1/transactions?transactionType=Debit",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "transactionType",
+                  "value": "Debit"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Blocking Rule — RETURNED Child Blocks Refunds",
+      "item": [
+        {
+          "name": "Attempt refund on txn with RETURNED child (should fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 400 Bad Request', function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error is ERR_REFUND_NOT_ELIGIBLE', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.title || json.type).to.include('ERR_REFUND_NOT_ELIGIBLE');",
+                  "});",
+                  "",
+                  "pm.test('Error mentions returned/bank', function() {",
+                  "    var json = pm.response.json();",
+                  "    var detail = json.detail || '';",
+                  "    pm.expect(detail.toLowerCase()).to.include('return');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 10.00,\n    \"reason\": \"QA test - blocking rule verification\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{returnedChildParentTxnId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{returnedChildParentTxnId}}",
+                "refund"
+              ]
+            },
+            "description": "Set `returnedChildParentTxnId` to a transaction that has a child refund in RETURNED status. This requires an AchReturnReceivedEvent to have been processed first."
+          },
+          "response": []
+        }
+      ],
+      "description": "These tests require a refund transaction that has been RETURNED by the bank (via AchReturnReceivedEvent processing). This cannot be triggered via API — it requires an event. Use these requests AFTER a return has been processed in the test environment to verify the blocking rule."
+    },
+    {
+      "name": "9. Edge Cases",
+      "item": [
+        {
+          "name": "Refund on PARTIALLY_REFUNDED transaction (should succeed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 202 Accepted (PARTIALLY_REFUNDED is eligible)', function() {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('Refund approved', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('APPROVED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 5.00,\n    \"reason\": \"QA test - refund on PARTIALLY_REFUNDED\"\n}"
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            },
+            "description": "Run AFTER folder 2 (partial refund) — the original should be in PARTIALLY_REFUNDED status, which is eligible for further refunds."
+          },
+          "response": []
+        },
+        {
+          "name": "Remaining balance refund → original becomes REFUNDED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Returns 202 Accepted', function() {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('RefundType is FULL (remaining balance)', function() {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.refundType).to.eql('FULL');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access-token}}",
+                "type": "text"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"requestId\": \"{{$guid}}\",\n    \"amount\": 99999.99,\n    \"reason\": \"QA test - use remaining balance amount from previous error response\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+              "host": [
+                "{{payments-management-api}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{settledAchTransactionId}}",
+                "refund"
+              ]
+            },
+            "description": "NOTE: Replace the amount with the actual remaining refundable balance. The 99999.99 is a placeholder — first check the ERR_REFUND_AMOUNT_EXCEEDED response to see the refundableAmount, then use that value."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "payments-management-api",
+      "value": "https://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "settledAchTransactionId",
+      "value": "refund-qa-settled-ach-01",
+      "type": "string",
+      "description": "SETTLED ACH $100 — created by seed-refund-test-data.sql"
+    },
+    {
+      "key": "settledAchTransactionId2",
+      "value": "refund-qa-settled-ach-02",
+      "type": "string",
+      "description": "SETTLED ACH $100 for full refund — created by seed-refund-test-data.sql"
+    },
+    {
+      "key": "nonAchTransactionId",
+      "value": "refund-qa-cnp-settled-01",
+      "type": "string",
+      "description": "SETTLED CNP transaction — created by seed-refund-test-data.sql"
+    },
+    {
+      "key": "pendingTransactionId",
+      "value": "refund-qa-pending-ach-01",
+      "type": "string",
+      "description": "PENDING ACH transaction — created by seed-refund-test-data.sql"
+    },
+    {
+      "key": "oldTransactionId",
+      "value": "refund-qa-old-settled-01",
+      "type": "string",
+      "description": "SETTLED ACH >6 months old — created by seed-refund-test-data.sql"
+    },
+    {
+      "key": "refundTransactionId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-populated: refund txn ID from partial refund"
+    },
+    {
+      "key": "fullRefundTransactionId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-populated: refund txn ID from full refund"
+    },
+    {
+      "key": "originalAmount",
+      "value": ""
+    },
+    {
+      "key": "idempotentRefundId",
+      "value": ""
+    }
+  ]
+}

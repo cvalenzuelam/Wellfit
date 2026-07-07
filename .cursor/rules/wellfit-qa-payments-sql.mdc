@@ -1,0 +1,87 @@
+---
+description: Stage/DEV SQL — [Payments].[Payments] column names and common query patterns for Wellfit QA.
+alwaysApply: true
+---
+
+# Wellfit QA — `[Payments].[Payments]` (Platform DB)
+
+Use these **actual column names** in SQL, test cases, and runbooks. Do **not** invent `PaymentId` or `CreatedDate` — they do not exist on this table.
+
+## Connection (Stage)
+
+- **Server:** `stage-platform-wellfit-sqlserver.database.windows.net`
+- **Database:** `Platform`
+- **Table:** `[Payments].[Payments]`
+
+## Columns (verified Stage schema)
+
+| Column | QA notes |
+|--------|----------|
+| **Id** | Primary key — use for joins and assertions (not `PaymentId`) |
+| **TimeStamp** | Row time — use for `ORDER BY` (not `CreatedDate`) |
+| **Amount**, **PayFacFee** | Monetary fields |
+| **PaymentType** | Payment rail/type label |
+| **PaymentTypeMethod** | Enum — see mapping below |
+| **AccountSuffix** | Last digits / suffix |
+| **OrderId**, **OrderIdType** | Client order reference |
+| **TransactionId** | Processor / Wellfit txn id — correlate with API & App Insights |
+| **ResponseCode**, **ResponseMessage** | Auth/charge outcome |
+| **Token** | Card vault token — **NULL on real ACH/eCheck rows** |
+| **ApprovalNumber** | Card auth code — **NULL on real ACH/eCheck rows** |
+| **SettlementDate**, **Voided**, **FundingInstructionId** | Settlement / void state |
+| **EmvApplicationId**, **EmvApplicationName**, **SerialNumber** | CP / EMV |
+| **SubMerchantAccountId** | Merchant account FK |
+| **Metadata**, **EntityUpdated** | Audit / payload |
+
+Full select list (SSMS-style):
+
+```sql
+SELECT TOP (1000) [Id], [TimeStamp], [Amount], [PayFacFee], [PaymentType],
+  [AccountSuffix], [OrderId], [TransactionId], [ResponseCode], [ResponseMessage],
+  [Token], [SettlementDate], [Voided], [FundingInstructionId],
+  [EmvApplicationId], [EmvApplicationName], [ApprovalNumber], [OrderIdType],
+  [Metadata], [SubMerchantAccountId], [PaymentTypeMethod], [EntityUpdated], [SerialNumber]
+FROM [Payments].[Payments];
+```
+
+## PaymentTypeMethod
+
+| Value | Method |
+|-------|--------|
+| 0 | eCheck default (ACH) |
+| 1 | Pay Page |
+| 2 | CNP token |
+| 3 | Apple Pay |
+| 4 | Google Pay |
+| 5 | Card Present |
+
+ACH rows often have **NULL** `Token` and **NULL** `ApprovalNumber` — expected, not bad data.
+
+## Common query patterns
+
+**By transactionId:**
+
+```sql
+SELECT * FROM [Payments].[Payments] WHERE TransactionId = '<id>';
+```
+
+**Recent ACH-like rows (NULL card-only fields):**
+
+```sql
+SELECT TOP 20 Id, TransactionId, OrderId, Amount, Token, ApprovalNumber,
+  PaymentType, PaymentTypeMethod, TimeStamp
+FROM [Payments].[Payments]
+WHERE Token IS NULL AND ApprovalNumber IS NULL
+ORDER BY TimeStamp DESC;
+```
+
+**Recent card CNP (token flow):**
+
+```sql
+SELECT TOP 20 Id, TransactionId, OrderId, Token, ApprovalNumber, PaymentTypeMethod, TimeStamp
+FROM [Payments].[Payments]
+WHERE PaymentTypeMethod = 2
+ORDER BY TimeStamp DESC;
+```
+
+Related tables: `[Payments].[Refunds]`, `[Payments].[Voids]`, `[Payments].[PaymentTokens]`.

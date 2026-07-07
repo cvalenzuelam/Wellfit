@@ -1,0 +1,54 @@
+---
+description: PAY-4047 Stage QA — BLOCKED; ach-returns nullable Charge fields; resume checklist
+globs: tickets/PAY-4047/**
+alwaysApply: false
+---
+
+# PAY-4047 — Stage QA (BLOCKED — resume later)
+
+**Status:** STAGE QA **BLOCKED** (2026-07-07). Chris paused; retomar cuando Jason desbloquee delivery.
+
+## Bug
+
+AchReturns EF loads `[Payments].[Payments]` as `Charge`. Real ACH rows have **NULL** `Token` and `ApprovalNumber`. Pre-fix → `SqlNullValueException` at `SqlDataReader.GetString()`. Fix: PR #305 — `string?` + `.IsRequired(false)`.
+
+**Not this ticket:** Payment Management `POST …/refund` (PAY-2452). Path here is **Event Grid → ach-returns-api → ReturnNotification**.
+
+## Blocker
+
+- Topic `wellfit-datafactory`: **Publish = 3**, subscription `ach-returns-api`: **Received = 0**
+- No `ReturnNotificationReceivedProcessor` traces; `[Payments].[ReturnedPayments]` empty
+- **Pending:** Jason — subscription filter / routing / queue (filter: `data.eventName` = `ReturnNotificationReceivedEvent`)
+
+## Test data (Stage)
+
+| Field | Value |
+|-------|--------|
+| `TransactionId` | `84087690065068981` |
+| `OrderId` | `ORD-2025-029` |
+| `Amount` | `120.00` |
+| CaseId | `PAY4047-003` |
+| ACH row | `Token` NULL, `ApprovalNumber` NULL, `PaymentTypeMethod` = 0 |
+
+## Assets
+
+- `tickets/PAY-4047/scripts/publish-stage-ach-returns-from-csv.ps1` — Stage publish (`EVENTGRID_KEY`)
+- `tickets/PAY-4047/scripts/pay-4047-stage.csv`
+- Shared ACH returns QA toolkit: `scripts/ach-returns/`
+- Context: `tickets/PAY-4047/PAY-4047-QA-Context.md`
+
+## Testmo (2 cases only)
+
+1. **TC-2** — Event Grid publish → `ach-returns-api` **Received** > 0 (prerequisite)
+2. **TC-1** — Return processes without `SqlNullValueException`; row in `[Payments].[ReturnedPayments]`
+
+**Order:** TC-2 then TC-1. Dev CI: PR #305 `ChargeNullableCardFieldsIntegrationTests` — Jira only, no manual duplicate.
+
+## Resume checklist
+
+1. Re-run `tickets/PAY-4047/scripts/publish-stage-ach-returns-from-csv.ps1`; confirm subscription **Received** > 0
+2. App Insights `stage-insights`: no `SqlNullValueException` on ach-returns for test `TransactionId`
+3. SQL: `SELECT * FROM [Payments].[ReturnedPayments] WHERE OriginalPaymentId = '<payment Id>'`
+4. Close TC-2 → TC-1 → Jira comment (PASS template in `wellfit-qa-jira-stage-comment.mdc`)
+
+**Sync:** Jason (fixture / routing). Jira PAY-4047; QA subtasks PAY-4081, PAY-4082.
