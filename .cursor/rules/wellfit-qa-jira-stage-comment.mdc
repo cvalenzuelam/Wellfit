@@ -1,0 +1,45 @@
+---
+description: Short Jira comment template when STAGE QA is complete for a PAY ticket.
+alwaysApply: true
+---
+
+# Wellfit QA — Jira STAGE completion comment (short format)
+
+When the user asks for a **Jira comment** after **STAGE QA is done**, use this **short English** block. Do **not** include QA engineer name unless they ask.
+
+## Template
+
+```text
+STAGE QA PASS — {TICKET-ID}.
+
+{Setup: 1–2 sentences — test data, failure trigger or main action, HTTP trigger if API.}
+
+Verified: {comma-separated pass bullets — alerts, DB state, service health, logs. Note expected secondary signals (e.g. coordinator email) as "expected", not defects.}
+
+Recovery: {if run — restore step, re-trigger outcome, synthetic caveats. Omit section if N/A.}
+
+{Out-of-scope ACs}: unit tests {PR if known}. Evidence in Testmo.
+```
+
+## Rules
+
+- **Language:** English (Jira / US client).
+- **Tone:** factual, compact — no long paragraphs.
+- **Result line:** start with `STAGE QA PASS — {TICKET-ID}.` (use `FAIL` / `BLOCKED` only if that was the outcome).
+- **Evidence:** point to **Testmo**; do not paste screenshots into Jira unless asked.
+- **Synthetic data:** call out NULL timestamps / 404 file-not-found when rows have no real files.
+- **Merged behavior:** name related tickets when a second email or signal is expected (e.g. PAY-3587 coordinator).
+
+## Example (PAY-3821)
+
+```text
+STAGE QA PASS — PAY-3821.
+
+Synthetic setup: 3 pending FundingBatches (PAY3821-E2E-*), SFTP broken via sftpurl=10.255.255.1, trigger POST /send-funding-batch → 202.
+
+Verified: one PAY-3821 alert listing all 3 unsent batches; rows stayed NULL; service healthy (202/health); App Insights SFTP failure logged. Coordinator stage-failed email also received (expected PAY-3587).
+
+Recovery: restored sftpurl to batch.vantivprelive.com, re-trigger → rows re-attempted, NULL retained (synthetic), error changed to storage 404 — AC-5 pass. Cleanup done.
+
+AC-4 + sent-before exclusion: unit tests PR #283. Evidence in Testmo.
+```

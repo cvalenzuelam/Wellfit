@@ -8,6 +8,11 @@ alwaysApply: true
 
 When the user asks for **test cases** for this project:
 
+## Delivery
+
+- Output test cases **in the chat only** — for the user to copy/paste into **Testmo**.
+- **Do not** create or write test-case files under `tickets/` (no `test-cases.md`, no `test-cases/TC-*.md`, no README for test cases).
+
 ## Language
 
 - **Test case body** (title, AC fields, Preconditions, Expected, Steps): **English** (US client).
