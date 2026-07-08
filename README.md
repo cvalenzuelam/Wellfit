@@ -21,8 +21,8 @@ Wellfit/
 │   ├── PAY-3683/
 │   ├── PAY-3791/
 │   ├── PAY-3811/           # ACH Token Vault deactivation Event Grid publish
-│   ├── PAY-4047/           # ach-returns nullable Charge.Token on ACH rows
-│   │   └── scripts/        # Stage return publish script + CSV
+│   ├── PAY-4047/           # ach-returns nullable Charge.Token on ACH rows (STAGE PASS)
+│   │   └── scripts/        # inject-ach-return.sql (+ deprecated CSV publish)
 │   └── PAY-3821/           # Treasury funding-batch send error handling
 ├── docs/
 │   └── guides/             # Cross-cutting reference (PDFs, shared guides)
@@ -37,7 +37,8 @@ Wellfit/
 | Postman environments | `postman/environments/` |
 | Ticket runbooks & Jira XML | `tickets/PAY-XXXX/` |
 | ACH returns QA scripts (QA env) | `scripts/ach-returns/` |
-| PAY-4047 Stage return publish | `tickets/PAY-4047/scripts/` |
+| PAY-4047 Stage runbook + inject SQL | `tickets/PAY-4047/PAY-4047-QA-Context.md` |
+| PAY-4047 FileProcessedEvent Postman | `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json` |
 | Treasury funding guide (PDF) | `docs/guides/Treasury_Settlement_Funding_Guide.pdf` |
 | PAY-3821 QA walkthrough (Chris) | `tickets/PAY-3821/PAY-3821-STAGE-QA-Walkthrough_Chris.md` |
 

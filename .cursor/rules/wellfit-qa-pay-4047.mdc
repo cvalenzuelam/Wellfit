@@ -1,54 +1,37 @@
 ---
-description: PAY-4047 Stage QA — BLOCKED; ach-returns nullable Charge fields; resume checklist
+description: PAY-4047 Stage QA — ach-returns nullable Charge fields; Jason inject + FileProcessedEvent runbook
 globs: tickets/PAY-4047/**
 alwaysApply: false
 ---
 
-# PAY-4047 — Stage QA (BLOCKED — resume later)
+# PAY-4047 — Stage QA (PASS — Jason runbook)
 
-**Status:** STAGE QA **BLOCKED** (2026-07-07). Chris paused; retomar cuando Jason desbloquee delivery.
+**Status:** STAGE QA **PASS** (2026-07-08). Chris validated with Jason Slack runbook.
 
 ## Bug
 
-AchReturns EF loads `[Payments].[Payments]` as `Charge`. Real ACH rows have **NULL** `Token` and `ApprovalNumber`. Pre-fix → `SqlNullValueException` at `SqlDataReader.GetString()`. Fix: PR #305 — `string?` + `.IsRequired(false)`.
+AchReturns EF loads `[Payments].[Payments]` as `Charge`. Real ACH rows have **NULL** `Token` and `ApprovalNumber`. Pre-fix → `SqlNullValueException`. Fix: PR #305 — `string?` + `.IsRequired(false)`.
 
-**Not this ticket:** Payment Management `POST …/refund` (PAY-2452). Path here is **Event Grid → ach-returns-api → ReturnNotification**.
+## Stage runbook (order)
 
-## Blocker
+1. **Anchor** — Platform SQL: ACH `'000'`, NULL Token/ApprovalNumber, `LEN(TransactionId) <= 20`, no existing `ReturnedPayments`
+2. **Inject** — `tickets/PAY-4047/scripts/inject-ach-return.sql`: `@Commit=0` dry run → `@Commit=1` commit
+3. **Trigger** — POST `stage-wf-payments-func` **`FileProcessedEvent`** (host key `default` from App keys); body `FileName` `ECheckReturnReport_*`, `ProcessedAt` UTC — **within 5 min** of SQL insert
+4. **Verify** — `ReturnedPayments.ProcessingStatus` ≠ 0; App Insights 0 `SqlNullValueException`
 
-- Topic `wellfit-datafactory`: **Publish = 3**, subscription `ach-returns-api`: **Received = 0**
-- No `ReturnNotificationReceivedProcessor` traces; `[Payments].[ReturnedPayments]` empty
-- **Pending:** Jason — subscription filter / routing / queue (filter: `data.eventName` = `ReturnNotificationReceivedEvent`)
+**Not Stage:** Event Grid topic `operations` (local only). Deprecated: `wellfit-datafactory` CSV publish script.
 
-## Test data (Stage)
+## Postman
 
-| Field | Value |
-|-------|--------|
-| `TransactionId` | `84087690065068981` |
-| `OrderId` | `ORD-2025-029` |
-| `Amount` | `120.00` |
-| CaseId | `PAY4047-003` |
-| ACH row | `Token` NULL, `ApprovalNumber` NULL, `PaymentTypeMethod` = 0 |
+- Collection: `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json`
+- Env: `tickets/PAY-4047/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json` — set `functionKey` (never commit)
 
-## Assets
+## Pass criteria
 
-- `tickets/PAY-4047/scripts/publish-stage-ach-returns-from-csv.ps1` — Stage publish (`EVENTGRID_KEY`)
-- `tickets/PAY-4047/scripts/pay-4047-stage.csv`
-- Shared ACH returns QA toolkit: `scripts/ach-returns/`
-- Context: `tickets/PAY-4047/PAY-4047-QA-Context.md`
+- FileProcessedEvent **200** + `Payment.ReturnReport.Ingested`
+- SQL `ProcessingStatus = 1` or `3`
+- App Insights: no `SqlNullValueException` on ach-returns for test window
 
-## Testmo (2 cases only)
+## Context
 
-1. **TC-2** — Event Grid publish → `ach-returns-api` **Received** > 0 (prerequisite)
-2. **TC-1** — Return processes without `SqlNullValueException`; row in `[Payments].[ReturnedPayments]`
-
-**Order:** TC-2 then TC-1. Dev CI: PR #305 `ChargeNullableCardFieldsIntegrationTests` — Jira only, no manual duplicate.
-
-## Resume checklist
-
-1. Re-run `tickets/PAY-4047/scripts/publish-stage-ach-returns-from-csv.ps1`; confirm subscription **Received** > 0
-2. App Insights `stage-insights`: no `SqlNullValueException` on ach-returns for test `TransactionId`
-3. SQL: `SELECT * FROM [Payments].[ReturnedPayments] WHERE OriginalPaymentId = '<payment Id>'`
-4. Close TC-2 → TC-1 → Jira comment (PASS template in `wellfit-qa-jira-stage-comment.mdc`)
-
-**Sync:** Jason (fixture / routing). Jira PAY-4047; QA subtasks PAY-4081, PAY-4082.
+Full runbook: `tickets/PAY-4047/PAY-4047-QA-Context.md`. Dev CI: PR #305 — Jira only.

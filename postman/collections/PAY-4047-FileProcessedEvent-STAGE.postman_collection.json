@@ -1,0 +1,82 @@
+{
+  "info": {
+    "name": "PAY-4047 — FileProcessedEvent (STAGE)",
+    "_postman_id": "pay4047-file-processed-event-stage",
+    "description": "Step 3 per Jason Stage runbook: POST to `stage-wf-payments-func` → `FileProcessedEvent` after `inject-ach-return.sql` commit.\n\n**Within 5 min** of the SQL insert `TimeStamp`.\n\nSet `functionKey` from `stage-wf-payments-func` App keys (host key `default`) — do not commit the key. Pass: HTTP 200 + `EventName: Payment.ReturnReport.Ingested`.\n\nSee `tickets/PAY-4047/PAY-4047-QA-Context.md`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "paymentsFuncBaseUrl",
+      "value": "https://stage-wf-payments-func.azurewebsites.net",
+      "type": "string"
+    },
+    {
+      "key": "functionKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fileName",
+      "value": "ECheckReturnReport_QAFIX_20260708.CSV",
+      "type": "string"
+    },
+    {
+      "key": "processedAt",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "POST FileProcessedEvent (trigger ReturnReport.Ingested)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('processedAt', new Date().toISOString());",
+              "console.log('ProcessedAt (UTC) = ' + pm.collectionVariables.get('processedAt'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "var bodyText = pm.response.text();",
+              "pm.test('response mentions Payment.ReturnReport.Ingested', function () {",
+              "    pm.expect(bodyText).to.include('Payment.ReturnReport.Ingested');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"FileName\": \"{{fileName}}\",\n  \"ProcessedAt\": \"{{processedAt}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{paymentsFuncBaseUrl}}/api/FileProcessedEvent?code={{functionKey}}",
+        "description": "Jason STAGE runbook step 3. `FileName` must start with `ECheckReturnReport_`. `ProcessedAt` = UTC now (auto-set on Send)."
+      }
+    }
+  ]
+}

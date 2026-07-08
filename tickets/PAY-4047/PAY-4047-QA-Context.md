@@ -1,214 +1,156 @@
 # PAY-4047 — ach-returns: nullable Charge.Token & ApprovalNumber on ACH rows
 
-**Bug · ach-returns · Status: In Stage · Fix: R9.6 · Parent: PAY-4026 (Express Lane Q2) · QA: Chris (PAY-4081, PAY-4082)**
+**Bug · ach-returns · STAGE QA PASS (2026-07-08) · Fix: R9.6 · Parent: PAY-4026 · QA: Chris (PAY-4081, PAY-4082)**
 
-Jira export: `PAY-4047-Jira-Export.pdf`. Dev PR: [wellfit-payments #305](https://wellfit-technologies-inc.ghe.com/Wellfit/wellfit-payments/pull/305). Design ref: bmad-wellfit #3291 §8.5 “Bug 2”.
+Dev PR: [wellfit-payments #305](https://wellfit-technologies-inc.ghe.com/Wellfit/wellfit-payments/pull/305). Design ref: bmad-wellfit #3291 §8.5 “Bug 2”. Fixture ref: bmad #2929.
 
----
-
-## Ticket summary
-
-| Field | Value |
-|-------|--------|
-| **Type** | Bug (Priority 3) |
-| **Labels** | `express-lane` |
-| **Assignee (dev)** | Jason Thomas |
-| **QA sub-tasks** | PAY-4082 Create test cases · PAY-4081 Test fix — **Chris** |
-| **Repo / service** | `wellfit-payments` · **AchReturns.API** |
+Jira: https://wellfit.atlassian.net/browse/PAY-4047
 
 ---
 
 ## Problem
 
-`Charge.Token` and `Charge.ApprovalNumber` (`AchReturns.API/Database/Platform/Models/Charges/Charge.cs`) are **card-only** fields (vault token + auth/approval code). On **real ACH/eCheck** payments they are **legitimately NULL** on 100% of rows.
+`Charge.Token` and `Charge.ApprovalNumber` are **card-only** fields. On **real ACH/eCheck** payments they are **legitimately NULL**.
 
-EF Core mapping (`ChargeMapping.cs`) had both as **non-nullable `string`**. Newer **Microsoft.Data.SqlClient** (via WF framework) throws when materializing those rows:
+Pre-fix EF mapping was non-nullable → `SqlNullValueException` at `SqlDataReader.GetString()` when ach-returns loaded the row during return processing.
 
-```text
-SqlNullValueException: Data is Null. This method or property cannot be called on Null values.
-  at SqlDataReader.GetString()
-```
-
-**Surfaced in:** ACH return / NOC fixture **e2e in Stage** — the e2e path had **sidestepped** the bug rather than proving the fix.
+**Fix (PR #305):** `string?` + `.IsRequired(false)` on both fields. Dev test: `ChargeNullableCardFieldsIntegrationTests`.
 
 ---
 
-## Fix (dev)
+## STAGE runbook (Jason — validated 2026-07-08)
 
-| Change | Detail |
-|--------|--------|
-| Model | `Charge.Token` and `Charge.ApprovalNumber` → **`string?`** |
-| Mapping | `.IsRequired(false)` on both in `ChargeMapping.cs` |
-| Dev test | `AchReturns.API.Tests/Integration/ChargeNullableCardFieldsIntegrationTests.cs` — seeds `[Payments].[Payments]` with NULL Token/ApprovalNumber via raw ADO, reads via `PlatformDbContext` |
+### 1 — Anchor payment (Platform SQL)
 
-**Before fix:** integration test fails with `SqlNullValueException` (same as production).  
-**After fix:** row materializes; Token and ApprovalNumber read back as **null**.
-
----
-
-## What QA validates (no formal AC list in Jira — derived from Verification)
-
-| Theme | Pass criteria |
-|-------|----------------|
-| **EF materialization** | ach-returns reads a **real ACH** payment row (NULL Token + NULL ApprovalNumber) **without** `SqlNullValueException` |
-| **Return / NOC path** | STAGE flow that loads Charge for an ACH return or NOC **completes** (no 500 from null mapping) |
-| **Regression** | Card rows with populated Token/ApprovalNumber still load correctly |
-| **Observability** | No `SqlNullValueException` / `GetString` on null in App Insights for the test operation |
-| **Dev-only** | Tier 1 integration test in PR #305 — cite CI; do not duplicate as manual case unless asked |
-
----
-
-## Data model (SQL)
-
-ACH payments live in **`[Payments].[Payments]`**. Card-only columns on the Charge mapping:
-
-| Column | ACH rows | Card rows |
-|--------|----------|-----------|
-| **Token** | **NULL** (expected) | vault / processor token |
-| **ApprovalNumber** | **NULL** (expected) | auth / approval code |
-
-**PaymentTypeMethod** (reference): `0` = eCheck default (ACH), `1` Pay Page, `2` CNP token, etc.
-
-### Find candidate ACH rows (Stage)
+Find a live settled ACH `'000'` payment with **NULL** `Token` and **NULL** `ApprovalNumber`, `LEN(TransactionId) <= 20`, and **no** existing `[Payments].[ReturnedPayments]` row.
 
 ```sql
-SELECT TOP 20
-    Id, TransactionId, OrderId, Amount,
-    Token, ApprovalNumber, PaymentType, PaymentTypeMethod, TimeStamp
-FROM [Payments].[Payments]
-WHERE Token IS NULL
-  AND ApprovalNumber IS NULL
-ORDER BY TimeStamp DESC;
+SELECT TOP 5
+    p.Id, p.TransactionId, p.OrderId, p.Amount,
+    p.Token, p.ApprovalNumber, p.ResponseCode
+FROM [Payments].[Payments] p
+JOIN [Payments].[AchPaymentDetails] apd ON apd.PaymentId = p.Id
+WHERE p.ResponseCode = '000'
+  AND LEN(p.TransactionId) <= 20
+  AND p.Token IS NULL
+  AND p.ApprovalNumber IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM [Payments].[ReturnedPayments] rp
+    WHERE rp.OriginalPaymentId = p.Id
+  )
+ORDER BY p.TimeStamp DESC;
 ```
 
-Pick a row tied to a return/NOC scenario dev provides, or use one from a fresh ACH sale in Stage.
+If none exist, create a new test ACH payment in Stage first (Payments V2 ACH submit).
 
----
+### 2 — Inject return (SQL script)
 
-## Stage environment
+**Script:** `tickets/PAY-4047/scripts/inject-ach-return.sql`  
+**DB:** `stage-platform-wellfit-sqlserver.database.windows.net` → **Platform**
 
-| Item | Value |
-|------|--------|
-| **SQL** | `stage-platform-wellfit-sqlserver.database.windows.net` → **`Platform`** |
-| **Service** | **ach-returns** / AchReturns.API (confirm base URL and auth with dev) |
-| **App Insights** | **`stage-insights`** — cloud role likely `stage-wf-ach-returns` or similar (confirm) |
-| **Related flows** | ACH return ingestion, NOC / account-updater fixture e2e (same family as PAY-3811) |
-| **ACH payment API** | Payments V2 ACH submit — see `PAY-3627-STAGE-PUT-Driven` request **07** for ACH sale pattern |
+| Pass | `@Commit` | Expected |
+|------|-----------|----------|
+| Dry run | `0` | Preview + `DRY RUN (rolled back)` — nothing persisted |
+| Commit | `1` | `COMMITTED return fixture...` — pending row (`ProcessingStatus = 0`) |
 
-### Postman (uploaded 2026-07-07)
+Set `@PaymentId` to pin the anchor. Note commit **UTC timestamp** (5-minute lookback starts here).
 
-| Asset | Path |
-|-------|------|
-| **PAY-2452 ACH Refunds collection** | `postman/collections/PAY-2452-ACH-Refunds-QA.postman_collection.json` |
-| **Local Dev env** | `postman/environments/PAY-2452-ACH-Refunds-Local-Dev.postman_environment.json` |
-| **STAGE env** | `postman/environments/PAY-2452-ACH-Refunds-STAGE.postman_environment.json` |
-| **Screenshots** | `assets/screenshots/PAY-4047/` |
+### 3 — Trigger report-ingested (HTTP)
 
-**Ticket note:** material uploaded as “3797 / ach returns” is **PAY-2452** (Payment Management refunds) + context for **PAY-4047** (AchReturns.API). **PAY-3797** is a different bug (v2 card **capture** drift) — not this flow.
-
-### Services map (do not confuse)
-
-| Service | API | PAY-4047? |
-|---------|-----|-----------|
-| **Payment Management API** | `POST …/api/transactions/{id}/refund` | **No** — refunds workflow (PAY-2452) |
-| **AchReturns.API** | Event-driven — **`AchReturnReceivedEvent`** | **Yes** — loads `Charge` from SQL (NULL Token bug) |
-| **Payments V2 API** | ACH sale | Creates payment row only |
-
-Collection folder **8. Blocking Rule** states: bank return status requires **`AchReturnReceivedEvent`** processed first — **cannot trigger via refund POST**. That event is the **PAY-4047** exercise path; ask Jason for Stage fixture steps.
-
-### Stage URLs (from collection + screenshots)
+**Not** Event Grid topic `operations` (local only — does not exist in Stage).
 
 | Item | Value |
 |------|--------|
-| **Identity** | `https://stage-wf-identity-api.azurewebsites.net/connect/token` |
-| **Payment Management** | `https://stage-wf-payment-management-api.azurewebsites.net` |
-| **Auth client** | `WellfitPaymentManagementAPI` (secret in collection — rotate in Postman env, do not commit) |
-| **Example txn id (screenshots)** | `01KS3A0CGDW7TY6C5KCW2AX857` |
-| **Refund example** | `POST {{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund` |
+| **Function App** | `stage-wf-payments-func` |
+| **Function** | `FileProcessedEvent` |
+| **URL** | `https://stage-wf-payments-func.azurewebsites.net/api/FileProcessedEvent?code=<functionKey>` |
+| **Auth** | Function key — `stage-wf-payments-func` → **App keys** → host key **`default`** (or Key Vault; do not commit/paste in tickets) |
+| **Body** | `FileName` starting with `ECheckReturnReport_` (e.g. `ECheckReturnReport_QAFIX_<date>.CSV`); `ProcessedAt` = **UTC now** |
+| **Timing** | POST within **5 minutes** of SQL insert `TimeStamp` |
+| **Pass** | HTTP **200**; response includes `"EventName": "Payment.ReturnReport.Ingested"` |
 
----
+**Postman:** `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json` + env `tickets/PAY-4047/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json`
 
-## How to test (QA flow)
+### 4 — Verify PAY-4047 fix
 
-### 1 — Baseline data check
+**SQL:**
 
-First confirm the payment row you will use has **NULL** Token and ApprovalNumber in SQL (query above).
+```sql
+SELECT Id, OriginalPaymentId, ProcessorTransactionId,
+       ReasonCode, ProcessingStatus, TimeStamp
+FROM [Payments].[ReturnedPayments]
+WHERE OriginalPaymentId = '<anchor PaymentId>';
+```
 
-### 2 — Trigger ach-returns read path (STAGE)
+**Pass:** `ProcessingStatus = 1` (Processed) or `3` (NeedsReview) — not `0`.
 
-Use the **return or NOC fixture path** dev documents for Stage (same e2e that originally surfaced Bug 2). Typical pattern:
-
-1. Existing ACH payment row (NULL card fields) in `[Payments].[Payments]`.
-2. Ingest **ACH return** or drive **NOC** processing so AchReturns.API loads the Charge via EF.
-3. API/worker completes — **not** HTTP 500 / unhandled exception.
-
-**Before fix:** `SqlNullValueException` in logs when loading the row.  
-**After fix:** processing continues; Charge fields null in memory/response as expected.
-
-### 3 — App Insights
-
-Search by `operation_Id`, `transactionId`, or `PaymentId`:
+**App Insights** (`stage-insights`):
 
 ```kusto
 exceptions
-| where timestamp > ago(2h)
+| where timestamp > ago(1h)
 | where cloud_RoleName has "ach" or cloud_RoleName has "return"
 | where outerMessage has "SqlNullValueException"
     or innermostMessage has "SqlNullValueException"
-    or message has "GetString"
-| project timestamp, operation_Id, outerMessage, innermostMessage, cloud_RoleName
+| project timestamp, operation_Id, outerMessage, cloud_RoleName
 | order by timestamp desc
 ```
 
-**Pass:** 0 rows for your test window after fix.
-
-Trace the happy operation:
-
-```kusto
-requests
-| where timestamp > ago(2h)
-| where cloud_RoleName has "ach" or cloud_RoleName has "return"
-| project timestamp, operation_Id, url, resultCode, duration
-| order by timestamp desc
-| take 30
-```
-
-### 4 — Card regression (optional)
-
-Load or process a **card** payment where Token and ApprovalNumber are **non-null** — still materializes and return flow unaffected.
+**Pass:** 0 rows in test window.
 
 ---
 
-## Suggested Testmo themes (~8 cases for PAY-4082)
+## STAGE QA evidence (2026-07-08)
 
-1. SQL — identify ACH row with NULL Token + ApprovalNumber (precondition case).
-2. ACH return path — Charge loads without exception (primary fix).
-3. NOC / return fixture e2e — end-to-end Stage pass (regression of Bug 2 scenario).
-4. App Insights — no `SqlNullValueException` on test operation.
-5. API/worker — no 500 on ACH row materialization.
-6. Card payment regression — non-null Token/ApprovalNumber still OK.
-7. Service health — ach-returns healthy after test run.
-8. Dev integration test — PR #305 `ChargeNullableCardFieldsIntegrationTests` (note CI evidence; manual N/A).
+| Run | TransactionId | OrderId | Amount | ProcessingStatus | App Insights |
+|-----|---------------|---------|--------|------------------|--------------|
+| 1 | `84085454800162514` | `100654830` | 44.33 | 1 | Same outcome |
+| 2 | `84085205723518905` | `order-221938327191` | 35.00 | 1 | 0 `SqlNullValueException` |
+
+Screenshots: `assets/screenshots/PAY-4047/`. Evidence in Testmo.
 
 ---
 
-## Chris session notes (2026-07-07)
+## Assets
 
-| Step | Result |
+| Asset | Path | Notes |
+|-------|------|-------|
+| SQL inject script | `tickets/PAY-4047/scripts/inject-ach-return.sql` | Jason fixture (bmad #2929) |
+| Fixture README (dev/local) | `tickets/PAY-4047/ACH-Return-Fixture-README.md` | Local `operations` topic; Stage uses FileProcessedEvent |
+| Postman collection | `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json` | Step 3 trigger |
+| Postman environment | `tickets/PAY-4047/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json` | Set `functionKey` locally |
+| ~~Deprecated~~ CSV + PS1 | `tickets/PAY-4047/scripts/publish-stage-ach-returns-from-csv.ps1` | Old path: `wellfit-datafactory` / `ReturnNotificationReceivedEvent` — superseded |
+| QA ACH returns toolkit (QA env) | `scripts/ach-returns/` | Different env (`qa-wf-eventgrid`) |
+
+---
+
+## Environment reference
+
+| Item | Value |
 |------|--------|
-| SQL — ACH row NULL Token/ApprovalNumber | ✅ e.g. `Id=1ec7efc7-…`, `TransactionId=84087676722070924`, `ORD-2025-002` |
-| App Insights — SqlNullValueException (30d) | Empty — no historical crash |
-| App Insights — txn `84087676722070924` | Only `Payments.V2.API` + `PaymentManagement.API` (payment **created**, ach-returns **not invoked**) |
-| PAY-2452 Postman | Imported — refunds on Payment Management; **not** direct ach-returns trigger |
-
-## Blockers / sync with dev
-
-1. **AchReturnReceivedEvent** / NOC fixture in Stage (PAY-4047 primary path) — Jason.
-2. **App Insights cloud role** name for ach-returns.
-3. Seed script `postman/seed-refund-test-data.sql` referenced by PAY-2452 collection — **not in repo**; Stage uses real txn ids or dev seed.
+| **Platform SQL** | `stage-platform-wellfit-sqlserver.database.windows.net` → `Platform` |
+| **App Insights** | `stage-insights` — cloud roles matching `ach` / `return` |
+| **Event Grid namespace** | `stage-wf-eventgrid` — topics include `wellfit-payments`, `wellfit-datafactory` (not used for this runbook) |
 
 ---
 
-## Jira
+## Deprecated / do not use for PAY-4047 Stage
 
-https://wellfit.atlassian.net/browse/PAY-4047
+| Approach | Why |
+|----------|-----|
+| Event Grid topic **`operations`** | Does not exist in Stage (local `eventgrid-bridge` only) |
+| `publish-stage-ach-returns-from-csv.ps1` → **`wellfit-datafactory`** | Different event (`ReturnNotificationReceivedEvent`); subscription delivery was blocked 2026-07-07 |
+
+---
+
+## Jira comment template (PASS)
+
+```text
+STAGE QA PASS — PAY-4047.
+
+Setup: Jason Stage runbook — inject-ach-return.sql on Platform (anchor = live settled ACH '000' rows with NULL Token/ApprovalNumber). Trigger: POST stage-wf-payments-func FileProcessedEvent within 5 min of SQL commit.
+
+Verified: HTTP 200 + EventName Payment.ReturnReport.Ingested; ReturnedPayments ProcessingStatus = 1; App Insights 0 SqlNullValueException in test window.
+
+Dev CI: PR #305 ChargeNullableCardFieldsIntegrationTests. Evidence in Testmo.
+```

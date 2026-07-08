@@ -1,4 +1,9 @@
 <#
+.DEPRECATED
+  Superseded 2026-07-08 by Jason Stage runbook: inject-ach-return.sql +
+  stage-wf-payments-func FileProcessedEvent. This script targeted wellfit-datafactory /
+  ReturnNotificationReceivedEvent (subscription delivery was blocked). See PAY-4047-QA-Context.md.
+
 .SYNOPSIS
   Publish ACH return records to STAGE Event Grid (PAY-4047 / ach-returns QA).
 
