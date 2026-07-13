@@ -1,0 +1,72 @@
+---
+description: Wellfit STAGE Azure SQL databases and key tables (Platform + Payments) for QA
+alwaysApply: true
+---
+
+# Wellfit QA — STAGE SQL databases & key tables
+
+**Server:** `stage-platform-wellfit-sqlserver.database.windows.net`
+
+## Databases on this server
+
+| Database | Typical QA use |
+|----------|----------------|
+| **Platform** | Live charges, ACH returns inject, settlements |
+| **Payments** | Account Updater, PM transactions, ACH methods, tokenizations |
+| **TokenVault** | ACH Token Vault bank tokens (PAY-3811 “tokenized”) |
+| **Orchestrator** | Fallback if Account Updater schema missing on Payments |
+| AchReAuth, AIDatabase, analytics, Comm, Logs, PaymentArrangements, platform-dialexa, PracticeManagement, Wallet, WellfitArchives, wellfitbillpay, WellfitFeatureFlags, WellfitLegalLanguage, wellfitpay, Wellfitreporting, WellfitServices, WellfitSystemSettings | Other product DBs |
+
+## Platform — tables QA uses most
+
+| Schema.Table | Use |
+|--------------|-----|
+| `[Payments].[Payments]` | Charge rows (`Id`, `TransactionId`, `Token` NULL on ACH, `ResponseCode`) |
+| `[Payments].[AchPaymentDetails]` | ACH detail / join for anchors |
+| `[Payments].[ReturnedPayments]` | Return fixture + `ProcessingStatus` |
+| `[Payments].[Refunds]`, `[Payments].[Voids]` | Refund/void asserts |
+| `[Payments].[BankAccounts]`, `[Payments].[Tokenizations]` | Bank / tokenization refs on Platform |
+| `[Payments].[FundingBatches]`, `[Payments].[FundingInstructions]` | Treasury / funding |
+| `[OnBoarding].*`, `[MerchantProvisioning].*` | Merchant onboarding |
+| `[Sales].*`, `[Financing].*`, `[Identity].*`, `[Security].*` | Broader platform (rarely for PAY ACH tickets) |
+
+## Payments DB — tables QA uses most
+
+| Schema.Table | Use |
+|--------------|-----|
+| `[AccountUpdater].[ReturnDeactivations]` | PAY-3811 / PAY-3790 — hard-return deactivation rows |
+| `[AccountUpdater].[AchNOCs]` | NOC claim/ingest |
+| `[AccountUpdater].[UnmatchedAchNOCs]` | Unmatched NOCs |
+| `[AccountUpdater].[TokenMigrationFiles]`, `[TokenMigrationRecords]` | Token migration |
+| `[Transactions].[PaymentTransaction]` | PM payment txn |
+| `[Transactions].[PaymentMethodACH]` | ACH method on PM txn — cols: `PaymentTransactionId`, `RoutingNumber`, `MaskedAccountNumber`; **no** vault `TokenId` |
+| `[Transactions].[ACHReturn]`, `[ACHNotificationOfChange]` | PM return / NOC records |
+| `[Returns].[ReturnConfigurations]`, `[RedepositAttempts]` | Redeposit config |
+| `[Payments].[PaymentRequests]`, `[AchLimit*]` | Requests / ACH limits |
+
+## TokenVault DB — tables (ACH bank tokens)
+
+| Table | Use |
+|-------|-----|
+| `[dbo].[BankAccountTokens]` | **Primary** — ACH bank tokens. Key cols: `Id`, `Status` (`Active`/`Inactive`), `AccountHash`, `RoutingNumber`, `DeactivatedAt`, `DeactivationReason` |
+| `[dbo].[BankAccountTokenLog]` | Token change / audit log |
+| `[dbo].[PaymentTokens]` | Payment tokens (may be card-related; confirm before use) |
+| `tmp_ms_xx_BankAccountTokens_*` | Temp/migration — ignore for QA |
+| Index/PostOptimization/QueryStore* | Ops — ignore |
+
+## Wallet DB — tables
+
+| Table | Use |
+|-------|-----|
+| `[dbo].[Token]` | Wallet tokens |
+| `[dbo].[Wallet]` | Wallet records |
+| `[dbo].[TokenPurgeLog]` | Purge audit |
+| Index/PostOptimization/QueryStore* | Ops — ignore |
+
+## PAY-3811 — where “tokenized” data lives
+
+- **Link that matters:** Platform `[Payments].[Payments].Token` = GUID of `TokenVault.dbo.BankAccountTokens.Id` (`Status=Active`). AchReturns parses `Token` → `TokenId` on `Payment.Return.Received`. NULL/non-GUID → vault skips deactivation.
+- Real ACH often has `Token` NULL (OK for PAY-4047; **disqualifies** PAY-3811 until set to a vault GUID for the test).
+- `PaymentMethodACH` / Platform `Tokenizations` (card) / `BankAccounts` are **not** the vault link.
+- End evidence TC1: `[AccountUpdater].[ReturnDeactivations]` on **Payments** DB.
+- Wallet DB is separate — not ACH Token Vault.

@@ -1,0 +1,62 @@
+---
+description: PAY-3811 Stage QA — ACH Token Vault deactivation events; BMAD runbook (tokenized Token GUID)
+globs: tickets/PAY-3811/**
+alwaysApply: false
+---
+
+# PAY-3811 — Stage QA (BMAD runbook)
+
+**Status:** In Stage · Fix PR #290 (`f7e4af2e+`) · QA Chris (PAY-4011 / PAY-4012)  
+**Full context:** `tickets/PAY-3811/PAY-3811-QA-Context.md`
+
+## Critical link (why NULL-Token ACH fails)
+
+Vault deactivates only when `Payment.Return.Received` carries **`TokenId`**. AchReturns sets it from the anchor charge:
+
+`Guid.TryParse(payment.Token, out tokenId)` → if null/non-GUID → `TokenId=null` → vault **Acknowledge, no deactivation**.
+
+**Tokenized for TC1** ⇔ `[Payments].[Payments].Token` (Platform charge row) = GUID equal to `TokenVault.dbo.BankAccountTokens.Id` with `Status=Active`.
+
+Do **not** use random ACH `'000'` with `Token=NULL` — that only proves PAY-4047 ingest.
+
+## STAGE wiring check (do first)
+
+SB: `payments` topic → `ach-tokenvault-api` (`Payment.Return.Received`); `accounts` → `ach-tokenvault-api` (`Account.NoC.Received`).
+
+App Insights (**vault** role, not func):
+
+```kusto
+traces | where timestamp > datetime(2026-07-09)
+| where message has "AchReturnReceivedIntegrationEvent"
+```
+
+- Empty → blocker (subscription/deploy). Escalate Jay/DevOps.
+- Present with empty TokenId → wired; fix data (set Token GUID).
+- Then proceed TC1.
+
+## TC1 happy path (order)
+
+1. **Anchor:** find payment where `Token` ∈ Active `BankAccountTokens.Id`, **or** UPDATE disposable ACH payment `Token` to an Active vault GUID (e.g. QA Tester `73850000-5622-EA37-EDEC-08DED213101F`).
+2. **Inject:** `inject-ach-return.sql` `@ReasonCode=R02` (not R01/R09), `@Commit=1` on that payment.
+3. **Trigger:** POST `stage-wf-payments-func` `FileProcessedEvent` within 5 min (same as PAY-4047).
+4. **Verify:**
+   - Vault AI: `Hard return code` + `Published AchReturnBankAccountDeactivatedEvent` for TokenId; **0** `reserved attribute` / Failed publish BankToken.
+   - TokenVault: `Status` not Active, `DeactivatedAt` set.
+   - Payments DB: `[AccountUpdater].[ReturnDeactivations]` one row (`WellfitTokenId`, `ReturnCode=R02`, `SourceEventId`=ReturnedPaymentId).
+   - Func AI: `OnAccountDeactivated` (no malformed discard).
+
+## Key Testmo cases for this bug (keep lean)
+
+1. Tokenized hard return R02 → token Deactivated + ReturnDeactivations + no reserved-attribute (AC-2).
+2. Soft return R01 on tokenized anchor → token stays Active; no ReturnDeactivations (negative).
+3. AC-1 = PR #290 unit tests (Jira only). AC-3 = out of scope. NOC path → PAY-4104 (Stage routing), not a PASS gate for this bug.
+
+## TC2 / TC3 / out of scope
+
+- **TC2 NOC:** blocked Stage — `No routing configured for event type: Account.NoC.Received` → **PAY-4104**.
+- **TC3 soft:** R01/R09 on tokenized anchor → token stays Active; no ReturnDeactivations row.
+- **AC-3** framework false-success: out of scope. **AC-1** unit tests only.
+
+## Chris STAGE result 2026-07-09
+
+- TC1 PASS (tokenized R02). TC3 PASS (R01). TC2 blocked → PAY-4104. Jira STAGE PASS return path.

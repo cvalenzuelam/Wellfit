@@ -69,7 +69,7 @@ Set `@PaymentId` to pin the anchor. Note commit **UTC timestamp** (5-minute look
 | **Timing** | POST within **5 minutes** of SQL insert `TimeStamp` |
 | **Pass** | HTTP **200**; response includes `"EventName": "Payment.ReturnReport.Ingested"` |
 
-**Postman:** `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json` + env `tickets/PAY-4047/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json`
+**Postman:** `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json` + env `postman/environments/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json`
 
 ### 4 — Verify PAY-4047 fix
 
@@ -118,7 +118,7 @@ Screenshots: `assets/screenshots/PAY-4047/`. Evidence in Testmo.
 | SQL inject script | `tickets/PAY-4047/scripts/inject-ach-return.sql` | Jason fixture (bmad #2929) |
 | Fixture README (dev/local) | `tickets/PAY-4047/ACH-Return-Fixture-README.md` | Local `operations` topic; Stage uses FileProcessedEvent |
 | Postman collection | `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json` | Step 3 trigger |
-| Postman environment | `tickets/PAY-4047/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json` | Set `functionKey` locally |
+| Postman environment | `postman/environments/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json` | Set `functionKey` locally |
 | ~~Deprecated~~ CSV + PS1 | `tickets/PAY-4047/scripts/publish-stage-ach-returns-from-csv.ps1` | Old path: `wellfit-datafactory` / `ReturnNotificationReceivedEvent` — superseded |
 | QA ACH returns toolkit (QA env) | `scripts/ach-returns/` | Different env (`qa-wf-eventgrid`) |
 

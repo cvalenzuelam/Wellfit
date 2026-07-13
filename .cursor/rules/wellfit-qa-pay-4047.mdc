@@ -24,7 +24,7 @@ AchReturns EF loads `[Payments].[Payments]` as `Charge`. Real ACH rows have **NU
 ## Postman
 
 - Collection: `postman/collections/PAY-4047-FileProcessedEvent-STAGE.postman_collection.json`
-- Env: `tickets/PAY-4047/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json` — set `functionKey` (never commit)
+- Env: `postman/environments/PAY-4047-FileProcessedEvent-STAGE.postman_environment.json` — set `functionKey` (never commit)
 
 ## Pass criteria
 

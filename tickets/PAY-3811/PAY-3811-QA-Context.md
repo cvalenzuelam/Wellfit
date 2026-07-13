@@ -2,7 +2,9 @@
 
 **Bug · ach-token-vault · Status: In Stage · Fix: R9.6 · QA: Chris (PAY-4011, PAY-4012)**
 
-Jira export: `PAY-3811-Jira-Export.pdf`. Blocks PAY-3790 (Account Updater orchestrator — closed; AC-2 depended on this fix).
+Jira export: `tickets/PAY-3811/PAY-3811-Jira-Export.pdf`. Related (closed): `tickets/PAY-3790/PAY-3790-Jira-Export.pdf` — Account Updater orchestrator; AC-2 depended on this fix.
+
+**Postman (STAGE):** collection `postman/collections/PAY-3811-OnNocUpdateReportIngested-STAGE.postman_collection.json` + env `postman/environments/PAY-3811-OnNocUpdateReportIngested-STAGE.postman_environment.json` (set `functionKey` locally).
 
 ---
 
@@ -77,66 +79,82 @@ Azure Event Grid rejects **`subject`** as a reserved attribute name → **every 
 
 ---
 
-## How to test (QA flow)
+## STAGE QA runbook (BMAD — 2026-07-09)
 
-### Prerequisites
+Cursor rule: `.cursor/rules/wellfit-qa-pay-3811.mdc` (globs `tickets/PAY-3811/**`).
 
-- Confirm with dev **which env** for PAY-4012 (**Dev** per AC-2 wording; ticket status **In Stage** — align before run).
-- Dev documents **how to trigger** each path:
-  - **NOC deactivation** (NOC file / account-updater pipeline → vault)
-  - **ACH return deactivation** (return code path → vault)
-- Access: **App Insights** (vault + orchestrator roles), **Service Bus** peek on accounts topic, **SQL** for orchestrator tables.
+### Why NULL-Token ACH fails TC1
 
-### AC-2 — happy path (post-fix)
+AchReturns builds `Payment.Return.Received` with `TokenId` only if `[Payments].[Payments].Token` parses as a GUID (`Guid.TryParse`). If `Token` is null/non-GUID → vault **Acknowledge, no deactivation**.
 
-1. Trigger vault deactivation (NOC or return — one case per event type if both in scope).
-2. **Service Bus / EG:** message for `Account.BankToken.NocDeactivated` or `Account.BankToken.ReturnDeactivated` on **accounts** topic — valid CloudEvent, **`subject` in envelope**, not as illegal extension.
-3. **Orchestrator:** row in **`AccountUpdater.ReturnDeactivations`** (or dev-confirmed NOC resolution table) tied to the bank token / merchant.
-4. **App Insights (vault):** single success publish trace — **no** preceding `ArgumentException` on `subject`.
+**Tokenized** ⇔ `Payments.Payments.Token` = `TokenVault.dbo.BankAccountTokens.Id` (`Status=Active`).  
+`PaymentMethodACH` / card `Tokenizations` / `BankAccounts` are irrelevant for this link.
 
-### AC-3 — logging (post-fix)
+### Chris attempt 2026-07-09
 
-- **Before fix:** failure + false success in same request (document as baseline if re-checking pre-deploy).
-- **After fix:** inject or natural failure (if dev provides safe trigger) → **error** severity log; **no** `Successfully published…` for a failed publish.
+- R02 inject + `FileProcessedEvent` → `ReturnedPayments` status 1; AchReturns `Payment.Return.Received` OK.
+- `ReturnDeactivations` empty; no vault `ReturnDeactivated` / `OnAccountDeactivated` — anchor `Token` was NULL (PAY-4047-style payment).
 
-### AC-1
+### (F) Wiring check first
 
-- Reference dev unit tests / PR — no manual case unless asked.
+SB: `payments` → `ach-tokenvault-api` (`Payment.Return.Received`); `accounts` → `ach-tokenvault-api` (`Account.NoC.Received`).
+
+```kusto
+traces | where timestamp > datetime(2026-07-09)
+| where message has "AchReturnReceivedIntegrationEvent"
+```
+
+Use **vault** App Insights role (`ach-tokenvault-api`), not the func app. Empty → env blocker. Empty TokenId in message → wired; fix Token data.
+
+### (B) Anchor
+
+Option 1: find ACH payment whose `Token` ∈ Active `BankAccountTokens.Id`.  
+Option 2: `UPDATE` disposable payment `Token` to an Active vault GUID (e.g. QA Tester `73850000-5622-EA37-EDEC-08DED213101F`).
+
+### (C)–(D) TC1
+
+Same PAY-4047 path: `inject-ach-return.sql` R02 + `FileProcessedEvent` within 5 min on **tokenized** anchor.
+
+Pass: vault “Hard return” + `Published AchReturnBankAccountDeactivatedEvent`; 0 reserved-attribute errors; token Inactive + `DeactivatedAt`; one `[AccountUpdater].[ReturnDeactivations]` row (`WellfitTokenId`, `ReturnCode=R02`, `SourceEventId`=ReturnedPaymentId); `OnAccountDeactivated` fired.
+
+### TC2 / TC3 / out of scope
+
+- **TC2 NOC:** `Account.NoC.Received` with matched vault TokenId → NocDeactivated + token Inactive + NOC resolved Deactivated (not ReturnDeactivations).
+- **TC3:** R01/R09 on tokenized anchor → token stays Active; no deactivation row.
+- **AC-3** framework swallow: out of scope. **AC-1** unit tests only.
 
 ---
 
 ## App Insights KQL (starting points)
 
-Vault — find deactivation publish attempts:
+Vault — return ingest / deactivation:
 
 ```kusto
 traces
-| where timestamp > ago(1h)
-| where cloud_RoleName has "token" or cloud_RoleName has "vault" or cloud_RoleName has "ach"
-| where message has "NocDeactivated" or message has "ReturnDeactivated" or message has "BankToken"
-| project timestamp, severityLevel, message, operation_Id
+| where timestamp > ago(2h)
+| where message has "AchReturnReceivedIntegrationEvent"
+    or message has "Hard return code"
+    or message has "Published AchReturnBankAccountDeactivatedEvent"
+    or message has "ReturnDeactivated"
+| project timestamp, severityLevel, message, cloud_RoleName
 | order by timestamp desc
 ```
 
-Find false-success pattern (pre-fix baseline):
+Reserved-attribute regression (must be zero post-fix):
 
 ```kusto
 traces
-| where timestamp > ago(24h)
-| where message has "Successfully published" and message has "NocDeactivated"
-| join kind=inner (
-    exceptions
-    | where timestamp > ago(24h)
-    | where outerMessage has "subject" or innermostMessage has "reserved attribute"
-) on operation_Id
-| project timestamp, operation_Id, message, outerMessage
+| where timestamp > ago(2h)
+| where message has "reserved attribute" or message has "Failed to publish event Account.BankToken"
+| project timestamp, message, cloud_RoleName
+| order by timestamp desc
 ```
 
-Orchestrator — deactivation handler:
+Orchestrator:
 
 ```kusto
 traces
-| where timestamp > ago(1h)
+| where timestamp > ago(2h)
 | where message has "OnAccountDeactivated" or message has "ReturnDeactivations"
 | project timestamp, message, operation_Id, cloud_RoleName
 | order by timestamp desc
@@ -146,23 +164,23 @@ traces
 
 ## Suggested Testmo themes (~8 cases when writing PAY-4011)
 
-1. NOC deactivation — event on accounts SB topic (AC-2).
-2. Return deactivation — event on accounts SB topic (AC-2).
-3. CloudEvent shape — no reserved `subject` extension (AC-2 spot-check).
-4. Orchestrator — `ReturnDeactivations` row after NOC path (AC-2).
-5. Orchestrator — return path resolution (AC-2).
-6. Vault logs — success path, no exception (AC-2).
-7. Vault logs — failed publish surfaces as error, not success (AC-3).
-8. Regression — ACH reporting / FR-10 not blank when orchestrator + vault both deployed (optional E2E with Integrations).
+1. STAGE wiring — vault receives `AchReturnReceivedIntegrationEvent` (F).
+2. Tokenized anchor — `Payments.Token` = Active `BankAccountTokens.Id` (B).
+3. TC1 hard return R02 — vault publish + token Inactive (C/D).
+4. TC1 — no reserved-attribute publish failure (PAY-3811 fix).
+5. TC1 — `ReturnDeactivations` row + `OnAccountDeactivated` (D).
+6. TC3 soft return R01/R09 — no deactivation (E).
+7. TC2 NOC deactivation path (E) when harness available.
+8. AC-1 unit tests / PR #290 — cite CI (no manual). AC-3 out of scope.
 
 ---
 
 ## Blockers / sync with dev
 
-1. **Exact STAGE vs Dev** env for PAY-4012 (AC-2 says Dev; Jira status In Stage).
-2. **Trigger steps** for NOC vs return deactivation in non-local env.
-3. **Service Bus queue/topic names** and peek permissions for QA.
-4. **Orchestrator deployed?** If not in target env, AC-2 may be SB-only + vault logs until orchestrator is live.
+1. Vault SB subscriptions + ach-tokenvault-api running on STAGE (F).
+2. Tokenized anchor (`Token` GUID) — not NULL ACH (B).
+3. Orchestrator `OnAccountDeactivated` + EG `accounts` subscription for full E2E row.
+4. TC2 NOC inject / direct publish harness if needed.
 
 ---
 

@@ -16,7 +16,14 @@ alwaysApply: true
 - **One step only** per reply unless Chris asks for more.
 - **Do not** dump full test plans, all ACs, or recovery steps upfront.
 - Wait for confirmation before the next step.
-- **Spanish**, simple words.
+- **Spanish** with Chris for step-by-step walkthrough (simple words).
+
+## Team language (US)
+
+- Chris’s **team / client is US-based**.
+- **Slack team channels, Jira comments, Testmo cases, bug descriptions, and anything shared with the US team → English.**
+- Do not draft Spanish for Slack/Jira/Testmo unless Chris explicitly asks for Spanish.
+- Chat with Chris can stay Spanish; deliverables for the team stay English.
 
 ## Deployed build
 

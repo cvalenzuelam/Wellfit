@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "PAY-3811 — OnNocUpdateReportIngested (STAGE)",
+    "_postman_id": "pay3811-noc-update-report-ingested-stage",
+    "description": "TC2 trigger for PAY-3811: POST Event Grid webhook to `stage-wf-payments-func` → `OnNocUpdateReportIngested` after inserting a claimable row in `[AccountUpdater].[AchNOCs]` (Status NULL) on Payments DB.\n\nSet `functionKey` from `stage-wf-payments-func` App keys (host key `default`) — do not commit the key. You can reuse the PAY-4047 STAGE environment.\n\nHeaders require `aeg-event-type: Notification`. Body is an Event Grid notification array.\n\nSee `tickets/PAY-3811/PAY-3811-QA-Context.md`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "paymentsFuncBaseUrl",
+      "value": "https://stage-wf-payments-func.azurewebsites.net",
+      "type": "string"
+    },
+    {
+      "key": "functionKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "eventTime",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fileName",
+      "value": "ECheckNOCReport_QAFIX_PAY3811.CSV",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "POST OnNocUpdateReportIngested (trigger NOC ingest)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('eventId', pm.variables.replaceIn('{{$guid}}'));",
+              "pm.collectionVariables.set('eventTime', new Date().toISOString());",
+              "console.log('eventId = ' + pm.collectionVariables.get('eventId'));",
+              "console.log('eventTime (UTC) = ' + pm.collectionVariables.get('eventTime'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 or 202', function () {",
+              "    pm.expect([200, 202]).to.include(pm.response.code);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "aeg-event-type",
+            "value": "Notification"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"specversion\": \"1.0\",\n  \"id\": \"{{eventId}}\",\n  \"source\": \"qa/fixture/pay-3811-noc\",\n  \"type\": \"Account.NocUpdateReport.Ingested\",\n  \"subject\": \"Account.NocUpdateReport.Ingested\",\n  \"time\": \"{{eventTime}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"fileName\": \"{{fileName}}\",\n    \"recordCount\": 1,\n    \"processedAt\": \"{{eventTime}}\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{paymentsFuncBaseUrl}}/runtime/webhooks/EventGrid?functionName=OnNocUpdateReportIngested&code={{functionKey}}",
+        "description": "PAY-3811 TC2. After AchNOCs insert (Status NULL) on Payments DB. Reuse functionKey from PAY-4047 STAGE env."
+      }
+    }
+  ]
+}
