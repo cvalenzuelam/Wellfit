@@ -1,0 +1,156 @@
+{
+  "info": {
+    "name": "PAY-4077 Merchant Provisioning STAGE",
+    "description": "STAGE QA helper for PAY-4077.\n\nOrder:\n1. Authenticate\n2. Create SubMerchant\n3. Retrieve SubMerchant\n\nBase URL and auth credentials are hardcoded for STAGE. Token and wellfit-submerchant-id are saved as collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "Payments-Bearer-Token", "value": "" },
+    { "key": "wellfit-submerchant-id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Authenticate (STAGE MP)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('bearerToken present', () => pm.expect(json.bearerToken).to.be.a('string').and.not.empty);",
+              "pm.collectionVariables.set('Payments-Bearer-Token', json.bearerToken);",
+              "if (pm.environment) { try { pm.environment.set('Payments-Bearer-Token', json.bearerToken); } catch (e) {} }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"WellfitOnBoardingAPI\",\n  \"password\": \"Testing12!!L0v3Wellfit\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/authenticate",
+        "description": "STAGE MP authenticate. Hardcoded username/password and STAGE base URL."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create SubMerchant (fresh — 3 processors)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const now = new Date();",
+              "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+              "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+              "pm.collectionVariables.set('randomTaxId', uniq9());",
+              "pm.collectionVariables.set('randomPspMerchantId', uniq9());",
+              "pm.collectionVariables.set('randomSsn', uniq9());",
+              "pm.collectionVariables.set('randomSsn2', uniq9());",
+              "pm.collectionVariables.set('pspMerchantIdOverride', `PAY4077-${stamp}`);",
+              "pm.collectionVariables.set('qaLegalEntityName', `PAY4077 LE ${stamp}`);",
+              "pm.collectionVariables.set('qaDbaName', `PAY4077 DBA ${stamp}`);",
+              "pm.collectionVariables.set('qaMerchantName', `PAY4077 QA ${stamp}`);",
+              "pm.collectionVariables.set('qaOwnerEmail1', `pay4077.o1.${stamp}@example.com`);",
+              "pm.collectionVariables.set('qaOwnerEmail2', `pay4077.o2.${stamp}@example.com`);",
+              "pm.collectionVariables.set('qaPcEmail', `pay4077.pc.${stamp}@example.com`);",
+              "// also set request-scoped vars (more reliable than collection alone)",
+              "pm.variables.set('randomTaxId', pm.collectionVariables.get('randomTaxId'));",
+              "pm.variables.set('randomPspMerchantId', pm.collectionVariables.get('randomPspMerchantId'));",
+              "pm.variables.set('randomSsn', pm.collectionVariables.get('randomSsn'));",
+              "pm.variables.set('randomSsn2', pm.collectionVariables.get('randomSsn2'));",
+              "pm.variables.set('pspMerchantIdOverride', pm.collectionVariables.get('pspMerchantIdOverride'));",
+              "pm.variables.set('qaLegalEntityName', pm.collectionVariables.get('qaLegalEntityName'));",
+              "pm.variables.set('qaDbaName', pm.collectionVariables.get('qaDbaName'));",
+              "pm.variables.set('qaMerchantName', pm.collectionVariables.get('qaMerchantName'));",
+              "pm.variables.set('qaOwnerEmail1', pm.collectionVariables.get('qaOwnerEmail1'));",
+              "pm.variables.set('qaOwnerEmail2', pm.collectionVariables.get('qaOwnerEmail2'));",
+              "pm.variables.set('qaPcEmail', pm.collectionVariables.get('qaPcEmail'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+              "const json = pm.response.json();",
+              "const id = json.wellfitSubMerchantId || json.WellfitSubMerchantId;",
+              "pm.test('wellfitSubMerchantId returned', () => pm.expect(id).to.be.a('string').and.not.empty);",
+              "if (id) {",
+              "  pm.collectionVariables.set('wellfit-submerchant-id', id);",
+              "  console.log('wellfit-submerchant-id =', id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{Payments-Bearer-Token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"LIMITED_LIABILITY_COMPANY\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomTaxId}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 51,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      },\n      {\n        \"Title\": \"owner2\",\n        \"Ssn\": \"{{randomSsn2}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 49,\n        \"Order\": 0,\n        \"FirstName\": \"p first 2\",\n        \"LastName\": \"p last 2\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St 2\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail2}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4077\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*PAY4077\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"PAY4077\",\n      \"CompanyName\": \"PAY4077\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"5068093d-aa1f-41f8-ac42-1fc85a92b766\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/create-sub-merchant",
+        "description": "Creates a fresh SubMerchant. Random unique fields each run. Saves wellfit-submerchant-id."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Retrieve SubMerchant",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "console.log('status', pm.response.code);",
+              "try {",
+              "  const json = pm.response.json();",
+              "  if (json.validationErrors) {",
+              "    console.log('validationErrors', JSON.stringify(json.validationErrors, null, 2));",
+              "  }",
+              "} catch (e) {}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{Payments-Bearer-Token}}" }
+        ],
+        "url": {
+          "raw": "https://stage-wf-merchantprovisioning-api.azurewebsites.net/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfit-submerchant-id}}",
+          "protocol": "https",
+          "host": ["stage-wf-merchantprovisioning-api", "azurewebsites", "net"],
+          "path": ["provisioning", "retrieve-sub-merchant"],
+          "query": [
+            {
+              "key": "wellfitSubMerchantId",
+              "value": "{{wellfit-submerchant-id}}"
+            }
+          ]
+        },
+        "description": "Retrieve after create, or after SQL ProcessorReference corruption."
+      },
+      "response": []
+    }
+  ]
+}
