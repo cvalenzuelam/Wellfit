@@ -6,7 +6,7 @@ alwaysApply: true
 # Wellfit BMAD (`bmad-wellfit`)
 
 **Repo:** https://wellfit-technologies-inc.ghe.com/Wellfit/bmad-wellfit  
-**Local (this workspace):** `bmad-wellfit-main/` (gitignored — large; do not commit).  
+**Local (this workspace):** `docs/reference/bmad/bmad-wellfit-main/` (gitignored — large; do not commit).  
 **Tagline:** “Code is the implementation. Context is the asset. Completed work is the wisdom.”
 
 Chris has **GHE browse access**. Full “Claude in BMAD” = open this repo in **Claude Code** and run skills. Brett often does that for Chris until Claude Code is set up.

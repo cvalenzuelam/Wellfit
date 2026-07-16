@@ -6,8 +6,12 @@ desktop.ini
 # Archives
 *.7z
 
-# BMAD (large local copy — do not commit)
+# BMAD (large local copy under docs/reference — do not commit)
+docs/reference/bmad/bmad-wellfit-main/
+docs/reference/bmad/bmad-wellfit/
+docs/reference/bmad/bmad-wellfit-extract/
 bmad-wellfit/
 bmad-wellfit-main/
 bmad-wellfit-extract/
 bmad-wellfit-main.zip
+**/bmad-wellfit-main.zip
