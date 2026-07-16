@@ -1,0 +1,406 @@
+{
+  "info": {
+    "_postman_id": "pay-4064-ach-refund-stage",
+    "name": "PAY-4064 ACH Refund — STAGE",
+    "description": "STAGE QA for PAY-4064: eligible ACH refund must not return HTTP 500.\n\n## Setup\n1. Import env `PAY-4064 ACH Refund STAGE`\n2. Fill `settledAchTransactionId` (and optionally `settledAchTransactionId2`) — use `tickets/PAY-4064/scripts/find-refundable-ach-STAGE.sql` then GET verify\n3. Run folder 0 → 1 → 2 (partial). Folder 3 needs a second eligible txn.\n\n## Auth\nUses `WellfitUnifiedPaymentsAPI` on STAGE Identity — includes `WellfitPaymentManagementAPI.Full` + `WellfitPaymentsAPI.RefundPayments`.\nDo **not** use `WellfitPaymentManagementAPI` alone (missing refund scopes).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Setup",
+      "item": [
+        {
+          "name": "Authenticate (UnifiedPayments — refund scopes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Token 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Has access_token', function () {",
+                  "    pm.expect(body.access_token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('Payment-Bearer-Token', body.access_token);",
+                  "pm.environment.set('access-token', body.access_token);",
+                  "const scope = body.scope || '';",
+                  "console.log('scopes:', scope);",
+                  "pm.test('Has RefundPayments scope', function () {",
+                  "    pm.expect(scope).to.include('WellfitPaymentsAPI.RefundPayments');",
+                  "});",
+                  "pm.test('Has PaymentManagement Full scope', function () {",
+                  "    pm.expect(scope).to.include('WellfitPaymentManagementAPI.Full');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "WellfitUnifiedPaymentsAPI", "type": "text" },
+                { "key": "client_secret", "value": "Testing123!!W3llf1t1!", "type": "text" }
+              ]
+            },
+            "url": "https://stage-wf-identity-api.azurewebsites.net/connect/token",
+            "description": "STAGE Identity. Client already returns RefundPayments + PaymentManagement Full without requesting scope."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Prereq — Verify eligible ACH",
+      "item": [
+        {
+          "name": "GET settled ACH transaction",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const id = pm.environment.get('settledAchTransactionId');",
+                  "if (!id) {",
+                  "    throw new Error('Set settledAchTransactionId in PAY-4064 ACH Refund STAGE env first (SQL script in tickets/PAY-4064/scripts).');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GET 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.environment.set('originalAmount', String(json.amount ?? ''));",
+                  "if (json.refundableAmount != null) {",
+                  "    pm.environment.set('refundableAmount', String(json.refundableAmount));",
+                  "}",
+                  "console.log('status=', json.transactionStatus, 'rail=', json.rail, 'amount=', json.amount, 'refundable=', json.refundableAmount);",
+                  "console.log('availableActions=', json.availableActions);",
+                  "console.log('unavailable refund=', (json.unavailableActions || {}).refund);",
+                  "pm.test('ACH rail (1)', function () {",
+                  "    pm.expect(json.rail).to.eql(1);",
+                  "});",
+                  "pm.test('Refund action available (PAY-4064 precondition)', function () {",
+                  "    const actions = (json.availableActions || []).map(String);",
+                  "    pm.expect(actions.map(a => a.toLowerCase())).to.include('refund');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Happy Path — Partial refund (bug fix)",
+      "item": [
+        {
+          "name": "POST partial ACH refund",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Not HTTP 500 (PAY-4064)', function () {",
+                  "    pm.expect(pm.response.code).to.not.eql(500);",
+                  "});",
+                  "pm.test('Success 2xx', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);",
+                  "});",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (e) { console.log(pm.response.text()); }",
+                  "const refundId = json.transactionId || json.refundTransactionId || (json.refund && json.refund.transactionId);",
+                  "if (refundId) {",
+                  "    pm.environment.set('refundTransactionId', String(refundId));",
+                  "    console.log('refundTransactionId=', refundId);",
+                  "}",
+                  "console.log(JSON.stringify(json).slice(0, 800));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"{{$guid}}\",\n  \"amount\": {{partialRefundAmount}},\n  \"reason\": \"QA PAY-4064 - partial ACH refund\"\n}"
+            },
+            "url": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+            "description": "Core PAY-4064 proof: eligible ACH refund must process (not 500)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET original after partial refund",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GET 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "console.log('status=', json.transactionStatus, 'refundable=', json.refundableAmount);",
+                  "console.log('unavailable refund=', (json.unavailableActions || {}).refund);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Happy Path — Full refund (optional 2nd txn)",
+      "item": [
+        {
+          "name": "GET second settled ACH",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const id = pm.environment.get('settledAchTransactionId2');",
+                  "if (!id) {",
+                  "    throw new Error('Optional: set settledAchTransactionId2 for full-refund case.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GET 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "pm.test('Refund available', function () {",
+                  "    const actions = (json.availableActions || []).map(a => String(a).toLowerCase());",
+                  "    pm.expect(actions).to.include('refund');",
+                  "});",
+                  "if (json.refundableAmount != null) {",
+                  "    pm.environment.set('refundableAmount', String(json.refundableAmount));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{payments-management-api}}/api/v1/transactions/{{settledAchTransactionId2}}"
+          },
+          "response": []
+        },
+        {
+          "name": "POST full ACH refund",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const amt = pm.environment.get('refundableAmount') || pm.environment.get('originalAmount');",
+                  "if (!amt) {",
+                  "    throw new Error('refundableAmount missing — run GET second settled ACH first.');",
+                  "}",
+                  "pm.variables.set('fullRefundAmount', amt);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Not HTTP 500 (PAY-4064)', function () {",
+                  "    pm.expect(pm.response.code).to.not.eql(500);",
+                  "});",
+                  "pm.test('Success 2xx', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]);",
+                  "});",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (e) {}",
+                  "const refundId = json.transactionId || json.refundTransactionId;",
+                  "if (refundId) pm.environment.set('fullRefundTransactionId', String(refundId));",
+                  "console.log(JSON.stringify(json).slice(0, 800));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"{{$guid}}\",\n  \"amount\": {{fullRefundAmount}},\n  \"reason\": \"QA PAY-4064 - full ACH refund\"\n}"
+            },
+            "url": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId2}}/refund"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Negative smoke — still client errors",
+      "item": [
+        {
+          "name": "POST refund amount exceeded",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Not HTTP 500', function () {",
+                  "    pm.expect(pm.response.code).to.not.eql(500);",
+                  "});",
+                  "pm.test('Client error 4xx', function () {",
+                  "    pm.expect(pm.response.code).to.be.within(400, 499);",
+                  "});",
+                  "console.log(pm.response.text().slice(0, 500));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"{{$guid}}\",\n  \"amount\": 999999.99,\n  \"reason\": \"QA PAY-4064 - amount exceeded\"\n}"
+            },
+            "url": "{{payments-management-api}}/api/transactions/{{settledAchTransactionId}}/refund",
+            "description": "Regression: negatives should stay 4xx (bug was happy-path-only 500)."
+          },
+          "response": []
+        },
+        {
+          "name": "POST refund not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Not HTTP 500', function () {",
+                  "    pm.expect(pm.response.code).to.not.eql(500);",
+                  "});",
+                  "pm.test('Client error 4xx', function () {",
+                  "    pm.expect(pm.response.code).to.be.within(400, 499);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"{{$guid}}\",\n  \"amount\": 1.00,\n  \"reason\": \"QA PAY-4064 - not found\"\n}"
+            },
+            "url": "{{payments-management-api}}/api/transactions/txn_does_not_exist_99999/refund"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "payments-management-api",
+      "value": "https://stage-wf-payment-management-api.azurewebsites.net"
+    }
+  ]
+}

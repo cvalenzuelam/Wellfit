@@ -1,0 +1,42 @@
+---
+description: Wellfit QA — on every new ticket, create a STAGE-ready Postman collection + env under tickets/PAY-XXXX/ (do not trust DEV/Claude dumps as-is)
+alwaysApply: true
+---
+
+# Wellfit QA — STAGE Postman package per new ticket
+
+When Chris starts (or hands over) a **new ticket**, **always** produce a **STAGE-ready Postman package** he can import and run with minimal clicks — even if he already pasted a collection/env from Brett/devs/Claude.
+
+## Always do (new ticket)
+
+1. Create / refresh **exactly two** Postman JSON files at **`tickets/PAY-XXXX/` root** (same pattern as PAY-4033 / PAY-4064):
+   - `PAY-XXXX-….postman_collection.json`
+   - `PAY-XXXX-…-STAGE.postman_environment.json` (name must say **STAGE**)
+2. **Do not** also put duplicates under `tickets/PAY-XXXX/postman/` — that shows 4 files on import. Optional mirror only under repo `postman/collections/` + `postman/environments/`.
+3. Tell Chris the **two paths** and: import → select STAGE env → Send.
+
+## Do not trust incoming Postman as STAGE-ready
+
+Dev/Claude collections are **often DEV-oriented** (wrong host, identity, client, scope, token var names, seed IDs, localhost). Treat them as **inputs to adapt**, not as the QA package.
+
+- Rebuild or heavily rewrite for STAGE; do not leave Chris fixing Scripts/Variables in the UI.
+- Prefer a **lean ticket suite** (auth → prereq → happy path → key negatives) over shipping a huge unfinished epic collection.
+
+## STAGE readiness checklist
+
+Follow `wellfit-qa-postman-agent-edits.mdc` + `wellfit-qa-prefer-stage-docs.mdc` + `wellfit-qa-stage-credentials.mdc`. In particular:
+
+| Check | Requirement |
+|-------|-------------|
+| Hosts | Real STAGE APIs (`stage-wf-*-api.azurewebsites.net` / known platform hosts) — not DEV/localhost |
+| Auth | STAGE Identity + client that **actually has** the needed scopes (verify; DEV client ≠ STAGE scopes) |
+| Token save | `pm.environment.set(...)` matching header vars (`bearerToken` / `Payment-Bearer-Token` / etc.) |
+| Env selected | Prefill STAGE base URL + secrets used by the suite; empty only for one-off IDs Chris must fill |
+| Runnable order | Folder 0 auth works alone; next requests use saved token without red `{{vars}}` |
+| Data gaps | SQL/script or clear single field to fill (e.g. eligible `transactionId`) — call it out |
+
+## Goal
+
+Chris should **only** import the ticket folder files, pick the STAGE env, and execute — not reconfigure Claude/DEV dumps by hand.
+
+When walking steps: name **carpeta + request** only (see `wellfit-qa-postman-folder-path.mdc`).

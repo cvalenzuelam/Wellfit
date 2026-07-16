@@ -1,0 +1,386 @@
+{
+  "info": {
+    "name": "PAY-4072 — WFC ACH Information → MaxRedepositAttempts (STAGE)",
+    "description": "STAGE QA package. Injects WellfitConnect.AchInformation.* onto Payments Service Bus and verifies ach-returns-microservice upserts [Returns].[ReturnConfigurations].MaxRedepositAttempts (SubMerchantId + ProcessorId=0).\n\nImport with env: PAY-4072 STAGE (sbNamespace=stage-payments-bus; SAS keys prefilled).\n\nSTAGE runnable: Folder 1 (Method A — direct SB inject to accounts) + Folder 3 (DLQ peek). Verify rows in SQL DB Payments → [Returns].[ReturnConfigurations].\n\nPARKED: Folder 2 (Event Grid Method B) — STAGE egDomainEndpoint / egDomainKey not filled; skip until confirmed.\n\nKEY vs PAY-4033: this consumer LOGS-AND-SKIPS bad input (null / bad SubMerchantId / value outside [0,2]) — does NOT dead-letter. Every scenario expects EMPTY DLQ.\n\nBLOCKERS: (1) ach-returns-api subscription must exist on stage-payments-bus / accounts (Brett → DevOps). (2) Real WFC→Payments bridge still missing — inject only.\n\nPre-request mints SB SAS from env sbSharedAccessKeyName + sbSharedAccessKey into sbSasToken.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Mint a Service Bus SAS token for the 'accounts' topic (used by Method A + DLQ peek).",
+          "// Requires sbNamespace, sbSharedAccessKeyName, sbSharedAccessKey in the active environment.",
+          "const CryptoJS = require('crypto-js');",
+          "const ns = pm.environment.get('sbNamespace');",
+          "const topic = pm.environment.get('sbTopic') || 'accounts';",
+          "const keyName = pm.environment.get('sbSharedAccessKeyName');",
+          "const key = pm.environment.get('sbSharedAccessKey');",
+          "if (ns && keyName && key) {",
+          "  const uri = encodeURIComponent('https://' + ns + '.servicebus.windows.net/' + topic);",
+          "  const expiry = Math.floor(Date.now() / 1000) + 3600;",
+          "  const sig = encodeURIComponent(CryptoJS.HmacSHA256(uri + '\\n' + expiry, key).toString(CryptoJS.enc.Base64));",
+          "  const token = 'SharedAccessSignature sr=' + uri + '&sig=' + sig + '&se=' + expiry + '&skn=' + keyName;",
+          "  pm.environment.set('sbSasToken', token);",
+          "} else {",
+          "  console.log('SB SAS not minted — set sbNamespace, sbSharedAccessKeyName, sbSharedAccessKey to use Method A / DLQ peek.');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "sbTopic",
+      "value": "accounts",
+      "type": "string"
+    },
+    {
+      "key": "sbSubscription",
+      "value": "ach-returns-api",
+      "type": "string"
+    },
+    {
+      "key": "eventTypeCreated",
+      "value": "WellfitConnect.AchInformation.Created",
+      "type": "string"
+    },
+    {
+      "key": "eventTypeUpdated",
+      "value": "WellfitConnect.AchInformation.Updated",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Inject via Service Bus (STAGE — recommended)",
+      "description": "STAGE primary path. Direct send to stage-payments-bus / accounts via SB REST. BrokerProperties.Label = event type so it matches ach-returns-api filter (sys.Label IN Created/Updated). Expect HTTP 201 (accepted onto topic) — consumer result via SQL on Payments DB + DLQ peek (folder 3). Requires ach-returns-api subscription provisioned on STAGE.",
+      "item": [
+        {
+          "name": "1.1 Created (happy path, ECheckRetryAttempts=2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted onto accounts topic (201)', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "console.log('Injected .Created for SubMerchantId=' + pm.environment.get('subMerchantId') + ' — expect INSERT, MaxRedepositAttempts=2, ProcessorId=0. Verify via SQL / folder 3.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 2,\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S1 — happy insert. Valid GUID + ECheckRetryAttempts=2. Expect a new [Returns].[ReturnConfigurations] row (SubMerchantId, ProcessorId=0) with MaxRedepositAttempts=2 and EntityUpdated NULL."
+          }
+        },
+        {
+          "name": "1.2 Updated (same SubMerchantId, ECheckRetryAttempts=1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Injected .Updated — expect UPDATE path; MaxRedepositAttempts=1, EntityUpdated set. Run AFTER 1.1 for the same SubMerchantId.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Updated\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Updated\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 1,\n    \"ECheckTransactionLimit\": 750.00,\n    \"ECheckDailyTransactionLimit\": 3000.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S2 — happy update. Label=…Updated is mapped to the same handler via Program.cs. Expect the existing row's MaxRedepositAttempts to become 1 and EntityUpdated to be set. No second row (unique key SubMerchantId+ProcessorId)."
+          }
+        },
+        {
+          "name": "1.3 Skip — null ECheckRetryAttempts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Field omitted -> handler logs \"ECheckRetryAttempts is null ... Skipping\" and returns. NO row written for PAY-4072. DLQ stays EMPTY (not dead-lettered).');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S4 — null skip. ECheckRetryAttempts omitted (NOT 0 — the producer's ?? 0 default would make 0 a valid value). Handler logs+skips; no ReturnConfigurations write; DLQ empty. NOTE: the limits are still present, so PAY-4033 (if provisioned) will still write AchLimitConfig from this same message — use a fresh GUID here if you want a clean no-op."
+          }
+        },
+        {
+          "name": "1.4 Skip — out of range (ECheckRetryAttempts=3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Value 3 is outside [0,2] -> handler logs \"out of range [0, 2] ... Skipping\" and returns. NO write; the DB CHECK constraint is never reached. DLQ EMPTY.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 3,\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S5 — out-of-range skip. ECheckRetryAttempts=3 (byte on the wire, so >255 can't occur). Handler rejects before SQL; CHK_ReturnConfigurations_MaxAttempts never exercised. No write; DLQ empty."
+          }
+        },
+        {
+          "name": "1.5 Boundary — ECheckRetryAttempts=0 (valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('0 is the valid LOWER boundary -> INSERT/UPDATE with MaxRedepositAttempts=0. Use a FRESH subMerchantId to see a clean insert with value 0.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 0,\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S6 — lower-boundary valid. MaxRedepositAttempts=0 is accepted (guard is BETWEEN 0 AND 2 inclusive). Verify a row with MaxRedepositAttempts=0; DLQ empty."
+          }
+        },
+        {
+          "name": "1.6 Skip — malformed SubMerchantId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('SubMerchantId is not a GUID -> handler logs \"invalid SubMerchantId ... Skipping\" and returns. No write; DLQ EMPTY (not dead-lettered).');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"not-a-guid\",\n    \"ECheckRetryAttempts\": 2,\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S7 — malformed SubMerchantId. Guid.TryParse fails -> log warn + skip. No write; DLQ empty. (PAY-4033's ACL would dead-letter this; PAY-4072 does not.)"
+          }
+        },
+        {
+          "name": "1.7 Non-target event type (filter negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Label does NOT match the ach-returns-api filter -> not delivered to this subscription. No row, no DLQ on ach-returns-api.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.SomethingElse.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4072\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.SomethingElse.Created\",\n  \"subject\": \"SomethingElse\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 2\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            },
+            "description": "S8 — filter negative. sys.Label IN (...Created,...Updated) excludes this type, so ach-returns-api never receives it. No row; DLQ empty."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. PARKED — Inject via Event Grid (STAGE needs EG key)",
+      "description": "PARKED for STAGE QA. Method B needs egDomainEndpoint + egDomainKey in the STAGE env (still TODO). Do not run as the next happy-path step. Use Folder 1 (Service Bus) instead. Body source set to 'accounts' (domain-topic addressing, same as PAY-4033 DEV calibration) for when EG is unparked.",
+      "item": [
+        {
+          "name": "2.1 Created (happy path) — PARKED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('event accepted by Event Grid (200)', function () { pm.response.to.have.status(200); });",
+                  "console.log('Published to accounts EG domain — verify via SQL (Payments DB / ReturnConfigurations) / folder 3.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/cloudevents-batch+json" },
+              { "key": "aeg-sas-key", "value": "{{egDomainKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"id\": \"{{$guid}}\",\n    \"source\": \"accounts\",\n    \"specversion\": \"1.0\",\n    \"type\": \"WellfitConnect.AchInformation.Created\",\n    \"subject\": \"AchInformation\",\n    \"time\": \"{{$isoTimestamp}}\",\n    \"data\": {\n      \"SubMerchantId\": \"{{subMerchantId}}\",\n      \"ECheckRetryAttempts\": 2,\n      \"ECheckTransactionLimit\": 500.00,\n      \"ECheckDailyTransactionLimit\": 2500.00\n    }\n  }\n]"
+            },
+            "url": {
+              "raw": "https://{{egDomainEndpoint}}/api/events",
+              "protocol": "https",
+              "host": ["{{egDomainEndpoint}}"],
+              "path": ["api", "events"]
+            },
+            "description": "PARKED on STAGE until egDomainEndpoint + egDomainKey are filled. Not the primary STAGE path — use 1.1 instead."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Verify",
+      "description": "DLQ peek helper for STAGE subscription ach-returns-api. Row/value verification is via SQL on STAGE DB Payments → [Returns].[ReturnConfigurations] (see E2E_RUNBOOK.md §7.1).",
+      "item": [
+        {
+          "name": "3.1 Peek DLQ (ach-returns-api dead-letter — expect EMPTY)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 204 => DLQ empty (EXPECTED for every scenario in this collection — this consumer skips bad input, it does not dead-letter).",
+                  "// 200 => a dead-lettered message was peeked => INVESTIGATE: deserialization failure or a thrown handler exception (transient DB / concurrent-insert race).",
+                  "pm.test('DLQ empty (204)', function () {",
+                  "  pm.expect(pm.response.code, 'expected empty DLQ for PAY-4072 — a message here is unexpected').to.eql(204);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "  console.log('UNEXPECTED DLQ message body: ' + pm.response.text());",
+                  "  console.log('BrokerProperties: ' + pm.response.headers.get('BrokerProperties'));",
+                  "  console.log('-> Check App Insights (RUNBOOK §7.3): deserialization error vs handler exception.');",
+                  "} else {",
+                  "  console.log('DLQ empty — expected.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{sbSasToken}}" }
+            ],
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/subscriptions/{{sbSubscription}}/$deadletterqueue/messages/head",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "subscriptions", "{{sbSubscription}}", "$deadletterqueue", "messages", "head"]
+            },
+            "description": "Peek-lock the head of the ach-returns-api DLQ via SB REST. Peek does not remove the message. For PAY-4072 the DLQ should always be empty (204); a 200 indicates a deserialization or handler-exception problem, not rejected poison."
+          }
+        }
+      ]
+    }
+  ]
+}

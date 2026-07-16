@@ -20,7 +20,7 @@ When the user asks for **test cases** for this project:
 
 ## Structure (always use)
 
-1. **Title** line (TestRail style). **Must begin with `Validate that`** — e.g. `Validate that Legacy Payments API publishes enriched Payment.Debit.Submitted when per-transaction limit is exceeded`. **Do not** append environment labels `(STAGE)`, `(DEV)`, or ticket/AC tags (`[PAY-XXXX]`, `[AC-n]`) to the title — Testmo links the ticket separately; use **AC Linked** for AC id and mention environment in **Preconditions** when it matters.
+1. **Title** line (TestRail style) — paste as **plain text only**. **Must begin with `Validate that`**. **Do not** prefix with `Title:`, `**Title:**`, or any label — Chris copies the line straight into Testmo. Example first line: `Validate that Legacy Payments API publishes enriched Payment.Debit.Submitted when per-transaction limit is exceeded`. **Do not** append environment labels `(STAGE)`, `(DEV)`, or ticket/AC tags (`[PAY-XXXX]`, `[AC-n]`) to the title — Testmo links the ticket separately; use **AC Linked** for AC id and mention environment in **Preconditions** when it matters.
 2. **AC fields** (no `Description` heading — Testmo already labels that section). Start directly with:
    - **AC Linked:** AC-*n* (and ticket id here if useful, e.g. `PAY-3609 / AC-1`)
    - **AC Description:** one clear outcome statement.
@@ -35,20 +35,27 @@ When the user asks for **test cases** for this project:
 
 ## Volume & granularity (Wellfit QA convention)
 
-### Bugs — few key cases only
+**No fixed count.** Size the suite to the ticket with judgment: cover what QA must prove, then add a **few** sensible extras so the suite looks complete — not sparse, not padded.
 
-- For **Bug** tickets: generate only the **key manual cases actually needed to prove the fix** against the ACs (typically **2–4**).
-- Prefer: one happy-path that proves the defect is gone, one negative/regression if it was part of the QA plan or risk, plus any env evidence check that is truly distinct.
-- Do **not** pad bugs to 8–10. Do **not** invent wiring/smoke/setup cases unless the user asks.
-- Skip ACs that are unit-test-only or explicitly out of scope (note in Jira instead).
-- Follow-up env/config issues found during bug QA → separate ticket; do not inflate the bug’s Testmo suite with those cases unless the user asks.
+| Ticket size | Guidance (not a quota) |
+|-------------|-------------------------|
+| Small (one path / one-line fix / simple STAGE check) | Core proof cases + **1–2** extras (e.g. regression or adjacent rail). Often ~**3–5**. |
+| Medium | Needed ACs/env checks + a couple of supporting cases. Often ~**5–7**. |
+| Large / multi-surface story | Split by real verification actions until coverage is solid. Often ~**7–10**, more only if the work truly needs it. |
 
-### Stories / larger features
+### Always
 
-- Target **8–10 manual test cases** unless the user asks for a different count.
-- **Split by verification action**, not only by AC — API auth/smoke, endpoint calls, SQL, Azure/config, email, App Insights, health, recovery/teardown.
+- Prefer **necessary** cases first; extras must be real checks QA would run (regression, second processor, equal-name edge, evidence), not filler (generic auth-only smoke, fake wiring).
+- **Do not** force 8–10 on a small ticket. **Do not** stop at 1–2 when there are clear distinct env checks.
+- Split by **verification action** when it helps (API, SQL, Azure, email, App Insights, recovery) — only if those are real for the ticket.
 - A single E2E run may satisfy several cases in sequence; each case should still be independently executable in Testmo.
-- Do **not** inflate with fake scenarios; when the ticket has fewer ACs, reach 8–10 by decomposing **real** env steps QA performs.
+- Skip unit-test-only / out-of-scope ACs (note in Jira instead).
+- User override wins if they ask for a specific count.
+
+### Bugs
+
+- Key cases to prove the fix (happy path + negative/regression if relevant). Same sizing judgment — usually toward the small end.
+- Follow-up env/config issues → separate ticket; do not inflate the bug suite unless asked.
 
 ## Tone
 

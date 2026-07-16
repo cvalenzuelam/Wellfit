@@ -1,0 +1,39 @@
+---
+description: Wellfit QA — when unsure (SQL, endpoints, hosts, scopes, flags), ask Chris first; grow project context from his answers
+alwaysApply: true
+---
+
+# Wellfit QA — ask Chris before guessing
+
+Chris prefers **preguntar** over inventar. The biggest friction has been bad SQL and wrong endpoints/config. When info is missing or weak, **ask him** — then save the answer into verified docs/rules so the next ticket is smoother.
+
+## Ask first when unsure about
+
+| Area | Examples | Do not |
+|------|----------|--------|
+| **SQL** | DB (Platform vs Payments), table/column names, joins, status codes | Invent schema or ship a guess query as the main step |
+| **API / Postman** | Base URL, path, method, required headers, body fields | Invent STAGE hosts or endpoints from DEV twins |
+| **Auth** | Which client/scopes for this API | Assume a client has a scope |
+| **Env / Azure** | Feature flags, App Settings keys, which App Service | Guess flag names/values |
+| **Test data** | Which txn/id is eligible | Pick random ids that often 502/404 |
+
+Light inference from **verified** STAGE docs is OK. Blind guessing when confidence is low is **not**.
+
+## How to ask
+
+1. Say clearly what you need (1–3 concrete asks).
+2. Prefer a small discovery query / Azure path / “paste the host you use” over a long essay.
+3. When he answers, **update immediately**:
+   - `docs/guides/stage-sql-schema-verified.md`
+   - `docs/guides/stage-identity-client-scopes.md`
+   - `docs/guides/stage-hosts-verified.md`
+   - `.cursor/rules/wellfit-qa-stage-sql-databases.mdc` / credentials / related rules
+4. Then generate the SQL / Postman / steps with that truth.
+
+## Mindset
+
+- Asking grows **project context** for both of us — that is the goal.
+- Occasional educated guess is fine only if grounded in verified STAGE docs; if it fails, stop and ask.
+- SQL + endpoints are the default place to **pause and ask**.
+
+Related: `wellfit-qa-sql-ask-before-guess.mdc`, `wellfit-qa-prefer-stage-docs.mdc`, `wellfit-qa-stage-postman-per-ticket.mdc`.

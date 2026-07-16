@@ -5,3 +5,9 @@ desktop.ini
 
 # Archives
 *.7z
+
+# BMAD (large local copy — do not commit)
+bmad-wellfit/
+bmad-wellfit-main/
+bmad-wellfit-extract/
+bmad-wellfit-main.zip

@@ -1,0 +1,57 @@
+---
+description: Wellfit QA — edit Postman collections/environments in repo; Chris only re-imports; avoid broken auth/vars
+alwaysApply: true
+---
+
+# Wellfit QA — Postman: agent edits files, Chris imports
+
+When Postman setup needs fixes (URLs, auth, scripts that save tokens, variables, bodies, STAGE values):
+
+## Do
+
+- **Edit the JSON in the repo** (`tickets/PAY-XXXX/…`, `postman/collections/`, `postman/environments/`).
+- Give Chris the **file path(s)** and say **re-import / replace** in Postman.
+- Prefer a ready **STAGE environment** + collection that runs with minimal clicks (Send).
+
+## Do not
+
+- Ask Chris to manually edit Postman UI (Scripts, Variables, Headers, paste secrets into the app) **as the primary fix**.
+- Dump long “open Scripts → change this line” instructions unless he explicitly prefers that or import is blocked.
+
+## Exceptions (OK to ask him)
+
+- One-time values only he has (real `accountId`, one-off txn id) — still prefer putting a placeholder in the env file and telling him the single field to fill **after** import, or ask him to paste the value so you write it into the env file.
+- Selecting the environment dropdown / clicking **Send** (runtime actions, not file edits).
+
+## Default flow
+
+1. You fix collection + environment in the workspace.
+2. Chris imports both.
+3. Chris selects the STAGE env and runs the next request.
+
+## Quality checklist (avoid broken runs)
+
+Before handing Chris a collection/env to import, verify these — **do not** ship setups that fail after a successful auth:
+
+1. **Token persistence**  
+   Auth “Tests/Post-response” must save the token where subsequent requests read it.  
+   If the **environment** defines `bearerToken` (or similar) — even empty — Postman **prefers env over collection**.  
+   → Save with **`pm.environment.set(...)`** (and optionally also `pm.collectionVariables.set`).  
+   → Same for any ID captured from a seed request (`originalLitleTxnId`, etc.).
+
+2. **Variable name match**  
+   Header/body `{{bearerToken}}` must match the key set by the script and present in the env. No typos / alternate names (`Payment-Bearer-Token` vs `bearerToken`) unless every request uses the same one.
+
+3. **Hosts are real STAGE hosts**  
+   Do not invent `stage-app-*` twins of DEV. Prefer known STAGE patterns (`stage-wf-*-api.azurewebsites.net`) and **DNS/HTTP smoke** when unsure (e.g. endpoint returns 401 without token = alive).
+
+4. **Env selected + values prefilled**  
+   Env name clear (`PAY-XXXX … STAGE`). Required vars filled (base URL, client, secret, scope, subMerchant). Empty only when truly unknown — and call that out as the single gap.
+
+5. **Auth request is runnable**  
+   Prefer hardcoded STAGE identity URL + client/secret/scope on the token request (like existing QA collections), not unresolved `{{placeholders}}`.
+
+6. **Folder B / parked requests**  
+   Mark clearly; do not leave them looking like the next happy-path step.
+
+Lesson learned (PAY-4032): token 200 OK but redeposit showed red `{{bearerToken}}` because script only set collection vars while env had empty `bearerToken`.

@@ -5,7 +5,9 @@ alwaysApply: true
 
 # Wellfit QA — Jira STAGE completion comment (short format)
 
-When the user asks for a **Jira comment** after **STAGE QA is done**, use this **short English** block. Do **not** include QA engineer name unless they ask.
+When **STAGE QA is done** (or Chris asks for the Jira comment), give this **short English** block **ready to copy/paste into Jira**. Do it at ticket close together with the chat verdict — do **not** wait for him to ask again. Do **not** include QA engineer name unless they ask.
+
+The Jira comment **is** a fenced copy block. The internal QA verdict in chat is **not** (see `wellfit-qa-ticket-verdict.mdc`).
 
 ## Template
 

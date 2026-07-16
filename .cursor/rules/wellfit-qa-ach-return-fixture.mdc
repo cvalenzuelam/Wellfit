@@ -1,0 +1,49 @@
+---
+description: ACH return Stage QA fixture — inject-ach-return.sql match contract, params, trigger
+alwaysApply: true
+---
+
+# Wellfit QA — ACH return fixture (`inject-ach-return.sql`)
+
+Canonical script: `tickets/PAY-4047/scripts/inject-ach-return.sql` (bmad #2929).  
+DB: **Platform** → `[Payments].[ReturnedPayments]` + live `[Payments].[Payments]`.  
+Columns verified STAGE 2026-07-16 in `docs/guides/stage-sql-schema-verified.md`.  
+Docs: `tickets/PAY-4047/ACH-Return-Fixture-README.md`.
+
+## What it does
+
+Inserts a **pending** return (`ProcessingStatus = 0`) anchored to an **existing** live ACH `'000'` payment. **No charge is created.**
+
+## Match contract (handler)
+
+- Handler reads `ReturnedPayments` where `TimeStamp >= (event.ProcessedAt - 5 min)` and pending (`ProcessingStatus` NULL or `0`).
+- Charge match: `ReturnedPayments.ProcessorTransactionId` = `Payments.TransactionId` **and** `ResponseCode = '000'`.
+- `ProcessorTransactionId` is **nvarchar(20)** → anchor `TransactionId` must be `LEN <= 20` or match fails silently.
+
+## Anchor eligibility
+
+- `ResponseCode = '000'`
+- Has `[Payments].[AchPaymentDetails]`
+- `LEN(TransactionId) <= 20`
+- No existing `ReturnedPayments` for that `OriginalPaymentId`
+
+## Parameters
+
+| Param | Default | Notes |
+|-------|---------|--------|
+| `@Commit` | `0` | `0` = dry-run + ROLLBACK; `1` = COMMIT |
+| `@PaymentId` | `NULL` | `NULL` = most-recent eligible; else explicit GUID |
+| `@ReasonCode` | `R01` | NACHA R-code (R01 NSF, R02 closed, R10 unauthorized, …) |
+| `@Amount` | `NULL` | `NULL` = full anchor amount; else partial override |
+
+## Stage run order
+
+1. Run script on **Platform** (`@Commit=0` preview → `@Commit=1`).
+2. Within **5 min**, trigger ingest (STAGE: POST `stage-wf-payments-func` **FileProcessedEvent** → publishes `Payment.ReturnReport.Ingested`).
+3. Assert `ProcessingStatus` → `1` (Processed) or `3` (NeedsReview).
+
+## Caveats
+
+- Rollback only helps **before** the event is processed; downstream status/redeposit/events do not unwind.
+- Platform & Payments are separate Azure SQL DBs — this fixture is **Platform-only**.
+- Reuse for ACH-return / AchReturns tickets (PAY-4047, PAY-3811 hard returns, etc.); pick `@ReasonCode` per AC (e.g. R02 for hard-return deactivation).

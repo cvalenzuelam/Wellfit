@@ -1,0 +1,80 @@
+---
+description: Wellfit QA — Azure portal navigation for STAGE App Services (Worldpay Wrapper, Insights, config)
+alwaysApply: true
+---
+
+# Wellfit QA — Azure App Service menu map (STAGE)
+
+Chris has Azure portal access. When guiding him, **name the exact left-nav item** from the App Service blade — do not invent alternate paths.
+
+## Target apps (STAGE)
+
+| App | Typical use |
+|-----|-------------|
+| `stage-wf-worldpay-wrapper-api` | PAY-4032 Part A eCheck/redeposit, Vantiv Pre-Live |
+| `stage-wf-payment-management-api` | PM flags (e.g. AchRetry), PM API |
+| `stage-wf-identity-api` | Identity token host |
+
+Resource group is often under **stage-platform-api** (confirm in Overview).
+
+## Left-nav map (App Service blade)
+
+Chris sees sections like this (names may vary slightly by portal version):
+
+### Settings (config / secrets)
+
+| Click | What for |
+|-------|----------|
+| **Environment variables** | App settings + connection strings (preferred for `processor__vantiv__*`, feature flags) |
+| **Configuration** | Older/alternate blade for same app settings — use if Environment variables missing |
+| **Identity** | Managed identity |
+| **Authentication** | Easy Auth (usually N/A for these APIs) |
+
+**Do not ask Chris to change Key Vault–backed secrets** unless he owns that change. Prefer Show value / read-only.
+
+### Monitoring (logs)
+
+| Click | What for |
+|-------|----------|
+| **Application Insights** | Opens App Insights link for this app — **first stop for request/txn investigation** |
+| **Logs** | App Service / diagnostic log queries (secondary) |
+| **Log stream** | Live stdout (noisy; only for live Send debugging) |
+| **App Service logs** | Enable filesystem/blob logging |
+| **Metrics** / **Alerts** | Perf / alert rules — not first for functional 330 |
+
+### After clicking Application Insights
+
+Linked resource for STAGE wrapper: **`stage-insights`** (RG `stage-platform-core`). Overview charts = correct place.
+
+Inside **`stage-insights`** left nav:
+
+| Click | Use |
+|-------|-----|
+| **Investigate → Failures** | HTTP 5xx / exceptions (may miss business declines that return HTTP 200) |
+| **Investigate → Performance** | Slow ops |
+| **Monitoring → Logs** | **Best for searching a `transactionId` or `330`** (Kusto) |
+| **Transaction search** | If present under Investigate — paste txn id in search box |
+
+For PAY-4032 eCheck `330` (HTTP 200 Declined), prefer **Logs** over Failures.
+
+### Not for this investigation
+
+Deployment Center, Scale, SSH, API Management, Certificates, Networking — skip unless the issue is deploy/hosting.
+
+## STAGE Worldpay Wrapper settings Chris already verified
+
+App: `stage-wf-worldpay-wrapper-api` → **Environment variables**
+
+| Key | Known STAGE value / note |
+|-----|--------------------------|
+| `wellfit__featureFlags__WorldpayWrapper__ECheckEnabled` | `true` |
+| `processor__vantiv__merchantId` | `01264096` (= Postman `accountId`) |
+| `processor__vantiv__masterSubMerchantId` | `01291508` (not Postman `subMerchantId`) |
+| `processor__vantiv__url` | `https://payments.vantivprelive.com/vap/communicator/online` (Pre-Live — correct) |
+| `processor__vantiv__username` / `password` | Key Vault — confirm present; do not paste in chat |
+
+## Guidance style
+
+- One Azure click at a time when walking Chris.
+- Quote menu labels **exactly** as in this map (`Application Insights` under **Monitoring**, not “go to logs somewhere”).
+- If portal UI differs, ask what he sees under **Monitoring** and match to the closest row above.

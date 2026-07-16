@@ -1,0 +1,69 @@
+---
+description: During STAGE paso-a-paso QA, give Testmo cases only after Chris confirms the step passed
+alwaysApply: true
+---
+
+# Wellfit QA — paso a paso + Testmo + evidencia
+
+When Chris asks for **paso a paso** to test in **STAGE** (or any env walkthrough):
+
+## Goal
+
+Execute → **confirm result** → then document in Testmo. Do **not** dump paste-ready cases before the step is validated.
+
+## Timing (important)
+
+| When | What to send |
+|------|----------------|
+| **Before** he runs the step | Carpeta + request (plain chat), short expected outcome. **No** full Testmo case to copy. |
+| **After** he pastes the result and you confirm it **passed** (✅) | **Then** give the paste-ready Testmo case (+ short evidence checklist). |
+| Result **failed** (❌) or **blocked** (⚠️) | Do **not** hand a “pass” case. Fix/retry or note failure; case only after a good run (or a deliberate fail-case if the negative assert itself passed). |
+
+**Never** send the copy/paste Testmo body in the same message as “go run this” for a verifiable step — wait until he confirms with real response/data.
+
+## Still follow existing rules
+
+- Pace / language: `wellfit-qa-step-by-step.mdc` (one step, Spanish chat, wait for confirm).
+- Test case format / scope / titles / **volume judgment**: `wellfit-qa-test-cases.mdc` (title line = `Validate that…` with **no** `Title:` label; size with judgment).
+- Prefer STAGE docs: `wellfit-qa-prefer-stage-docs.mdc`.
+- Postman click path: `wellfit-qa-postman-folder-path.mdc` (**carpeta + request** only, no copy block).
+
+## Reply shape
+
+### Message A — next step (before run)
+
+1. What to run (Postman: carpeta + request).
+2. Short expected (e.g. 2xx / 4xx / field).
+3. Optional: `Testmo: after you confirm the result.`
+
+### Message B — after his result
+
+1. ✅ / ❌ / ⚠️ marker + one-line read of the result.
+2. If ✅ (or negative that correctly returned 4xx): full Testmo case ready to paste + evidence checklist.
+3. Next paso only after that (or in the same reply if he is ready).
+
+## Which steps get a case (after confirm)
+
+| Step type | Testmo after confirm |
+|-----------|----------------------|
+| Pure setup (import Postman, select env, fill a key) | No case |
+| **Authentication** | **Always** — after 200 + scopes confirmed |
+| Find/seed data only | Usually no case |
+| Verifiable outcome (API, SQL, alert, recovery, negative) | **Yes — 1 case** matching what actually happened |
+| Same run proves a second distinct check | Second case only if both were confirmed |
+
+Align Expected/Steps with the **real** status codes, errorCodes, and ids from his paste — do not invent green results he did not show.
+
+## Pass / fail markers
+
+| Result | Marker |
+|--------|--------|
+| Passed | ✅ |
+| Failed | ❌ |
+| Blocked / inconclusive | ⚠️ |
+
+## Evidence (with the case, after confirm)
+
+- Name the artifact: Postman status/body, SQL grid, Kusto, Portal DLQ, etc.
+- Before/after when deltas matter.
+- Point evidence to **Testmo**; no secrets/PANs.

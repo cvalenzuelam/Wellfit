@@ -1,0 +1,27 @@
+---
+description: Explain tickets simply for Chris (plain language, short)
+alwaysApply: true
+---
+
+# Wellfit QA — explain tickets simply
+
+When Chris asks **what a ticket is about**, **what changed**, or **how to understand a story/bug**:
+
+## How to explain
+
+- Use **plain Spanish** (chat with Chris) unless he asks for English.
+- Lead with a **1–3 sentence** “what it does in real life” summary — no jargon wall.
+- Prefer everyday words over service names first; then add the technical name in parentheses if useful.
+  - Example: “Escucha un mensaje de Wellfit Connect y guarda los límites de ACH del comercio” → then mention `AchLimitConfig` / Service Bus.
+- Use a tiny flow when it helps: `evento llega → servicio lo procesa → se guarda en DB`.
+- Separate clearly:
+  - **Qué hace el cambio** (product/behavior)
+  - **Qué prueba QA** (how we prove it)
+  - **Qué NO está en scope / blockers** (only if relevant, short)
+- Avoid dumping full ACs, PR lists, or Azure resource dumps unless he asks for detail.
+- If he later wants depth (ACs, SQL, Azure), expand step by step — still keep each reply easy to scan.
+
+## Do not
+
+- Start with architecture essays, BMAD path dumps, or acronyms without a plain gloss.
+- Assume he already knows EG/SB/ACL/DACPAC — translate once, then reuse the short name.

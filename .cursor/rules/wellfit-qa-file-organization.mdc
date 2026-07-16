@@ -1,0 +1,42 @@
+---
+description: Organize new/shared files into the correct Wellfit QA folders
+alwaysApply: true
+---
+
+# Wellfit QA — organize incoming files
+
+When Chris **drops, attaches, shares, or asks you to read** new files (zip, PDF, Postman JSON, screenshots, SQL, runbooks, Jira exports, etc.):
+
+## Do this every time
+
+1. **Read / inspect** the file to know what it is and which ticket it belongs to (e.g. `PAY-XXXX` in the name or content).
+2. **Move (or place) it** into the correct folder below — do **not** leave ticket/QA artifacts sitting in the repo root.
+3. **Create** `tickets/PAY-XXXX/` (or subfolders) if missing.
+4. Tell Chris in chat **where** each file ended up (short path list).
+
+## Destination map
+
+| Kind of file | Put it here |
+|---|---|
+| Ticket runbook, QA guide, Jira XML/PDF, research PDF, ticket-specific notes | `tickets/PAY-XXXX/` |
+| Ticket-only Postman collection/env (optional copy next to runbook) | Prefer also under `tickets/PAY-XXXX/` **and/or** canonical `postman/` (see below) |
+| Postman **collection** (`.postman_collection.json`) | `postman/collections/` |
+| Postman **environment** (`.postman_environment.json`) | `postman/environments/` |
+| Shared SQL / ACH inject / Event Grid scripts (reusable) | `scripts/` (or `scripts/ach-returns/` when ACH returns toolkit) |
+| Ticket-specific SQL/scripts | `tickets/PAY-XXXX/scripts/` |
+| Cross-cutting guides / reference PDFs | `docs/guides/` |
+| Archives, Testmo exports, bulky dumps | `docs/archives/` |
+| Screenshots / UI evidence | `assets/screenshots/PAY-XXXX/` (create ticket subfolder) |
+| Cursor rules | `.cursor/rules/` |
+
+## Rules of thumb
+
+- **Ticket id wins:** if the file is for a ticket, primary home is `tickets/PAY-XXXX/`. Shared Postman that QA will re-import often also lives under `postman/`.
+- **Do not** leave zips, PDFs, or Postman JSON at the workspace root after organizing.
+- **Zips:** extract only if Chris needs the contents for QA; then place extracted files by type; keep or move the zip under `docs/archives/` or the ticket folder if he wants to keep it.
+- **Duplicates:** if the same Postman file exists in both `tickets/PAY-XXXX/` and `postman/`, that is OK when useful; prefer one canonical copy in `postman/` plus a ticket copy only if the runbook depends on it.
+- **Ask only when ambiguous** (no ticket id and unclear type). Otherwise organize without waiting.
+
+## Example
+
+Chris drops `PAY-4032-test-runbook.md` + `PAY-4032-ach-redeposit.postman_collection.json` at root → move to `tickets/PAY-4032/` and also place/copy the collection under `postman/collections/`.

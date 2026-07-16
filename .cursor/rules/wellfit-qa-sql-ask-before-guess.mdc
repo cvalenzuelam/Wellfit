@@ -1,0 +1,42 @@
+---
+description: Wellfit QA — never invent SQL tables/columns; ask Chris for schema first, then update verified schema docs
+alwaysApply: true
+---
+
+# Wellfit QA — SQL: ask schema before guessing
+
+Broader rule (endpoints, hosts, scopes too): `wellfit-qa-ask-chris-before-guess.mdc`.
+
+When writing or fixing **STAGE/Preprod SQL** and you are **not sure** of the database, schema, table, or column names:
+
+## Do
+
+1. **Ask Chris** for structure first — do **not** invent tables/columns or ship a guess query as the main step.
+2. Give a short **discovery** query (`DB_NAME()`, `sys.tables`, `sys.columns`) scoped to what you need.
+3. When Chris pastes results (**tables, columns, lookup rows, scopes, hosts**), **update immediately**:
+   - `docs/guides/stage-sql-schema-verified.md` (source of truth)
+   - `.cursor/rules/wellfit-qa-stage-sql-databases.mdc` (QA quick map)
+   - related guides/rules if needed (e.g. `stage-identity-client-scopes.md`)
+4. Only then write the real ticket script / Postman data SQL.
+5. Treat his pastes as **canonical STAGE truth** over old runbooks or memory.
+
+## Do not
+
+- Assume Platform vs Payments vs master from memory alone — confirm `DB_NAME()`.
+- Copy table/column names from old DEV runbooks or Claude dumps without STAGE verify.
+- Use `SELECT *` / invented filters as a substitute for knowing the schema when Msg 208 / wrong columns are likely.
+- Put **`USE [db];` / `GO`** in QA scripts Chris runs in **Azure Data Studio** — ADS often fails to load/run those batches. Instead: comment “select DB **Payments** (or Platform) in the dropdown” and ship a single `SELECT` batch.
+
+## Already verified (use these; still ask if extending)
+
+All dumps below are **STAGE** (`stage-platform-wellfit-sqlserver…`). Re-verify if the ticket targets Preprod/Prod.
+
+- **Platform** `Payments.*` table list — see schema-verified doc (2026-07-16).
+- **Payments DB** schemas/tables + `PaymentTransaction` / `PaymentMethodACH` / lookups / `OriginType` — same doc.
+- **TokenVault** `BankAccountTokens` + `BankAccountTokenLog` columns — same doc.
+- Platform `[Payments].[Payments]` columns — `wellfit-qa-payments-sql.mdc`.
+- STAGE Identity client→scopes — `docs/guides/stage-identity-client-scopes.md`.
+
+## Goal
+
+Grow a reliable STAGE schema map over time so SQL scripts and Postman seed steps stop failing on invented names.

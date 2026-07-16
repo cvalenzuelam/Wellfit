@@ -1,0 +1,412 @@
+{
+  "info": {
+    "name": "PAY-4033 — WFC ACH Information Subscriber (E2E injection + verify)",
+    "description": "Injects WellfitConnect.AchInformation.* events onto the Payments side and verifies the submerchant-microservice consumer upserts Payments.AchLimitConfig.\n\nMethod A (folder 1): direct Service Bus send to the 'accounts' topic (recommended; does not depend on the missing WFC->Payments bridge).\nMethod B (folder 2): publish to the Payments 'accounts' Event Grid domain (full EG->SB->consumer path).\nFolder 3: verification helpers (REST read-back, DLQ peek).\n\nDEPLOY BLOCKER: WFC publishes to its own {env}-wellfitconnect EG domain, NOT the Payments accounts topic. The real WFC->consumer path is not wired, so you must inject. See E2E_RUNBOOK.md.\n\nThe collection-level pre-request script mints a Service Bus SAS token from sbSharedAccessKeyName + sbSharedAccessKey. Select the PAY-4033 DEV or STAGE environment before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Mint a Service Bus SAS token for the 'accounts' topic (used by Method A + DLQ peek).",
+          "// Requires sbNamespace, sbSharedAccessKeyName, sbSharedAccessKey in the active environment.",
+          "const CryptoJS = require('crypto-js');",
+          "const ns = pm.environment.get('sbNamespace');",
+          "const topic = pm.environment.get('sbTopic') || 'accounts';",
+          "const keyName = pm.environment.get('sbSharedAccessKeyName');",
+          "const key = pm.environment.get('sbSharedAccessKey');",
+          "if (ns && keyName && key) {",
+          "  const uri = encodeURIComponent('https://' + ns + '.servicebus.windows.net/' + topic);",
+          "  const expiry = Math.floor(Date.now() / 1000) + 3600;",
+          "  const sig = encodeURIComponent(CryptoJS.HmacSHA256(uri + '\\n' + expiry, key).toString(CryptoJS.enc.Base64));",
+          "  const token = 'SharedAccessSignature sr=' + uri + '&sig=' + sig + '&se=' + expiry + '&skn=' + keyName;",
+          "  pm.environment.set('sbSasToken', token);",
+          "} else {",
+          "  console.log('SB SAS not minted — set sbNamespace, sbSharedAccessKeyName, sbSharedAccessKey to use Method A / DLQ peek.');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "sbTopic",
+      "value": "accounts",
+      "type": "string"
+    },
+    {
+      "key": "eventTypeCreated",
+      "value": "WellfitConnect.AchInformation.Created",
+      "type": "string"
+    },
+    {
+      "key": "eventTypeUpdated",
+      "value": "WellfitConnect.AchInformation.Updated",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Auth",
+      "item": [
+        {
+          "name": "0.1 Get bearer token (client_credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('token issued', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.access_token).to.be.a('string');",
+                  "  pm.environment.set('access_token', json.access_token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials" },
+                { "key": "client_id", "value": "{{clientId}}" },
+                { "key": "client_secret", "value": "{{clientSecret}}" },
+                { "key": "scope", "value": "{{scope}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{identityTokenUrl}}",
+              "host": ["{{identityTokenUrl}}"]
+            },
+            "description": "OAuth2 client-credentials token for the SubMerchant API read-back (folder 3.1). Confirm the SubMerchant API scope/client for the target env before use."
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Inject via Service Bus (recommended)",
+      "description": "Direct send to the 'accounts' SB topic via the Service Bus REST API. BrokerProperties.Label = event type so it matches the submerchant-api subscription filter (sys.Label LIKE 'WellfitConnect.AchInformation.%'). Expect HTTP 201 (accepted onto the topic) — the consumer result is confirmed in folder 3 / SQL.",
+      "item": [
+        {
+          "name": "1.1 Created (happy path)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted onto accounts topic (201)', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "console.log('Injected .Created for SubMerchantId=' + pm.environment.get('subMerchantId') + ' — now verify via SQL / folder 3.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4033\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 2,\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "1.2 Updated (same SubMerchantId, new limits)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Injected .Updated — expect UpdateLimits path; verify limits changed to 750/3000.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Updated\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4033\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Updated\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 1,\n    \"ECheckTransactionLimit\": 750.00,\n    \"ECheckDailyTransactionLimit\": 3000.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "1.3 Poison — malformed SubMerchantId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Expect ACL InvalidWfcAchInformationException -> Reject -> DLQ. No row written. Check folder 3.3 / DLQ count.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4033\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"not-a-guid\",\n    \"ECheckRetryAttempts\": 2,\n    \"ECheckTransactionLimit\": 500.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "1.4 Poison — missing limit values",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Null limits -> ACL InvalidWfcAchInformationException -> Reject -> DLQ. No row.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4033\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 2,\n    \"ECheckTransactionLimit\": null,\n    \"ECheckDailyTransactionLimit\": null\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "1.5 Poison — negative limit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Negative limit -> ACL rejects (MN-1 fix) -> Reject -> DLQ. No row.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.AchInformation.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4033\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.AchInformation.Created\",\n  \"subject\": \"AchInformation\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\",\n    \"ECheckRetryAttempts\": 2,\n    \"ECheckTransactionLimit\": -1.00,\n    \"ECheckDailyTransactionLimit\": 2500.00\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            }
+          }
+        },
+        {
+          "name": "1.6 Non-target event type (filter negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('message accepted (201)', function () { pm.response.to.have.status(201); });",
+                  "console.log('Label does NOT match WellfitConnect.AchInformation.% -> should not be delivered to submerchant-api. No row, no DLQ on this sub.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"WellfitConnect.SomethingElse.Created\"}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"source\": \"runbook/pay-4033\",\n  \"specversion\": \"1.0\",\n  \"type\": \"WellfitConnect.SomethingElse.Created\",\n  \"subject\": \"SomethingElse\",\n  \"time\": \"{{$isoTimestamp}}\",\n  \"data\": {\n    \"SubMerchantId\": \"{{subMerchantId}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/messages",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "messages"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Inject via Event Grid Domain (full path)",
+      "description": "Publish to the Payments 'accounts' Event Grid domain; the existing accounts EG->SB forwarder delivers to the SB topic with Subject<-type mapping. Closest proxy to the future WFC->Payments bridge. Confirm the exact domain endpoint host and domain-topic addressing (first-run calibration, RUNBOOK §6/§9).",
+      "item": [
+        {
+          "name": "2.1 Created (happy path)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('event accepted by Event Grid (200)', function () { pm.response.to.have.status(200); });",
+                  "console.log('Published to accounts EG domain — verify via SQL / folder 3.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/cloudevents-batch+json" },
+              { "key": "aeg-sas-key", "value": "{{egDomainKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"id\": \"{{$guid}}\",\n    \"source\": \"accounts\",\n    \"specversion\": \"1.0\",\n    \"type\": \"WellfitConnect.AchInformation.Created\",\n    \"subject\": \"AchInformation\",\n    \"time\": \"{{$isoTimestamp}}\",\n    \"data\": {\n      \"SubMerchantId\": \"{{subMerchantId}}\",\n      \"ECheckRetryAttempts\": 2,\n      \"ECheckTransactionLimit\": 500.00,\n      \"ECheckDailyTransactionLimit\": 2500.00\n    }\n  }\n]"
+            },
+            "url": {
+              "raw": "https://{{egDomainEndpoint}}/api/events",
+              "protocol": "https",
+              "host": ["{{egDomainEndpoint}}"],
+              "path": ["api", "events"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Verify",
+      "item": [
+        {
+          "name": "3.1 GET SubMerchant by id (auth + exists smoke)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Auth smoke: any non-401/403 means the token was accepted. 404 is expected for a synthetic id.",
+                  "pm.test('auth accepted (not 401/403)', function () {",
+                  "  pm.expect([401, 403]).to.not.include(pm.response.code);",
+                  "});",
+                  "console.log('SubMerchant-by-id status ' + pm.response.code + ' (200=found, body has achLimits.perTransactionLimit/dailyLimit; 204=unknown id but auth OK).');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{submerchantApiBaseUrl}}/api/submerchants/{{subMerchantId}}",
+              "host": ["{{submerchantApiBaseUrl}}"],
+              "path": ["api", "submerchants", "{{subMerchantId}}"]
+            },
+            "description": "Read back the submerchant (requires WellfitSubMerchantAPI.Read — the clientId/scope defaults). The 200 response embeds the ACH limits: achLimits.perTransactionLimit / achLimits.dailyLimit (verified 2026-07-14). An unknown/synthetic subMerchantId returns 204 No Content (GetById returns null) — that still proves auth works; use a REAL submerchant id for a 200 with the limits. (ach-limits itself has no dedicated GET; it is PUT-only, policy ach-limits-admin.)"
+          }
+        },
+        {
+          "name": "3.2 Peek DLQ (submerchant-api dead-letter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 200 => a dead-lettered message was peeked (expected after poison scenarios S4-S6).",
+                  "// 204 => DLQ empty (expected after happy-path scenarios).",
+                  "pm.test('peek returned 200 (message present) or 204 (empty)', function () {",
+                  "  pm.expect([200, 204]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "  console.log('DLQ message body: ' + pm.response.text());",
+                  "  console.log('BrokerProperties: ' + pm.response.headers.get('BrokerProperties'));",
+                  "} else {",
+                  "  console.log('DLQ empty.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{sbSasToken}}" }
+            ],
+            "url": {
+              "raw": "https://{{sbNamespace}}.servicebus.windows.net/{{sbTopic}}/subscriptions/submerchant-api/$deadletterqueue/messages/head",
+              "protocol": "https",
+              "host": ["{{sbNamespace}}", "servicebus", "windows", "net"],
+              "path": ["{{sbTopic}}", "subscriptions", "submerchant-api", "$deadletterqueue", "messages", "head"]
+            },
+            "description": "Peek-lock the head of the submerchant-api DLQ via SB REST. Peek does not remove the message; to purge after poison tests, receive-and-delete or use the Portal SB explorer."
+          }
+        }
+      ]
+    }
+  ]
+}

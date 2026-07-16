@@ -10,6 +10,8 @@ alwaysApply: true
 - **Name:** Chris (Christopher Ariel Valenzuela Medina)
 - **Work email (alert inbox for STAGE QA):** `cvalenzuela@arkusnexus.com`
 - When staging Treasury settlement alert recipients in Azure, use this address unless Chris specifies another.
+- **Azure access:** Chris **has Azure portal access**. When QA is blocked by missing STAGE config (hosts, `accountId`, feature flags, App Settings, connection strings, Key Vault refs, etc.), **do not stop at “ask Brett only”** — guide him to look it up in Azure (App Service → Configuration / Identity / Logs). Prefer concrete portal path + what key to search for.
+- **SQL access:** Chris **has database access to STAGE and Preprod** (`stage-platform-wellfit-sqlserver.database.windows.net` and the Preprod SQL server the team uses). When blocked on merchant/subMerchant, ACH anchors, tokens, returns, etc., give him **ready-to-run SQL** (Platform / Payments / TokenVault as needed) — do not assume he must wait on a DBA.
 
 ## Pace
 
@@ -17,6 +19,8 @@ alwaysApply: true
 - **Do not** dump full test plans, all ACs, or recovery steps upfront.
 - Wait for confirmation before the next step.
 - **Spanish** with Chris for step-by-step walkthrough (simple words).
+- **Testmo + evidencia en el mismo ritmo:** when Chris is walking STAGE paso a paso, follow `wellfit-qa-step-by-step-testmo.mdc` — attach a Testmo-ready case + evidence checklist on verifiable steps (not only at the end).
+- **Pass/fail emoji:** when he pastes a result, start with ✅ / ❌ / ⚠️ (see that Testmo rule).
 
 ## Team language (US)
 

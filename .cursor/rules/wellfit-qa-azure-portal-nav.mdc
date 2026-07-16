@@ -1,0 +1,59 @@
+---
+description: Wellfit QA — Azure portal navigation for STAGE App Services (exact menu paths)
+alwaysApply: true
+---
+
+# Wellfit QA — Azure portal paths (STAGE)
+
+Chris has Azure access. When guiding him, **name the exact left-nav item** from the App Service blade — do not invent alternate labels.
+
+## Worldpay Wrapper STAGE
+
+**App:** `stage-wf-worldpay-wrapper-api` (Web App)
+
+### Left nav (as seen in portal)
+
+| Section | Items Chris sees |
+|---------|------------------|
+| Top | Overview, Activity log, Access control (IAM), Tags, Diagnose and solve problems, Microsoft Defender for Cloud, Events, AI, Resource visualizer |
+| **Deployment** | Deployment slots, Deployment Center |
+| **Settings** | **Environment variables**, Configuration, Instances, Authentication, Identity, Backups, Custom domains, Certificates, Networking, WebJobs, Service Connector, Locks |
+| Performance | Load Testing |
+| App Service plan | App Service plan, Scale up, Scale out |
+| Development Tools | SSH, Advanced Tools, Recommended services |
+| API | API Management, API definition, CORS |
+| **Monitoring** | Alerts, Metrics, **Logs**, Health check, **Application Insights**, Diagnostic settings, App Service logs, Log stream, Dashboards with Grafana |
+| Automation | Tasks, Export template |
+| Support | Resource health, Advisor recommendations |
+
+### Where to look for what
+
+| Need | Exact click path |
+|------|------------------|
+| App settings / flags / processor URL | **Settings → Environment variables** (not “Configuration” first — Chris’s UI lists Environment variables separately) |
+| Feature flag eCheck | Env var `wellfit__featureFlags__WorldpayWrapper__ECheckEnabled` |
+| Vantiv Pre-Live URL | Env var `processor__vantiv__url` → expected `https://payments.vantivprelive.com/vap/communicator/online` |
+| Merchant id (Postman `accountId`) | Env var `processor__vantiv__merchantId` → `01264096` |
+| Master submerchant (Azure only; **not** Postman subMerchantId) | `processor__vantiv__masterSubMerchantId` → `01291508` |
+| Live request logs | **Monitoring → Application Insights** → then open the Insights resource (“View Application Insights data” if shown) → Transaction search / Logs |
+| Raw app logs stream | **Monitoring → Log stream** or **App Service logs** |
+| Kusto / workspace queries on the app | **Monitoring → Logs** (App Service Logs blade — different from Application Insights until linked) |
+
+### How to phrase directions to Chris
+
+1. Open app **`stage-wf-worldpay-wrapper-api`**
+2. Left menu → **Monitoring** → **Application Insights**
+3. If prompted, open the linked Insights resource
+4. Search for a known `transactionId` from Postman (e.g. last eCheck sale id) or `330` / `Invalid Payment Type`
+
+For settings: **Settings → Environment variables** → filter/search by name → **Show value** (do not ask him to change Key Vault secrets).
+
+## Other STAGE apps (known)
+
+| App | Typical use |
+|-----|-------------|
+| `stage-wf-identity-api` | Token `client_credentials` |
+| `stage-wf-payment-management-api` | PM API / flags e.g. `PaymentManagement:AchRetry:Enabled` |
+| `stage-wf-worldpay-wrapper-api` | eCheck sale/redeposit Part A |
+
+If the portal UI differs, ask Chris which **exact** left-nav labels he sees under Monitoring/Settings before inventing a path.

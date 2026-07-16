@@ -5,7 +5,17 @@ alwaysApply: true
 
 # Wellfit QA — STAGE SQL databases & key tables
 
-**Server:** `stage-platform-wellfit-sqlserver.database.windows.net`
+**Chris has SQL access to STAGE and Preprod** — prefer giving him runnable queries when blocked (subMerchant ACH capability, payment anchors, tokens, returns). Do not gate on DBA unless permissions fail.
+
+**Server (STAGE):** `stage-platform-wellfit-sqlserver.database.windows.net`  
+**Preprod:** use the team’s Preprod SQL server when the ticket targets Preprod (same table patterns unless noted).
+
+**Verified schema dump (source of truth for table existence) — STAGE only:**  
+`docs/guides/stage-sql-schema-verified.md` — update that file when Chris pastes `sys.tables` / `sys.columns` results. Do **not** invent tables/columns missing from that dump. Do **not** treat STAGE schema as Preprod/Prod without re-check.
+
+**If unsure:** follow `wellfit-qa-sql-ask-before-guess.mdc` — ask Chris for structure first; do not guess queries.
+
+**Azure Data Studio:** do **not** use `USE …` / `GO` in scripts for Chris — ADS often won’t load/run them. Tell him to pick the DB in the dropdown; keep scripts as one plain `SELECT` batch.
 
 ## Databases on this server
 
@@ -17,14 +27,26 @@ alwaysApply: true
 | **Orchestrator** | Fallback if Account Updater schema missing on Payments |
 | AchReAuth, AIDatabase, analytics, Comm, Logs, PaymentArrangements, platform-dialexa, PracticeManagement, Wallet, WellfitArchives, wellfitbillpay, WellfitFeatureFlags, WellfitLegalLanguage, wellfitpay, Wellfitreporting, WellfitServices, WellfitSystemSettings | Other product DBs |
 
+## Critical: wrong DB = Msg 208
+
+- **`[Transactions].[PaymentTransaction]` does NOT exist on Platform.** It lives on the **Payments** database (same server, different DB dropdown).
+- Before writing PM/SQL for refunds/redeposits: confirm `SELECT DB_NAME();` → `Payments` (or the DB that actually has the table).
+- Prefer **verified** column lists (below / ticket scripts). Do not invent columns; if unsure, give Chris a `sys.columns` discovery query first.
+
 ## Platform — tables QA uses most
+
+Verified STAGE list (Chris schema dump 2026-07-16) includes under **`Payments`** schema:  
+`Payments`, `AchPaymentDetails`, `ReturnedPayments`, `Refunds`, `Voids`, `BankAccounts`, `Tokenizations`, `FundingBatches`, `FundingInstructions`, `PaymentRequests`, `AchLimitConfig`, `AchLimitConfigAuditLog`, `SubMerchants`, `SubMerchantAccounts`, `RefundsSettlements`, `PaymentsSettlements`, plus chargeback/disbursement/device tables.  
+Also: `[Financing].[RecurringPaymentTransactionalTable]`.  
+**No** `[Transactions].*` on Platform.
 
 | Schema.Table | Use |
 |--------------|-----|
 | `[Payments].[Payments]` | Charge rows (`Id`, `TransactionId`, `Token` NULL on ACH, `ResponseCode`) |
-| `[Payments].[AchPaymentDetails]` | ACH detail / join for anchors |
-| `[Payments].[ReturnedPayments]` | Return fixture + `ProcessingStatus` |
-| `[Payments].[Refunds]`, `[Payments].[Voids]` | Refund/void asserts |
+| `[Payments].[AchPaymentDetails]` | ACH detail — cols: `Id`, `PaymentId`→`Payments.Id`, `AccountType`, `SecCode`, `EntityCreated`/`EntityUpdated` |
+| `[Payments].[ReturnedPayments]` | ACH returns — `Id`, `TimeStamp`, `Amount`, `ReasonCode`, `OriginalPaymentId`, `ProcessorTransactionId`, `ProcessingStatus`, redeposit fields (full list in schema-verified) |
+| `[Payments].[Refunds]` | Platform refunds — `Id`, `TimeStamp`, `OriginalPaymentId`, `Amount`, `OrderId`, `TransactionId`, `ResponseCode`/`Message`, `Voided`, `PayFacFee`, … |
+| `[Payments].[Voids]` | Voids — `Id`, `TimeStamp`, `OriginalPaymentId`, `OrderId`, `TransactionId`, `ResponseCode`/`Message`, `Metadata` (no Amount) |
 | `[Payments].[BankAccounts]`, `[Payments].[Tokenizations]` | Bank / tokenization refs on Platform |
 | `[Payments].[FundingBatches]`, `[Payments].[FundingInstructions]` | Treasury / funding |
 | `[OnBoarding].*`, `[MerchantProvisioning].*` | Merchant onboarding |
@@ -32,24 +54,37 @@ alwaysApply: true
 
 ## Payments DB — tables QA uses most
 
+**Separate database named `Payments`** on the same STAGE server (verified table list 2026-07-16 in `docs/guides/stage-sql-schema-verified.md`). PM API txn ids (ULID `01K…`) are here — not Platform / not master.
+
+Schemas present: `AccountUpdater`, `Fees`, `Payments`, `Returns`, `Transactions`.
+
 | Schema.Table | Use |
 |--------------|-----|
-| `[AccountUpdater].[ReturnDeactivations]` | PAY-3811 / PAY-3790 — hard-return deactivation rows |
+| `[AccountUpdater].[ReturnDeactivations]` | Hard-return deactivation — `WellfitTokenId`, `OriginalPaymentId`, `ProcessorTransactionId`, `ReturnCode`, `Status`, resolve fields (Payments DB only; full cols in schema-verified) |
 | `[AccountUpdater].[AchNOCs]` | NOC claim/ingest |
 | `[AccountUpdater].[UnmatchedAchNOCs]` | Unmatched NOCs |
 | `[AccountUpdater].[TokenMigrationFiles]`, `[TokenMigrationRecords]` | Token migration |
-| `[Transactions].[PaymentTransaction]` | PM payment txn |
-| `[Transactions].[PaymentMethodACH]` | ACH method on PM txn — cols: `PaymentTransactionId`, `RoutingNumber`, `MaskedAccountNumber`; **no** vault `TokenId` |
-| `[Transactions].[ACHReturn]`, `[ACHNotificationOfChange]` | PM return / NOC records |
-| `[Returns].[ReturnConfigurations]`, `[RedepositAttempts]` | Redeposit config |
-| `[Payments].[PaymentRequests]`, `[AchLimit*]` | Requests / ACH limits |
+| `[Transactions].[PaymentTransaction]` | PM payment txn — **Payments DB only**. API id = col **`PaymentTransactionId`** (nvarchar ULID). PK **`Id`** = GUID. Status = **`TransactionStatusId`**. |
+| `[Transactions].[PaymentMethodACH]` | ACH method. Join: **`PaymentMethodACH.PaymentTransactionId` (GUID) = `PaymentTransaction.Id`**. Cols include RoutingNumber, MaskedAccountNumber. |
+| `[Transactions].[PaymentTransactionHistory]` | Status history |
+| `[Transactions].[TransactionStatus]` | Status lookup — full Id/Code map in `docs/guides/stage-sql-schema-verified.md` (6=SETTLED, 10=REFUNDED, 18=PARTIALLY_REFUNDED, …) |
+| `[Transactions].[TransactionType]` | 1=DEBIT, 2=CREDIT, 5=REFUND, 6=VOID, … (see schema-verified) |
+| `[Transactions].[Rail]` | 1=ACH, 2=CNP, 3=CP |
+| `[Transactions].[OriginType]` | WEB/TEL/PPD/CCD (ACH 1–4); ECOM/MOTO (CNP 5–6); POS/TAP_TO_PAY (CP 7–8) — see schema-verified |
+| `[Transactions].[ACHReturn]` | PM ACH return — `PaymentTransactionId`→`PaymentTransaction.Id`, reason codes, retry fields (see schema-verified) |
+| `[Transactions].[ACHNotificationOfChange]` | PM NOC — `NocCode`, original/corrected routing-account-name, `IsProcessed` (full cols in schema-verified) |
+| `[Returns].[RedepositAttempts]` | Redeposit attempts — `ReturnedPaymentId`, `OriginalPaymentId`, `AttemptNumber`, `RedepositPaymentId`, `AttemptStatus`, … |
+| `[Returns].[ReturnConfigurations]` | Per-merchant redeposit config — `SubMerchantId`, `ProcessorId`, `MaxRedepositAttempts` |
+| `[Payments].[PaymentRequests]`, `[AchDailyCounter]`, `[AchLimitEnforcementAuditLog]` | Requests / ACH limits (Payments DB) |
 
 ## TokenVault DB — tables (ACH bank tokens)
 
+**Verified table list 2026-07-16** (see `docs/guides/stage-sql-schema-verified.md`): `BankAccountTokens`, `BankAccountTokenLog`, `PaymentTokens` (+ ops/tmp ignore).
+
 | Table | Use |
 |-------|-----|
-| `[dbo].[BankAccountTokens]` | **Primary** — ACH bank tokens. Key cols: `Id`, `Status` (`Active`/`Inactive`), `AccountHash`, `RoutingNumber`, `DeactivatedAt`, `DeactivationReason` |
-| `[dbo].[BankAccountTokenLog]` | Token change / audit log |
+| `[dbo].[BankAccountTokens]` | **Primary** — ACH bank tokens. Verified cols: `Id`, `RoutingNumber`, `EncryptedAccountNumber`, `AccountHash`, `Status`, `DeactivatedAt`, `DeactivationReason`, NOC fields, `CreatedAt`/`UpdatedAt` (full list in schema-verified) |
+| `[dbo].[BankAccountTokenLog]` | Token audit — `TokenId`, `EventType`, `EventTimestamp`, `TokenStatusBefore`/`After`, NOC/return fields (see schema-verified) |
 | `[dbo].[PaymentTokens]` | Payment tokens (may be card-related; confirm before use) |
 | `tmp_ms_xx_BankAccountTokens_*` | Temp/migration — ignore for QA |
 | Index/PostOptimization/QueryStore* | Ops — ignore |

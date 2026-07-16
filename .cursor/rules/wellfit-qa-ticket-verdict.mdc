@@ -1,0 +1,40 @@
+---
+description: End-of-ticket QA verdict — recommend status/next action by judgment (chat only, not copy-paste)
+alwaysApply: true
+---
+
+# Wellfit QA — veredicto final al cerrar un ticket
+
+When STAGE (or target-env) testing for a ticket is **done or stopped**, give Chris an explicit **QA verdict** — not only a pass/fail table.
+
+## Always include (plain chat — NOT a copy block)
+
+1. **Verdict line** (pick one primary):
+   - `PASS` — core ACs proven; safe to advance
+   - `PASS WITH CAVEATS` — core ACs proven; known gaps/blockers documented (infra, telemetry, out-of-scope path)
+   - `FAIL` — a required AC failed; do not advance until fixed
+   - `BLOCKED` — could not finish required proof (env/missing access/missing dependency); not a product fail yet
+   - `PARTIAL` — only a slice was runnable; remainder deferred
+
+2. **Recommended ticket / board status** (plain language), e.g.:
+   - Move to Done / Ready for Prod / Sign-off
+   - Stay In Stage with caveats + follow-ups
+   - Send back to Dev
+   - Park / wait on infra (name owner if known)
+
+3. **Why** — 2–4 short bullets: what proved the core, what is caveat/blocked, risk if they ship anyway.
+
+4. **Follow-ups** — only real ones. No fluff.
+
+## Format
+
+- Chat with Chris: **Spanish**, simple. Verdict labels can stay English (PASS / FAIL / …).
+- **Do not** wrap the verdict in a ` ```text ` copy-paste block — it is for him to read, not paste.
+- After the verdict, also give the **Jira STAGE comment** ready to copy (English) per `wellfit-qa-jira-stage-comment.mdc` — that one **is** paste-ready.
+
+## Judgment rules
+
+- Judge by **what QA must prove for this story**, not by “every request in the Postman folder ran green.”
+- If happy path + main negatives are solid and leftovers are **infra / known runbook blockers / secondary telemetry**, prefer **PASS WITH CAVEATS** over BLOCKED.
+- Use **BLOCKED** when the **main** proof path could not run.
+- Use **FAIL** when the system behaved wrong under a test that did run.

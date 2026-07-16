@@ -1,0 +1,34 @@
+---
+description: Wellfit QA — adapt DEV-oriented test guides to STAGE when preparing QA walkthroughs
+alwaysApply: true
+---
+
+# Wellfit QA — prefer STAGE when adapting test docs
+
+When Chris shares a **testing guide, runbook, Postman collection, or any doc** used to know how to test a ticket:
+
+## Default
+
+- **QA almost always tests in STAGE**, not DEV.
+- If the artifact is **DEV-oriented** (DEV hosts, DEV identity, DEV Service Bus, DEV-only flags, “run on DEV first”, etc.), **adapt it for STAGE** before / while walking Chris through the test — do not leave him on DEV URLs by default.
+
+## What to adjust
+
+| Area | Action |
+|------|--------|
+| Base URLs / Azure app hosts | Map DEV → STAGE equivalents only when known/verified. If unsure of host or path → **ask Chris** (`wellfit-qa-ask-chris-before-guess.mdc`); do not invent unverified twins. |
+| Identity / token | STAGE identity (`stage-wf-identity-api` or `stage-platform.wellfit.com/identity`) + STAGE clients from `wellfit-qa-stage-credentials.mdc`. |
+| Postman env / variables | Prefer a **STAGE** environment file; hardcode or prefill STAGE values so QA does not fight placeholders. |
+| Auth scopes / clients | Confirm the STAGE client actually has the required scope (DEV-proven client may still work on STAGE — verify; do not assume UnifiedPayments has Wrapper scopes). |
+| Flags / feature gates | Note if a flag is OFF on STAGE or DEV-only; call out blockers for STAGE explicitly. |
+| Synthetic inject / az / SB | If the guide says “only DEV can inject”, keep that caveat — do **not** pretend STAGE can do it; still adapt everything else that *can* run on STAGE. |
+
+## How to deliver
+
+- Update the ticket’s Postman/env/guide under `tickets/PAY-XXXX/` when adapting (or say clearly what Chris must change).
+- In step-by-step walkthroughs with Chris: **default to STAGE steps**.
+- If Part of the suite is DEV-only (parked E2E, flag, etc.), separate clearly: **STAGE runnable** vs **DEV-only / blocked**.
+
+## Why
+
+DEV-oriented Brett/dev runbooks cause QA friction (wrong hosts, secrets, scopes). STAGE config mismatches are a recurring blocker — prefer STAGE from the start.

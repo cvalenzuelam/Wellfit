@@ -1,0 +1,289 @@
+{
+  "info": {
+    "name": "PAY-4032 ACH Redeposit STAGE",
+    "_postman_id": "pay4032-ach-redeposit-stage",
+    "description": "PAY-4032 Part A — STAGE Worldpay Wrapper eCheck sale + redeposit boundary.\n\nPrefilled STAGE data (Brett 2026-07-14 + PAY-4046):\n- accountId = SubMerchantAccounts.AccountId ProcessorId 0 = 01334267 (NOT Azure merchantId 01264096)\n- subMerchantId = 2e390000-8d7e-7ced-cade-08debd891c22\n- client = WellfitPaymentManagementAPI / WorldpayWrapperAPI.Full\n- Wrapper = https://stage-wf-worldpay-wrapper-api.azurewebsites.net\n\nFolder A = run today. Folder B = PARKED.\nImport also: postman/PAY-4032-ACH-Redeposit-STAGE.postman_environment.json and select it (token scripts write bearerToken to env).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "wpWrapperBaseUrl", "value": "https://stage-wf-worldpay-wrapper-api.azurewebsites.net", "type": "string" },
+    { "key": "identityBaseUrl", "value": "https://stage-wf-identity-api.azurewebsites.net", "type": "string" },
+    { "key": "clientId", "value": "WellfitPaymentManagementAPI", "type": "string" },
+    { "key": "clientSecret", "value": "Test123!", "type": "string" },
+    { "key": "tokenScope", "value": "WorldpayWrapperAPI.Full", "type": "string" },
+    { "key": "bearerToken", "value": "", "type": "string" },
+    { "key": "accountId", "value": "01334267", "type": "string" },
+    { "key": "subMerchantId", "value": "2e390000-8d7e-7ced-cade-08debd891c22", "type": "string" },
+    { "key": "originalLitleTxnId", "value": "", "type": "string" },
+    { "key": "sbNamespace", "value": "DO-NOT-USE-PARKED", "type": "string" },
+    { "key": "sbSharedAccessKeyName", "value": "RootManageSharedAccessKey", "type": "string" },
+    { "key": "sbSharedAccessKey", "value": "DO-NOT-USE-PARKED", "type": "string" },
+    { "key": "originalPaymentId", "value": "", "type": "string" },
+    { "key": "returnedPaymentId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "A. WorldpayWrapper redeposit boundary (run today)",
+      "item": [
+        {
+          "name": "0. Get token (client_credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('token request 200', function () { pm.response.to.have.status(200); });",
+                  "var body = pm.response.json();",
+                  "if (body && body.access_token) {",
+                  "    pm.collectionVariables.set('bearerToken', body.access_token);",
+                  "    pm.environment.set('bearerToken', body.access_token);",
+                  "    console.log('bearerToken saved to collection + environment (expires_in=' + body.expires_in + 's)');",
+                  "} else {",
+                  "    console.log('No access_token in response - check clientId/secret/scope.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/x-www-form-urlencoded" } ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials" },
+                { "key": "client_id", "value": "WellfitPaymentManagementAPI" },
+                { "key": "client_secret", "value": "Test123!" },
+                { "key": "scope", "value": "WorldpayWrapperAPI.Full" }
+              ]
+            },
+            "url": {
+              "raw": "https://stage-wf-identity-api.azurewebsites.net/connect/token",
+              "host": ["stage-wf-identity-api.azurewebsites.net"],
+              "protocol": "https",
+              "path": ["connect", "token"]
+            },
+            "description": "STAGE Identity token for Worldpay Wrapper. Client WellfitPaymentManagementAPI + scope WorldpayWrapperAPI.Full. Saves bearerToken to collection + environment."
+          }
+        },
+        {
+          "name": "1a. eCheck sale - seed a real litleTxnId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Seeds a real transaction so request 1 can redeposit against a genuine litleTxnId.",
+                  "// Needed for Tier 2 (Pre-Live). On Tier 1 (local sandbox) the redeposit accepts ANY id,",
+                  "// so this is optional there. Sandbox is amount-driven: amount % 1000 = response code",
+                  "// (5000 -> 000 Approved, 1110 -> 110 Insufficient Funds, 301 -> 301, ...).",
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var b = pm.response.json();",
+                  "if (b && b.transactionId) {",
+                  "    pm.collectionVariables.set('originalLitleTxnId', b.transactionId);",
+                  "    pm.environment.set('originalLitleTxnId', b.transactionId);",
+                  "    console.log('Seeded litleTxnId=' + b.transactionId + ' (code=' + b.responseCode + ') -> originalLitleTxnId');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"01334267\",\n  \"subMerchantId\": \"2e390000-8d7e-7ced-cade-08debd891c22\",\n  \"amount\": 5000,\n  \"orderId\": \"ORD-SEED-4032-1\",\n  \"bankAccountNumber\": \"1099999999\",\n  \"bankRoutingNumber\": \"011075150\",\n  \"bankAccountType\": \"Checking\",\n  \"orderSource\": \"echeckppd\",\n  \"accountFirstName\": \"Ach\",\n  \"accountLastName\": \"Retry\"\n}"
+            },
+            "url": {
+              "raw": "https://stage-wf-worldpay-wrapper-api.azurewebsites.net/api/v1/echeck/sales",
+              "host": ["stage-wf-worldpay-wrapper-api.azurewebsites.net"],
+              "protocol": "https",
+              "path": ["api", "v1", "echeck", "sales"]
+            },
+            "description": "STAGE eCheck sale seed. accountId=01334267 (SubMerchantAccounts ProcessorId 0), subMerchantId=Brett GUID. Saves transactionId -> originalLitleTxnId for request 1."
+          }
+        },
+        {
+          "name": "1. Redeposit - approved (valid numeric txn id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// AC: a previously returned eCheck re-presents at Vantiv by its original litleTxnId.",
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var b = pm.response.json();",
+                  "pm.test('body has WorldpayResponse shape', function () {",
+                  "    pm.expect(b).to.have.property('transactionId');",
+                  "    pm.expect(b).to.have.property('status');",
+                  "    pm.expect(b).to.have.property('responseCode');",
+                  "});",
+                  "pm.test('approved => ResponseCode 000/001 + Status Approved', function () {",
+                  "    pm.expect(b.status).to.eql('Approved');",
+                  "    pm.expect(['000','001']).to.include(b.responseCode);",
+                  "});",
+                  "console.log('Redeposit txnId=' + b.transactionId + ' status=' + b.status + ' code=' + b.responseCode);",
+                  "// NOTE: WP Cert may return a Pending (0xx) or a decline depending on the seeded test txn.",
+                  "// If so, this test is expected to fail-soft; record the actual code in the runbook results table."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"01334267\",\n  \"subMerchantId\": \"2e390000-8d7e-7ced-cade-08debd891c22\",\n  \"transactionId\": \"{{originalLitleTxnId}}\"\n}"
+            },
+            "url": {
+              "raw": "https://stage-wf-worldpay-wrapper-api.azurewebsites.net/api/v1/echeck/redeposits",
+              "host": ["stage-wf-worldpay-wrapper-api.azurewebsites.net"],
+              "protocol": "https",
+              "path": ["api", "v1", "echeck", "redeposits"]
+            },
+            "description": "STAGE redeposit by litleTxnId. accountId/subMerchantId prefilled; originalLitleTxnId comes from request 1a Tests script. Pre-Live may return Approved or a business decline (e.g. 367) for a fresh non-returned sale — both prove live Vantiv path."
+          }
+        },
+        {
+          "name": "2. Redeposit - non-numeric txn id => VALIDATION_ERROR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// PAY-4032 hardening (Copilot #4): non-numeric TransactionId is a caller error mapped to a",
+                  "// deterministic failure BEFORE the Worldpay boundary (long.TryParse), not an unhandled throw.",
+                  "pm.test('200 OK (mapped failure, not a 5xx)', function () { pm.response.to.have.status(200); });",
+                  "var b = pm.response.json();",
+                  "pm.test('Status Failed + ResponseCode VALIDATION_ERROR', function () {",
+                  "    pm.expect(b.status).to.eql('Failed');",
+                  "    pm.expect(b.responseCode).to.eql('VALIDATION_ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"01334267\",\n  \"subMerchantId\": \"2e390000-8d7e-7ced-cade-08debd891c22\",\n  \"transactionId\": \"not-a-number\"\n}"
+            },
+            "url": {
+              "raw": "https://stage-wf-worldpay-wrapper-api.azurewebsites.net/api/v1/echeck/redeposits",
+              "host": ["stage-wf-worldpay-wrapper-api.azurewebsites.net"],
+              "protocol": "https",
+              "path": ["api", "v1", "echeck", "redeposits"]
+            },
+            "description": "STAGE: non-numeric TransactionId fails fast (long.TryParse) → 200 Failed VALIDATION_ERROR — never reaches Worldpay."
+          }
+        },
+        {
+          "name": "3. Redeposit - missing TransactionId => 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// TransactionId is a required property - model binding rejects the payload before the handler.",
+                  "pm.test('400 Bad Request (ValidationProblemDetails)', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"01334267\",\n  \"subMerchantId\": \"2e390000-8d7e-7ced-cade-08debd891c22\"\n}"
+            },
+            "url": {
+              "raw": "https://stage-wf-worldpay-wrapper-api.azurewebsites.net/api/v1/echeck/redeposits",
+              "host": ["stage-wf-worldpay-wrapper-api.azurewebsites.net"],
+              "protocol": "https",
+              "path": ["api", "v1", "echeck", "redeposits"]
+            },
+            "description": "STAGE: omits required TransactionId. Expect 400 ValidationProblemDetails."
+          }
+        }
+      ],
+      "description": "STAGE Part A — live Worldpay Wrapper eCheck sale + redeposit boundary. Run 0 → 1a → 1 → 2 → 3."
+    },
+    {
+      "name": "B. E2E full-chain synthetic inject (PARKED - reference)",
+      "item": [
+        {
+          "name": "4. Inject Payment.Return.Received (Service Bus REST)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// PARKED - do not run against a shared env. See runbook Part B for prerequisites:",
+                  "//   flag PaymentManagement:AchRetry:Enabled = ON, DEV only, B3 inbound rename landed,",
+                  "//   subscriptions provisioned, and a seeded ORIGINAL ACH DEBIT in APPROVED/SETTLED.",
+                  "// PM consumes Payment.Return.Received from the Azure Service Bus 'payments' topic",
+                  "// (ServiceBusSubscription topicName=payments, subscriptionName=payment-management-api).",
+                  "// This generates a short-lived SAS token for the SB REST publish. Verify the MessageType",
+                  "// routing property/label against scripts/servicebus-topics/provision-sb-topics.sh before trusting it.",
+                  "var ns = pm.collectionVariables.get('sbNamespace');",
+                  "var keyName = pm.collectionVariables.get('sbSharedAccessKeyName');",
+                  "var key = pm.collectionVariables.get('sbSharedAccessKey');",
+                  "if (ns && key) {",
+                  "    var uri = encodeURIComponent('https://' + ns + '.servicebus.windows.net/payments');",
+                  "    var expiry = Math.floor(Date.now() / 1000) + 300;",
+                  "    var toSign = uri + '\\n' + expiry;",
+                  "    var sig = CryptoJS.HmacSHA256(toSign, key);",
+                  "    var sigB64 = encodeURIComponent(CryptoJS.enc.Base64.stringify(sig));",
+                  "    var sas = 'SharedAccessSignature sr=' + uri + '&sig=' + sigB64 + '&se=' + expiry + '&skn=' + keyName;",
+                  "    pm.collectionVariables.set('sbSasToken', sas);",
+                  "} else {",
+                  "    console.log('SB namespace/key not set - request is a reference template only.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "{{sbSasToken}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "BrokerProperties", "value": "{\"Label\":\"Payment.Return.Received\"}" },
+              { "key": "MessageType", "value": "Payment.Return.Received" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentId\": \"{{originalPaymentId}}\",\n  \"paymentTransactionId\": \"01J000000000000000000RETURN\",\n  \"timeStamp\": \"2026-07-13T00:00:00Z\",\n  \"subMerchantAccountId\": \"00000000-0000-0000-0000-000000000000\",\n  \"amount\": 100.00,\n  \"currency\": \"USD\",\n  \"orderId\": \"ORD-E2E-001\",\n  \"transactionId\": \"PROC-ORIG-E2E-1\",\n  \"returnReasonCode\": \"R01\",\n  \"returnReasonDescription\": \"Insufficient funds\",\n  \"responseCode\": \"00\",\n  \"responseMessage\": \"Returned\",\n  \"processorId\": 1,\n  \"isAdministrative\": false,\n  \"RedepositEligible\": true,\n  \"TotalRedepositAttempts\": 0,\n  \"ReturnedPaymentId\": \"{{returnedPaymentId}}\"\n}"
+            },
+            "url": { "raw": "https://{{sbNamespace}}.servicebus.windows.net/payments/messages", "protocol": "https", "host": ["{{sbNamespace}}", "servicebus", "windows", "net"], "path": ["payments", "messages"] },
+            "description": "PARKED reference. Publishes a flat Payment.Return.Received to the SB 'payments' topic to drive: PM mints APPROVED retry child (flag ON) -> emits Payment.Retry.Submitted (Event Grid) -> payments-func SyncAchChargeFunction mints a Charge (Id=RedepositPaymentId) -> treasury batch-build settles it -> ach-returns increments TotalRedepositAttempts. B3: the retry gate keys off RedepositEligible + TotalRedepositAttempts (PascalCase, add-only). Assertions are made in SQL / App Insights per the runbook, NOT in this response (a 201 only means the message was accepted onto the topic)."
+          }
+        }
+      ],
+      "description": "Reference only. The inbound trigger is a Service Bus message (not HTTP/Event Grid), so it is not a clean Postman operation and cannot run in a shared env until the flag can go ON. Prefer driving this from ach-returns or a test harness - see runbook Part B."
+    }
+  ]
+}

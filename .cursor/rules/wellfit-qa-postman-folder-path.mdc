@@ -1,0 +1,22 @@
+---
+description: Wellfit QA — Postman steps: folder + request in plain chat (no copy blocks)
+alwaysApply: true
+---
+
+# Wellfit QA — Postman: folder + request only
+
+When telling Chris which Postman call to run, **only** say in **plain chat** (no fenced/copy block):
+
+1. **Carpeta** (exact folder name)
+2. **Request** (exact request name)
+
+## Example (plain text in the reply — not a code block)
+
+Carpeta: 2. Happy Path — Partial refund (bug fix)  
+Request: GET original after partial refund
+
+## Do not
+
+- Wrap carpeta/request in ` ``` ` copy-paste blocks.
+- Add collection name, full URL, method/path, or long endpoint dumps unless he asks.
+- Say only “el GET” / “folder 2” without both names.

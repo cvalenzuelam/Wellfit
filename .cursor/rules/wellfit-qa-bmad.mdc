@@ -1,0 +1,98 @@
+---
+description: Wellfit BMAD repo overview — README context, agents, lanes, PAY paths, Wrapper eCheck fields
+alwaysApply: true
+---
+
+# Wellfit BMAD (`bmad-wellfit`)
+
+**Repo:** https://wellfit-technologies-inc.ghe.com/Wellfit/bmad-wellfit  
+**Local (this workspace):** `bmad-wellfit-main/` (gitignored — large; do not commit).  
+**Tagline:** “Code is the implementation. Context is the asset. Completed work is the wisdom.”
+
+Chris has **GHE browse access**. Full “Claude in BMAD” = open this repo in **Claude Code** and run skills. Brett often does that for Chris until Claude Code is set up.
+
+## What this repo is
+
+Central command for BMAD methodology across Wellfit — **not** runtime payments code (`wellfit-payments`).
+
+| Area | Path | Purpose |
+|------|------|---------|
+| Company standards | `COMPANY_BMAD_STANDARDS/` | Universal rules every agent loads |
+| Agent skills | `.claude/skills/` | Product-scoped + cross-product agents |
+| Workflows | `_bmad/` | Playbooks agents execute |
+| Product artifacts | `_bmad-output/products/{product}/` | PRDs, architecture, Express Lane, completed work |
+| Cross-product context | `_bmad-output/support-projects-context/` | Load on demand |
+| Support scripts | `COMPANY_BMAD_SUPPORT_FILES/` | new-initiative / new-feature / complete-* |
+
+## Work hierarchy
+
+```
+Initiative → Theme → Feature → Epic → Story
+```
+
+- **Initiative** — strategic, often cross-product (`_bmad-output/initiatives/{name}/`)
+- **Theme** — focused slice under an initiative
+- **Feature** — product capability (`…/03_Features/{feature}/` with `00_MAIN` … `05_Testing`)
+- **Epic / Story** — BA (Vision) breaks work after PRD + Architecture
+
+### Two delivery lanes
+
+| Lane | Where | Use for |
+|------|--------|---------|
+| **Highway** | `03_Features/` | New capabilities; PRD → Arch → Epics → Dev → Test (weeks) |
+| **Express Lane** | `04_ExpresseLane/` | Bugs, hotfixes, small enh, ops/runbooks (hours–days) |
+
+PAY-4032 is **Express Lane** enhancement.
+
+### Product folder shape
+
+```
+_bmad-output/products/{product}/
+├── 00_Project-Context/     # Boot snapshot + overview + tech stack
+├── 01_Planning/
+├── 02_Architecture/
+├── 03_Features/            # Highway (active)
+├── 04_ExpresseLane/        # bugs / enhancement / spike / task / runbooks
+├── 05_Completed/
+└── BMAD_HEALTH_SCORE.md
+```
+
+Agents boot with **Tier 1:** `BMAD_BOOT_SNAPSHOT.md` + `BMAD_HEALTH_SCORE.md` (don’t hand-edit the snapshot; regenerate via `/wellfit-snapshot-updater`).
+
+## Agent team (skills)
+
+Invoke as `/{product}-{role}` (payments prefix ≈ **`pay`** → `/pay-qa`, `/pay-dev`, …). Confirm exact prefix under `.claude/skills/`.
+
+| Role skill | Persona | Creates / does |
+|------------|---------|----------------|
+| `pdm` | Loki | Initiative briefs, feature PRDs, prototypes |
+| `po` | Steve Rogers | PRD, UX (via initiative→theme→feature) |
+| `ba` | Vision | Epics & Stories, Sprint Planning |
+| `architect` | Reed Richards | Architecture, ADRs |
+| `dev` | Peter Parker | Story impl + unit tests (TDD) |
+| **`qa`** | **Quinn** | **Test strategy, automation, QA reports** |
+| `tech-writer` | Barbara (Oracle) | Docs, diagrams |
+| `quick-flow-solo-dev` | Barry | Express-lane tech spec + impl |
+
+Cross-product: `/wellfit-pd` (Diana), `/wellfit-snapshot-updater`, `/wellfit-new-product`, `/wellfit-complete-feature|theme|initiative`.
+
+Org config: `_bmad/bmm/config.yaml` (`communication_language: English`, `output_folder: _bmad-output`).
+
+## Payments paths Chris uses most
+
+| Path | Use |
+|------|-----|
+| `…/payments/04_ExpresseLane/enhancement/ach-retry-from-legacy-payments-to-payment-management/` | **PAY-4032** — `solution.md`, `analysis.md`, `TEST_COVERAGE.md`, `correct-course.md` |
+| `…/payments/02_Architecture/services/worldpay-wrapper/` | Wrapper API contracts, eCheck examples, config |
+| `…/payments/04_ExpresseLane/00_INDEX_ExpressLane-Backlog.md` | Maps EL items ↔ Jira (PAY-4032 listed) |
+
+## Worldpay Wrapper eCheck (from BMAD contracts)
+
+- **`accountId`** = Worldpay/Litle **merchantId** — STAGE Azure `processor__vantiv__merchantId` = **`01264096`** (same in BMAD examples).
+- **`subMerchantId`** = Wellfit **SubMerchant GUID** — **not** Azure `masterSubMerchantId` (`01291508`).
+- Redeposit: `POST /api/v1/echeck/redeposits` by original `transactionId` (litleTxnId); no amount.
+- `orderSource` may include `echeckppd` (ACH PPD) per data-models.
+
+## QA operating rule
+
+BMAD = **design/context**. STAGE Postman/SQL = **proof**. When blocked, read Express Lane + wrapper contracts here before inventing hosts/field types; still adapt DEV runbooks to STAGE per `wellfit-qa-prefer-stage-docs`.

@@ -1,0 +1,37 @@
+---
+description: Slack messages — human tone, not robotic
+alwaysApply: true
+---
+
+# Wellfit QA — Slack message tone
+
+When Chris asks for a **Slack message** (ping Brett, ask for a runbook, status update, etc.):
+
+## Language
+
+- **English** for US team channels (same as other team deliverables).
+- Chat with Chris can stay Spanish; the draft he pastes into Slack stays English unless he asks otherwise.
+
+## Tone
+
+- Sound like a real coworker: short, natural, conversational.
+- Prefer “Hey Brett — …” / “quick ask” over formal openers (“Hi team,” “Hope this finds you well,” “I wanted to reach out regarding…”).
+- One clear ask. Light context only — no ticket dump, no AC lists, no corporate filler.
+- Avoid: “Kindly,” “Please advise,” “Per my last,” “As discussed,” bullet-heavy briefs, template blocks with labels like `Setup:` / `Verified:` (those are for Jira).
+- Emojis optional and rare; never required.
+
+## Shape
+
+- 2–5 short sentences (or one short paragraph).
+- Ticket name in plain words + id if useful; not a full description paste.
+- End with a simple thanks when asking for something.
+
+## Example
+
+```text
+Hey Brett — quick ask on PAY-XXXX (WFC AchInformation / MaxRetryAttempts).
+
+Could you send over the QA runbook when you get a chance? I’ll run STAGE from that.
+
+Thanks!
+```
