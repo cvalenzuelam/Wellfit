@@ -9,6 +9,7 @@
 | Identity (Azure) | `https://stage-wf-identity-api.azurewebsites.net` | Verified (token works) |
 | Identity (platform) | `https://stage-platform.wellfit.com/identity` | Known alternate |
 | Payment Management API | `https://stage-wf-payment-management-api.azurewebsites.net` | Verified (PAY-4064) |
+| Payments V2 API | `https://stage-platform.wellfit.com/payments-v2` | Verified alive (401 without token; PAY-3683 / PAY-4087). Alternate: `https://stage-wf-payments-v2-api.azurewebsites.net` |
 | Worldpay Wrapper API | `https://stage-wf-worldpay-wrapper-api.azurewebsites.net` | Known (credentials rule) |
 | Platform host (general) | `https://stage-platform.wellfit.com` | Known |
 | Treasury | `https://stage-platform.wellfit.com/treasury` | Known (PAY-3821) |

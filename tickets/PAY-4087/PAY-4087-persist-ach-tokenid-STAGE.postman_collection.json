@@ -1,0 +1,261 @@
+{
+  "info": {
+    "_postman_id": "pay-4087-persist-ach-tokenid-stage",
+    "name": "PAY-4087 Persist ACH TokenId — STAGE",
+    "description": "STAGE QA for PAY-4087: Payments V2 ACH TokenId must persist E2E onto Platform `[Payments].[Payments].Token`.\n\n## What this proves\n1. Raw-account ACH debit → response `tokenId` present (vault create path)\n2. Token-based ACH debit → same `tokenId` returned (vault lookup path)\n3. After sync (~30–60s): SQL — Platform `Token` = response `tokenId` = TokenVault `BankAccountTokens.Id`\n\n## Setup\n1. Import this collection + env `PAY-4087 Persist ACH TokenId STAGE`\n2. Select that environment\n3. Confirm `subMerchantId` is ACH-capable on STAGE (default Redhill; swap if needed)\n4. Run folder 0 → 1 → wait → SQL → folder 2\n\n## Auth\n`WellfitUnifiedPaymentsAPI` on STAGE Identity (includes `WellfitPaymentsV2API.Full` + Token Vault scopes).\n\n## Host\n`https://stage-platform.wellfit.com/payments-v2` → `POST /api/v1/payments`\n\n## Bank test data\nVantiv Pre-Live eCheck: routing `011075150` / account `1099999999` (env vars). If Worldpay declines, try the PAY-3627 pair in env notes.\n\n## SQL verify\n`tickets/PAY-4087/scripts/verify-ach-token-persisted-STAGE.sql`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Setup",
+      "item": [
+        {
+          "name": "Authenticate (UnifiedPayments — PV2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Token 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.test('Has access_token', function () {",
+                  "    pm.expect(body.access_token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.set('bearerToken', body.access_token);",
+                  "const scope = body.scope || '';",
+                  "console.log('scopes:', scope);",
+                  "pm.test('Has PaymentsV2 Full scope', function () {",
+                  "    pm.expect(scope).to.include('WellfitPaymentsV2API.Full');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials", "type": "text" },
+                { "key": "client_id", "value": "WellfitUnifiedPaymentsAPI", "type": "text" },
+                { "key": "client_secret", "value": "Testing123!!W3llf1t1!", "type": "text" }
+              ]
+            },
+            "url": "https://stage-wf-identity-api.azurewebsites.net/connect/token",
+            "description": "STAGE Identity. No scope param — client default scopes include WellfitPaymentsV2API.Full."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Happy Path — Raw ACH (create vault token)",
+      "item": [
+        {
+          "name": "POST ACH debit — raw account",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const ts = Date.now().toString().slice(-10);",
+                  "pm.environment.set('NOW', new Date().toISOString());",
+                  "// Worldpay/Vantiv orderId max length = 25",
+                  "pm.environment.set('orderId', `P4087R${ts}`);",
+                  "pm.environment.set('idempotencyKey', `pay4087-raw-${ts}`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('HTTP 2xx', function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "console.log(JSON.stringify(json, null, 2));",
+                  "",
+                  "const tokenId = json.tokenId || json.TokenId",
+                  "    || (json.response && (json.response.tokenId || json.response.TokenId))",
+                  "    || null;",
+                  "const txnId = (json.processorResponse && (json.processorResponse.transactionId || json.processorResponse.TransactionId))",
+                  "    || json.transactionId || json.TransactionId",
+                  "    || (json.response && (json.response.transactionId || json.response.TransactionId))",
+                  "    || null;",
+                  "const requestId = json.requestId || json.RequestId || null;",
+                  "const status = json.status || json.Status",
+                  "    || (json.response && (json.response.status || json.response.Status))",
+                  "    || null;",
+                  "",
+                  "if (requestId) pm.environment.set('requestId', String(requestId));",
+                  "if (txnId) pm.environment.set('transactionId', String(txnId));",
+                  "if (tokenId) {",
+                  "    pm.environment.set('achTokenId', String(tokenId));",
+                  "    pm.environment.set('rawPathTokenId', String(tokenId));",
+                  "}",
+                  "",
+                  "console.log('status=', status, 'tokenId=', tokenId, 'transactionId=', txnId, 'orderId=', pm.environment.get('orderId'));",
+                  "",
+                  "pm.test('Response has tokenId (vault create path)', function () {",
+                  "    pm.expect(tokenId, 'tokenId missing — PAY-4087 expects CreatePaymentResponse.TokenId').to.be.ok;",
+                  "});",
+                  "pm.test('Payment approved or submitted (not hard-failed)', function () {",
+                  "    if (status) {",
+                  "        const s = String(status).toLowerCase();",
+                  "        pm.expect(['approved', 'submitted'].some(x => s.includes(x)), `unexpected status: ${status}`).to.be.true;",
+                  "    }",
+                  "});",
+                  "",
+                  "console.log('NEXT: wait ~30–60s for Platform sync, then run tickets/PAY-4087/scripts/verify-ach-token-persisted-STAGE.sql (Platform + TokenVault).');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{bearerToken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{idempotencyKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"transactionType\": \"Sale\",\n  \"amount\": {{amount}},\n  \"currency\": \"USD\",\n  \"orderId\": \"{{orderId}}\",\n  \"orderIdType\": \"Invoice\",\n  \"paymentMethod\": {\n    \"type\": \"Ach\",\n    \"ach\": {\n      \"accountNumber\": \"{{accountNumber}}\",\n      \"routingNumber\": \"{{routingNumber}}\",\n      \"accountType\": \"Checking\",\n      \"secCode\": \"WEB\",\n      \"accountFirstName\": \"QA\",\n      \"accountLastName\": \"PAY4087\",\n      \"authorization\": {\n        \"authorizationType\": \"ELECTRONIC\",\n        \"authorizationDate\": \"{{NOW}}\",\n        \"authorizationReference\": \"QA-PAY4087-RAW-AUTH\",\n        \"signedAuthorizationOnFile\": true\n      }\n    }\n  }\n}"
+            },
+            "url": "{{pv2Api}}/api/v1/payments",
+            "description": "Raw-account ACH debit. Vault CreateTokenAsync runs after Worldpay approval; response must include tokenId. Saves achTokenId + transactionId for SQL and folder 2."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Happy Path — Token ACH (lookup vault token)",
+      "item": [
+        {
+          "name": "POST ACH debit — existing tokenId",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const tokenId = pm.environment.get('achTokenId');",
+                  "if (!tokenId) {",
+                  "    throw new Error('achTokenId empty — run folder 1 first (raw ACH) and confirm response tokenId was saved.');",
+                  "}",
+                  "const ts = Date.now().toString().slice(-10);",
+                  "pm.environment.set('NOW', new Date().toISOString());",
+                  "// Worldpay/Vantiv orderId max length = 25",
+                  "pm.environment.set('orderIdToken', `P4087T${ts}`);",
+                  "pm.environment.set('idempotencyKey', `pay4087-tok-${ts}`);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('HTTP 2xx', function () {",
+                  "    pm.expect(pm.response.code).to.be.within(200, 299);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "console.log(JSON.stringify(json, null, 2));",
+                  "",
+                  "const tokenId = json.tokenId || json.TokenId",
+                  "    || (json.response && (json.response.tokenId || json.response.TokenId))",
+                  "    || null;",
+                  "const txnId = (json.processorResponse && (json.processorResponse.transactionId || json.processorResponse.TransactionId))",
+                  "    || json.transactionId || json.TransactionId",
+                  "    || (json.response && (json.response.transactionId || json.response.TransactionId))",
+                  "    || null;",
+                  "const expected = pm.environment.get('achTokenId');",
+                  "",
+                  "if (txnId) pm.environment.set('transactionIdTokenPath', String(txnId));",
+                  "if (tokenId) pm.environment.set('lookupPathTokenId', String(tokenId));",
+                  "",
+                  "console.log('lookup tokenId=', tokenId, 'expected=', expected, 'transactionId=', txnId);",
+                  "",
+                  "pm.test('Response has tokenId (vault lookup path)', function () {",
+                  "    pm.expect(tokenId, 'tokenId missing on token-based debit').to.be.ok;",
+                  "});",
+                  "pm.test('Returned tokenId matches prior vault token', function () {",
+                  "    pm.expect(String(tokenId).toLowerCase()).to.eql(String(expected).toLowerCase());",
+                  "});",
+                  "",
+                  "console.log('NEXT: wait ~30–60s, SQL-verify Platform Token for orderIdToken / transactionIdTokenPath.');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{bearerToken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "{{idempotencyKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"transactionType\": \"Sale\",\n  \"amount\": {{amount}},\n  \"currency\": \"USD\",\n  \"orderId\": \"{{orderIdToken}}\",\n  \"orderIdType\": \"Invoice\",\n  \"paymentMethod\": {\n    \"type\": \"Ach\",\n    \"ach\": {\n      \"token\": \"{{achTokenId}}\",\n      \"tokenType\": \"Wellfit\",\n      \"accountType\": \"Checking\",\n      \"secCode\": \"WEB\",\n      \"authorization\": {\n        \"authorizationType\": \"ELECTRONIC\",\n        \"authorizationDate\": \"{{NOW}}\",\n        \"authorizationReference\": \"QA-PAY4087-TOK-AUTH\",\n        \"signedAuthorizationOnFile\": true\n      }\n    }\n  }\n}"
+            },
+            "url": "{{pv2Api}}/api/v1/payments",
+            "description": "Token-based ACH debit (GetTokenByIdAsync). Uses achTokenId from folder 1. Expect same tokenId in response; Platform Token should match after sync."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Parked — not required for core PASS",
+      "item": [
+        {
+          "name": "Limit-decline path (TokenId expected null on event) — PARKED",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{bearerToken}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "pay4087-parked-do-not-run" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"_comment\": \"PARKED — unit-test AC from solution.md (limit decline before token resolution → TokenId null). Not a STAGE PASS gate. Do not run unless Jason asks.\",\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"transactionType\": \"Sale\",\n  \"amount\": 999999.99,\n  \"currency\": \"USD\",\n  \"orderId\": \"QA-PAY4087-PARKED\",\n  \"orderIdType\": \"Invoice\",\n  \"paymentMethod\": {\n    \"type\": \"Ach\",\n    \"ach\": {\n      \"accountNumber\": \"{{accountNumber}}\",\n      \"routingNumber\": \"{{routingNumber}}\",\n      \"accountType\": \"Checking\",\n      \"secCode\": \"WEB\",\n      \"authorization\": {\n        \"authorizationType\": \"ELECTRONIC\",\n        \"authorizationDate\": \"2026-07-17T00:00:00Z\",\n        \"authorizationReference\": \"QA-PAY4087-PARKED\",\n        \"signedAuthorizationOnFile\": true\n      }\n    }\n  }\n}"
+            },
+            "url": "{{pv2Api}}/api/v1/payments",
+            "description": "PARKED. solution.md: limit-enforcement decline leaves event TokenId null (token resolution never ran). Covered by unit tests; not required for STAGE core PASS."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
