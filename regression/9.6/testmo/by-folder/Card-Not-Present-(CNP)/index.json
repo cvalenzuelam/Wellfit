@@ -1,0 +1,138 @@
+[
+  {
+    "caseId": "13579",
+    "testId": "1853870",
+    "title": "Validate that, CNP can process successful transactions with VISA Card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13580",
+    "testId": "1853871",
+    "title": "Validate that, CNP can process successful transactions with AMEX Card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13581",
+    "testId": "1853872",
+    "title": "Validate that,  CNP can process successful transactions with Discover card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13582",
+    "testId": "1853873",
+    "title": "Validate that, CNP can process successful transactions with MasterCard.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13583",
+    "testId": "1853874",
+    "title": "Validate that, CNP receives an error message when the CVV does not match.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13584",
+    "testId": "1853875",
+    "title": "Validate that,  CNP receives an error message when the Zipcode does not match.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13585",
+    "testId": "1853876",
+    "title": "Validate that,  CNP receives an error message when card is expired",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13586",
+    "testId": "1853877",
+    "title": "Validate that, the correct Transaction Amount is stored in the [Payments].[Payments] DB table.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "13588",
+    "testId": "1853878",
+    "title": "Validate that, the correct PaymenTypeMethod is stored for the new payment transaction in the [Payments].[Payments] DB table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "66733",
+    "testId": "1853884",
+    "title": "Validate that, a partial refund is able to get successfully processed for CNP transaction",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "286525",
+    "testId": "1853932",
+    "title": "Validate that,  the correct partial refund Amount and TransactionID is stored in the [Payments].[Refunds] table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "66734",
+    "testId": "1853885",
+    "title": "Validate that, a void transaction (Full refund under the same day window) is able to get successfully processed for CNP transaction",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "286526",
+    "testId": "1853933",
+    "title": "Validate that, the correct void amount and transactionID is stored in the [Payments].[Voids] table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "294866",
+    "testId": "1853934",
+    "title": "Validate that, CNP with Wellfit GUID can process successful transactions with VISA Card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "294867",
+    "testId": "1853935",
+    "title": "Validate that, CNP with Wellfit GUID can process successful transactions with AMEX Card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "294868",
+    "testId": "1853936",
+    "title": "Validate that, CNP with Wellfit GUID can process successful transactions with DISCOVER Card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  },
+  {
+    "caseId": "294869",
+    "testId": "1853937",
+    "title": "Validate that, CNP with Wellfit GUID can process successful transactions with Master  Card.",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Not Present (CNP)"
+  }
+]

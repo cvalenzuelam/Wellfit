@@ -1,0 +1,58 @@
+[
+  {
+    "caseId": "67603",
+    "testId": "1853899",
+    "title": "Verify that, delete-token API for credit cards request response is successful",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  },
+  {
+    "caseId": "67604",
+    "testId": "1853900",
+    "title": "Verify that, a card token cannot be deleted without authentication",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  },
+  {
+    "caseId": "67605",
+    "testId": "1853901",
+    "title": "Verify that, attempting to delete a token linked to an active subscription retrieves an error message",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  },
+  {
+    "caseId": "67606",
+    "testId": "1853902",
+    "title": "Verify that, attempting to delete a card token linked to an active payment plans retrieves an error message",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  },
+  {
+    "caseId": "67607",
+    "testId": "1853903",
+    "title": "Verify that, a clear error message is displayed when card token cannot be deleted from the Wallet",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  },
+  {
+    "caseId": "67608",
+    "testId": "1853904",
+    "title": "Verify that, all types of cards can be deleted via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  },
+  {
+    "caseId": "67609",
+    "testId": "1853905",
+    "title": "Verify that, once a deleted card token is removed, the details are also removed from the Wallet DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1127 MyWallet: Removing Stored Cards"
+  }
+]

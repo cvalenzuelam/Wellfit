@@ -1,0 +1,66 @@
+[
+  {
+    "caseId": "67588",
+    "testId": "1853891",
+    "title": "Verify that, authenticate API req res is successful",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67589",
+    "testId": "1853892",
+    "title": "Verify that, create-wallet API req res retrieves a successful response",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67590",
+    "testId": "1853893",
+    "title": "Verify that, a new card token can be added to a Wallet via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67591",
+    "testId": "1853894",
+    "title": "Verify that executing a query from the Wallet DB will retrieve the Wallet and Card token logs",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67592",
+    "testId": "1853895",
+    "title": "Verify that, card number, expiration date, CVV, zip/postal code,  input validations errors are returned via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67593",
+    "testId": "1853896",
+    "title": "Verify that, create-card token API returns a confirmation response after successfully adding a new card",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67594",
+    "testId": "1853897",
+    "title": "Verify that the card token generation  is logged in the DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  },
+  {
+    "caseId": "67595",
+    "testId": "1853898",
+    "title": "Validate Wallet Tokenize Transaction - TokenId Stored in Wallet DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "PAY-1128 MyWallet: Adding New Cards"
+  }
+]

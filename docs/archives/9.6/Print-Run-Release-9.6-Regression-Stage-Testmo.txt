@@ -1,0 +1,425 @@
+Run Release 9.6 Regression (Stage) – ID: 789  Test run
+5%
+Completed
+125 of 131 remaining
+6 Passed
+5% set to Passed
+0 Failed
+0% set to Failed
+0 Retest
+0% set to Retest
+0 Blocked
+0% set to Blocked
+0 Skipped
+0% set to Skipped
+5% 6 successful 0% 0 failures 95% 125 others
+Run ID 789
+Project
+State Active:   In progress
+Milestone
+Tags  regression
+Created at
+Created by
+ Card Not Present (CNP) (17)
+Regression
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Payments
+Release 9.6
+07/22/2026
+Ana PaulaA
+Validate that, CNP can process successful transactions with VISA Card. Normal
+Validate that, CNP can process successful transactions with AMEX Card. Normal
+Validate that, CNP can process successful transactions with Discover card. Normal
+Validate that, CNP can process successful transactions with MasterCard. Normal
+Validate that, CNP receives an error message when the CVV does not match. Normal
+Validate that, CNP receives an error message when the Zipcode does not match. Normal
+Validate that, CNP receives an error message when card is expired Normal
+Validate that, the correct Transaction Amount is stored in the [Payments].[Payments] DB table. Normal
+Validate that, the correct PaymenTypeMethod is stored for the new payment transaction in the [Payments].
+[Payments] DB table
+ Normal
+Validate that, a partial refund is able to get successfully processed for CNP transaction Normal
+Validate that, the correct partial refund Amount and TransactionID is stored in the [Payments].[Refunds] table Normal
+Validate that, a void transaction (Full refund under the same day window) is able to get successfully processed
+for CNP transaction
+ Normal
+Validate that, the correct void amount and transactionID is stored in the [Payments].[Voids] table Normal
+7/22/26, 2:34 PM Run Release 9.6 Regression (Stage) - Testmo
+https://wellﬁt.testmo.net/runs/print/789 1/6
+
+===== PAGE BREAK =====
+
+Untested
+Untested
+Untested
+Untested
+ Wellfit Provisioning (9)
+Regression
+Test Priority Status
+Passed
+Passed
+Passed
+Passed
+Passed
+Passed
+Untested
+Untested
+Untested
+ Card Present (CP) (5)
+Regression
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+ PAY-1128 MyWallet: Adding New Cards (8)
+Regression > Wallet
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Validate that, CNP with Wellfit GUID can process successful transactions with VISA Card. Normal
+Validate that, CNP with Wellfit GUID can process successful transactions with AMEX Card. Normal
+Validate that, CNP with Wellfit GUID can process successful transactions with DISCOVER Card. Normal
+Validate that, CNP with Wellfit GUID can process successful transactions with Master Card. Normal
+Verify that, from Wellfit Provisioning authenticate API is working 200 ok Normal
+Verify that, from Wellfit Provisioning, create new submerchant API is working 200 ok Normal
+Verify that, from Wellfit Provisioning collection, create update submerchant API is working 200 ok Normal
+Verify that, from Wellfit Provisioning collection, create read submerchant API is working 200 ok Normal
+Verify that, from DB Payments.Submerchant's table, created new submerchant is logged and stored correctly Normal
+Verify that, from Wellfit Provisioning, read merchant category codes API returns 200 OK Normal
+Verify that, from Wellfit Provisioning, create merchant category code API returns 200 OK Normal
+Verify that, from Wellfit Provisioning, delete merchant category code API returns 200 OK Normal
+Verify that, when a new sub-merchant is created, its merchant category code is stored and matches
+MerchantCategoryCodes
+ Normal
+Ensure, CP endpoint (/credit-card-present/charge-card) is able to make successfull payment with any payment
+device
+ Normal
+Ensure, CP endpoint is able to return token guid in the response Normal
+Ensure, Refunds are working fine for CP transactions Normal
+Ensure, voids are working fine for CP transactions Normal
+Ensure, CP end point returns transactionid with dash (-) (ex: 508616192-1588) Normal
+Verify that, authenticate API req res is successful Normal
+Verify that, create-wallet API req res retrieves a successful response Normal
+Verify that, a new card token can be added to a Wallet via API Normal
+Verify that executing a query from the Wallet DB will retrieve the Wallet and Card token logs Normal
+Verify that, card number, expiration date, CVV, zip/postal code, input validations errors are returned via API Normal
+Verify that, create-card token API returns a confirmation response after successfully adding a new card Normal
+Verify that the card token generation is logged in the DB Normal
+Validate Wallet Tokenize Transaction - TokenId Stored in Wallet DB Normal
+7/22/26, 2:34 PM Run Release 9.6 Regression (Stage) - Testmo
+https://wellﬁt.testmo.net/runs/print/789 2/6
+
+===== PAGE BREAK =====
+
+ PAY-1127 MyWallet: Removing Stored Cards (7)
+Regression > Wallet
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+ TokenVault (13)
+Regression
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+ EX8000 (1)
+Regression
+Test Priority Status
+Untested
+ Bug/HotFix* PAY-2603 Card Token Vault Fails to Return Wellfit Token (12)
+Regression
+Test Priority Status
+Untested
+Untested
+Verify that, delete-token API for credit cards request response is successful Normal
+Verify that, a card token cannot be deleted without authentication Normal
+Verify that, attempting to delete a token linked to an active subscription retrieves an error message Normal
+Verify that, attempting to delete a card token linked to an active payment plans retrieves an error message Normal
+Verify that, a clear error message is displayed when card token cannot be deleted from the Wallet Normal
+Verify that, all types of cards can be deleted via API Normal
+Verify that, once a deleted card token is removed, the details are also removed from the Wallet DB Normal
+Ensure CNP V1 endpoint is able to make a successful payment with processor token Normal
+Ensure CNP V1 endpoint is able to make a successful payment with token GUID Normal
+Ensure, CNP V1 endpoint is able to make a sucessful payment with paypageID Normal
+Ensure, Token is not saved into tokenvalut DB when CNP V1 endpoint runs with processor token ( Right now
+not saving in future it might be saved)
+ Normal
+Ensure, CP V1 endpoint returns token GUID in the response Normal
+Ensure, CNP V1 endpoint is able to make a successful payment with token GUID which returns on CP response Normal
+Ensure, Token is able to save into tokenvalut DB when CP V1 endpoint runs Normal
+Ensure, Token is able to add successfully and able to save into token valut DB when tokenVaultAPI/add-token
+end point runs
+ Normal
+Ensure, CNP V2 ( v2/cnp/charge) endpoint is able to make a successful payment with processor token Normal
+Ensure, CNP V2 ( v2/cnp/charge) endpoint is able to make a successful payment with token GUID' Normal
+Ensure, CNP V2 ( v2/cnp/charge) endpoint is able to make a successful payment with paypageid Normal
+Ensure, token is able to save into tokenvallt DB when CNP V2 end point runs with processor token ( If token is
+not present in DB it will save . If token is already there it will not save)
+ Normal
+Ensure that, CP charge card API retrieves Wellfit Token GUID as "cardToken" value response Normal
+Verify transaction successful on EX8000 device Normal
+Verify that, Add Token API works successfully without cardZipCode Normal
+Validate that, a token is created successfully when cardZipCode is provided Normal
+7/22/26, 2:34 PM Run Release 9.6 Regression (Stage) - Testmo
+https://wellﬁt.testmo.net/runs/print/789 3/6
+
+===== PAGE BREAK =====
+
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+ Treasury (1)
+Regression
+Test Priority Status
+Untested
+ CP Payment - Settlement and Funding - Treasury (9)
+Regression > Treasury
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+ CP Refund - Settlement and Funding - Treasury (9)
+Regression > Treasury
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Validate that, the API accepts a request when cardZipCode is sent as an empty string Normal
+Validate that, the API rejects invalid cardZipCode values Normal
+Validate that, the API no longer fails when cardZipCode is omitted Normal
+Validate that, the Token Vault generates and returns a Wellfit token for a valid CP charge API request without
+ZipCodeField
+ Normal
+Validate that, Wellfit Token retrieved in CP charge API response is stored in Token Vauld dbo Tokens table Normal
+Validate that, a Wellfit token is generated successfully for a valid CNP request with ZipCodeField Normal
+Validate that, Wellfit Token retrieved in CNP API response is stored in Token Vauld dbo Tokens table Normal
+Validate that, a Wellfit token is generated successfully for a valid CNP request without ZipCodeField Normal
+Validate that, a transaction is generated successfully for a valid CNP request with Wellfit Token Normal
+Validate that, the Token Vault returns a Processor token and generates a DevOps alert when Wellfit token
+generation fails for a CP request
+ Normal
+Verify that Funding and Settlement are skipped on holidays and processed on the next business day Normal
+Validate that POST CP /payments API is 200 OK Normal
+Validate that CP Payment can be successfully sent to the system Normal
+Validate that CP transaction is successfully stored as 'Approved' in Payments DB Normal
+Validate that CP transaction gets "SettlementDate"value filled via query through Payments DB Table Normal
+Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK Normal
+Validate that "FundingInstructions" and "SettlementDate" are not NULL for CNP transaction in Payments DB
+Table after creating FundingBatch via API
+ Normal
+Validate that Payments.FundingInstructions Table contains proper co-relation of "FIPC-PayFac", "FISC-
+NetSettlement" and "Id" against "fundingInstructionId". "PayFacFee" and "Amount" values from Platform
+Payments.Payments DB
+ Normal
+Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK Normal
+Validate that Payments.FundingBatches Table contains proper "BatchFileName" value after sending funding
+batch via API
+ Normal
+Validate that POST CP /payments API is 200 OK Normal
+Validate that CP partial refund can be successfully sent to the system Normal
+Validate that CP partial refund is successfully stored as 'Approved' in Payments DB Normal
+Validate that CP partial refund gets "SettlementDate"value filled via query through Payments DB Table Normal
+7/22/26, 2:34 PM Run Release 9.6 Regression (Stage) - Testmo
+https://wellﬁt.testmo.net/runs/print/789 4/6
+
+===== PAGE BREAK =====
+
+Untested
+Untested
+Untested
+Untested
+Untested
+ CNP Payment - Settlement and Funding - Treasury (9)
+Regression > Treasury
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+ CNP Refund - Settlement and Funding - Treasury (9)
+Regression > Treasury
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK Normal
+Validate that "FundingInstructions" and "SettlementDate" are not NULL for CP partial refund in Payments DB
+Table after creating FundingBatch via API
+ Normal
+Validate that Payments.FundingInstructions Table contains proper co-relation of "FIPC-PayFac", "FISC-
+NetSettlement" and "Id" against "fundingInstructionId". "PayFacFee" and "Amount" values from Platform
+Payments.Payments DB
+ Normal
+Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK Normal
+Validate that Payments.FundingBatches Table contains proper "BatchFileName" value after sending funding
+batch via API
+ Normal
+Validate that POST CNP /payments API is 200 OK Normal
+Validate that CNP Payment can be successfully sent to the system Normal
+Validate that CNP transaction is successfully stored as 'Approved' in Payments DB Normal
+Validate that CNP transaction gets "SettlementDate"value filled via query through Payments DB Table Normal
+Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK Normal
+Validate that "FundingInstructions" and "SettlementDate" are not NULL for CNP transaction in Payments DB
+Table after creating FundingBatch via API
+ Normal
+Validate that Payments.FundingInstructions Table contains proper co-relation of "FIPC-PayFac", "FISC-
+NetSettlement" and "Id" against "fundingInstructionId". "PayFacFee" and "Amount" values from Platform
+Payments.Payments DB
+ Normal
+Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK Normal
+Validate that Payments.FundingBatches Table contains proper "BatchFileName" value after sending funding
+batch via API
+ Normal
+Validate that POST CNP /payments API is 200 OK Normal
+Validate that CNP partial refund can be successfully sent to the system Normal
+Validate that CNP partial refund is successfully stored as 'Approved' in Payments DB Normal
+Validate that CNP partial refund gets "SettlementDate"value filled via query through Payments DB Table Normal
+Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK Normal
+Validate that "FundingInstructions" and "SettlementDate" are not NULL for CNP partial refund in Payments
+DB Table after creating FundingBatch via API
+ Normal
+Validate that Payments.FundingInstructions Table contains proper co-relation of "FIPC-PayFac", "FISC-
+NetSettlement" and "Id" against "fundingInstructionId". "PayFacFee" and "Amount" values from Platform
+Payments.Payments DB
+ Normal
+Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK Normal
+Validate that Payments.FundingBatches Table contains proper "BatchFileName" value after sending funding
+batch via API
+ Normal
+7/22/26, 2:34 PM Run Release 9.6 Regression (Stage) - Testmo
+https://wellﬁt.testmo.net/runs/print/789 5/6
+
+===== PAGE BREAK =====
+
+ ACH Payment - Settlement and Funding - Treasury (10)
+Regression > Treasury
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+ ACH Refund - Settlement and Funding - Treasury (12)
+Regression > Treasury
+Test Priority Status
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+Untested
+07/22/2026 4:34 pm (UTC-05:00)
+Validate that POST /payments/authenticate API is 200 OK Normal
+Validate that ACH Payment can be successfully sent to the system Normal
+Validate that ACH transaction is successfully stored as status 3 'Approved' in Payments and Platform DB Tables Normal
+Validate that ACH transaction gets "SettlementDate"value filled via query through Payments DB Table Normal
+Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK Normal
+Validate that "FundingInstructions" and "SettlementDate" are not NULL for ACH transactionid in Payments DB
+Table after creating FundingBatch via API
+ Normal
+Validate that Payments.FundingInstructions Table contains proper co-relation of "FIPC-PayFac", "FISC-
+NetSettlement" and "Id" against "fundingInstructionId". "PayFacFee" and "Amount" values from Platform
+Payments.Payments DB
+ Normal
+Validate that ACH transaction is successfully stored as status 5 'Funded' in Payments DB Tables Normal
+Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK Normal
+Validate that Payments.FundingBatches Table contains proper "BatchFileName" value after sending funding
+batch via API
+ Normal
+Validate that POST /payments/authenticate API is 200 OK Normal
+Validate that ACH Refund with new payment transaction can be successfully sent to the system Normal
+Validate that ACH Refund with existent payment transaction can be successfully sent to the system Normal
+Validate that ACH partial refund is successfully stored as status 'Partial Refund' 18 in Payments and Platform
+DB Tables
+ Normal
+Validate that ACH full refund is successfully stored as status 'Full Refund' 10 in Payments and Platform DB
+Tables
+ Normal
+Validate that ACH refund gets "SettlementDate"value filled via query through Payments/Platform DB Table Normal
+Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK Normal
+Validate that "FundingInstructions" and "SettlementDate" are not NULL for ACH Refund in Payments DB Table
+after creating FundingBatch via API
+ Normal
+Validate that ACH Refund is successfully stored as status 5 'Funded' in Payments DB Tables Normal
+Validate that Payments.FundingInstructions Table contains proper co-relation of "FIPC-PayFac", "FISC-
+NetSettlement" and "Id" against "fundingInstructionId". "PayFacFee" and "Amount" values from Platform
+Payments.Payments DB
+ Normal
+Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK Normal
+Validate that Payments.FundingBatches Table contains proper "BatchFileName" value after sending funding
+batch via API
+ Normal
+7/22/26, 2:34 PM Run Release 9.6 Regression (Stage) - Testmo
+https://wellﬁt.testmo.net/runs/print/789 6/6

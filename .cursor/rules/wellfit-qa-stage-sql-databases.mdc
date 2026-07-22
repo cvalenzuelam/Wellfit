@@ -85,7 +85,7 @@ Schemas present: `AccountUpdater`, `Fees`, `Payments`, `Returns`, `Transactions`
 |-------|-----|
 | `[dbo].[BankAccountTokens]` | **Primary** — ACH bank tokens. Verified cols: `Id`, `RoutingNumber`, `EncryptedAccountNumber`, `AccountHash`, `Status`, `DeactivatedAt`, `DeactivationReason`, NOC fields, `CreatedAt`/`UpdatedAt` (full list in schema-verified) |
 | `[dbo].[BankAccountTokenLog]` | Token audit — `TokenId`, `EventType`, `EventTimestamp`, `TokenStatusBefore`/`After`, NOC/return fields (see schema-verified) |
-| `[dbo].[PaymentTokens]` | Payment tokens (may be card-related; confirm before use) |
+| `[dbo].[PaymentTokens]` | CNP card processor tokens — `ProcessorToken` for process-card; cols: Id, ProcessorId, ProcessorToken, CardLastFour, CardBrand, CardExpirationMonth/Year, CardZipCode, EntityUpdated (verified 2026-07-22) |
 | `tmp_ms_xx_BankAccountTokens_*` | Temp/migration — ignore for QA |
 | Index/PostOptimization/QueryStore* | Ops — ignore |
 

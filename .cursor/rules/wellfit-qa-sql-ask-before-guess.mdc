@@ -1,42 +1,55 @@
 ---
-description: Wellfit QA — never invent SQL tables/columns; ask Chris for schema first, then update verified schema docs
+description: PRIORITY — never invent SQL; ask/discover schema first when columns/DB unknown
 alwaysApply: true
 ---
 
-# Wellfit QA — SQL: ask schema before guessing
+# Wellfit QA — SQL: ask schema before guessing (PRIORITY)
+
+**Chris priority (always):** When the conversation involves SQL / DB / “dame el query” / test data from tables — if you do **not** have **verified** DB + schema + table + column names for that object, **do not invent a query**. Discover or ask first. This outranks “be helpful and ship a guess SELECT”.
 
 Broader rule (endpoints, hosts, scopes too): `wellfit-qa-ask-chris-before-guess.mdc`.
 
-When writing or fixing **STAGE/Preprod SQL** and you are **not sure** of the database, schema, table, or column names:
+## Hard stop — inventing SQL
 
-## Do
+You **must not** invent:
 
-1. **Ask Chris** for structure first — do **not** invent tables/columns or ship a guess query as the main step.
-2. Give a short **discovery** query (`DB_NAME()`, `sys.tables`, `sys.columns`) scoped to what you need.
-3. When Chris pastes results (**tables, columns, lookup rows, scopes, hosts**), **update immediately**:
-   - `docs/guides/stage-sql-schema-verified.md` (source of truth)
-   - `.cursor/rules/wellfit-qa-stage-sql-databases.mdc` (QA quick map)
-   - related guides/rules if needed (e.g. `stage-identity-client-scopes.md`)
-4. Only then write the real ticket script / Postman data SQL.
-5. Treat his pastes as **canonical STAGE truth** over old runbooks or memory.
+- Database (Platform vs Payments vs TokenVault vs …)
+- Schema / table names
+- Column names (`ProcessorToken`, `Network`, `CreatedDate`, etc.)
+- Joins / status enums you have not verified
+
+“It existed in an old Postman comment / Testmo wording / another ticket” is **not** verified STAGE schema.
+
+## When unsure — do this instead
+
+1. Say clearly: **no tengo columnas/DB verificadas** for X.
+2. Give a short **discovery** only (no fake business query):
+   - `SELECT DB_NAME();`
+   - `INFORMATION_SCHEMA.COLUMNS` / `sys.columns` for the table
+   - or `sys.tables` filtered by name
+3. Wait for Chris’s paste.
+4. **Update immediately**:
+   - `docs/guides/stage-sql-schema-verified.md`
+   - `.cursor/rules/wellfit-qa-stage-sql-databases.mdc` (and related rules if needed)
+5. **Then** write the real SELECT/UPDATE/INSERT for the ticket.
 
 ## Do not
 
-- Assume Platform vs Payments vs master from memory alone — confirm `DB_NAME()`.
-- Copy table/column names from old DEV runbooks or Claude dumps without STAGE verify.
-- Use `SELECT *` / invented filters as a substitute for knowing the schema when Msg 208 / wrong columns are likely.
-- Put **`USE [db];` / `GO`** in QA scripts Chris runs in **Azure Data Studio** — ADS often fails to load/run those batches. Instead: comment “select DB **Payments** (or Platform) in the dropdown” and ship a single `SELECT` batch.
+- Ship a guess query as the main step (“try this, if it fails we’ll fix”).
+- Assume Platform vs Payments from memory alone.
+- Copy DEV/Claude column lists without STAGE verify.
+- Put **`USE [db];` / `GO`** in scripts for Azure Data Studio — pick DB in the dropdown; one `SELECT` batch.
 
-## Already verified (use these; still ask if extending)
+## Already verified (safe to use; still discover if extending)
 
-All dumps below are **STAGE** (`stage-platform-wellfit-sqlserver…`). Re-verify if the ticket targets Preprod/Prod.
+All dumps are **STAGE** (`stage-platform-wellfit-sqlserver…`). Re-verify Preprod/Prod.
 
-- **Platform** `Payments.*` table list — see schema-verified doc (2026-07-16).
+- **Platform** `Payments.*` table list — schema-verified doc (2026-07-16).
 - **Payments DB** schemas/tables + `PaymentTransaction` / `PaymentMethodACH` / lookups / `OriginType` — same doc.
 - **TokenVault** `BankAccountTokens` + `BankAccountTokenLog` columns — same doc.
 - Platform `[Payments].[Payments]` columns — `wellfit-qa-payments-sql.mdc`.
-- STAGE Identity client→scopes — `docs/guides/stage-identity-client-scopes.md`.
+- **TokenVault** `dbo.PaymentTokens` columns (2026-07-22) — CNP `process-card` body `token` = **`ProcessorToken`**. Not on Platform.
 
 ## Goal
 
-Grow a reliable STAGE schema map over time so SQL scripts and Postman seed steps stop failing on invented names.
+Grow a reliable STAGE schema map. Chris should never get a SQL step that fails on invented names when we could have asked first.

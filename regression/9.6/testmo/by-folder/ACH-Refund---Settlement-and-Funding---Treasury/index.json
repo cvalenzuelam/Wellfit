@@ -1,0 +1,98 @@
+[
+  {
+    "caseId": "303923",
+    "testId": "1853948",
+    "title": "Validate that POST  /payments/authenticate API is 200 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303924",
+    "testId": "1853949",
+    "title": "Validate that ACH Refund with new payment transaction can be successfully sent to the system",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303968",
+    "testId": "1853967",
+    "title": "Validate that ACH Refund with existent payment transaction can be successfully sent to the system",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303925",
+    "testId": "1853950",
+    "title": "Validate that ACH partial refund is successfully stored as status  'Partial Refund' 18  in Payments and Platform DB Tables",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303969",
+    "testId": "1853968",
+    "title": "Validate that ACH full refund is successfully stored as status  'Full Refund' 10  in Payments and Platform DB Tables",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303928",
+    "testId": "1853953",
+    "title": "Validate that  ACH refund  gets \"SettlementDate\"value filled via query through Payments/Platform  DB Table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303926",
+    "testId": "1853951",
+    "title": "Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303927",
+    "testId": "1853952",
+    "title": "Validate that  \"FundingInstructions\" and \"SettlementDate\" are not NULL for ACH Refund in Payments  DB Table after creating FundingBatch via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303929",
+    "testId": "1853954",
+    "title": "Validate that ACH Refund is successfully stored as status 5 'Funded' in Payments DB Tables",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303930",
+    "testId": "1853955",
+    "title": "Validate that Payments.FundingInstructions Table contains proper co-relation of  \"FIPC-PayFac\", \"FISC-NetSettlement\" and \"Id\" against  \"fundingInstructionId\". \"PayFacFee\" and \"Amount\" values from  Platform Payments.Payments DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303931",
+    "testId": "1853956",
+    "title": "Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303932",
+    "testId": "1853957",
+    "title": "Validate that Payments.FundingBatches Table contains proper \"BatchFileName\" value after sending funding batch via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "ACH Refund - Settlement and Funding - Treasury"
+  }
+]

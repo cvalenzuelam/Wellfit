@@ -1,0 +1,2040 @@
+{
+  "info": {
+    "name": "9.6 \u2014 CNP Regression (STAGE)",
+    "_postman_id": "r96-cnp-regression-stage-v2",
+    "description": "Release 9.6 STAGE \u2014 Card Not Present (CNP).\nEach folder = one Testmo case (exact title).\n\nImport env: `9.6 CNP Regression STAGE`.\nRun: 00. Auth \u2192 TC01\u2026TC17.\nTokens: TokenVault dbo.PaymentTokens ProcessorToken (numeric, not WPAC*).\nSQL folders: Send \u2192 Visualize \u2192 copy SQL \u2192 Platform DB.\n\nNegatives TC05\u2013TC07: Confluence Vantiv PANs \u2014 see `CNP-STAGE-vantiv-test-cards.md` (not ProcessorToken for CVV/ZIP).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Auth (run first)",
+      "description": "Setup \u2014 not a Testmo case. Saves Payment-Bearer-Token.",
+      "item": [
+        {
+          "name": "POST Authenticate Payment (STAGE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{URL}}/authenticate",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{paymentsUsername}}\",\n  \"password\": \"{{paymentsPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('bearerToken present', () => pm.expect(j.bearerToken).to.be.a('string').and.not.empty);",
+                  "pm.environment.set('Payment-Bearer-Token', j.bearerToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC01. Validate that, CNP can process successful transactions with VISA Card.",
+      "description": "AC-1 / Case 13579. process-card with numeric ProcessorToken from TokenVault.dbo.PaymentTokens (VISA), network VI, Redhill subMerchantId.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor, token/expirationDate.\n**Evidence:** Postman body. Saves lastTransactionId for TC08/TC09.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 VISA Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-1 / Case 13579. process-card with numeric ProcessorToken from TokenVault.dbo.PaymentTokens (VISA), network VI, Redhill subMerchantId.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor, token/expirationDate.\n**Evidence:** Postman body. Saves lastTransactionId for TC08/TC09.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.01,\n  \"expirationDate\": \"{{expirationDate}}\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenVisa}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC02. Validate that, CNP can process successful transactions with AMEX Card.",
+      "description": "AC-2 / Case 13580. AMEX ProcessorToken, network AX.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 AMEX Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-2 / Case 13580. AMEX ProcessorToken, network AX.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.01,\n  \"expirationDate\": \"{{expirationDateAmex}}\",\n  \"network\": \"AX\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenAmex}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC03. Validate that, CNP can process successful transactions with Discover card.",
+      "description": "AC-3 / Case 13581. Discover ProcessorToken, network DI.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 Discover card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-3 / Case 13581. Discover ProcessorToken, network DI.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.01,\n  \"expirationDate\": \"{{expirationDateDiscover}}\",\n  \"network\": \"DI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenDiscover}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC04. Validate that, CNP can process successful transactions with MasterCard.",
+      "description": "AC-4 / Case 13582. MasterCard ProcessorToken, network MC.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 MasterCard",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-4 / Case 13582. MasterCard ProcessorToken, network MC.\n\n**Expect:** 200, transactionId, approvalNumber, billingDescriptor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.01,\n  \"expirationDate\": \"{{expirationDateMc}}\",\n  \"network\": \"MC\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenMc}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC05. Validate that, CNP receives an error message when the CVV does not match.",
+      "description": "AC-5 / Case 13583. Confluence Vantiv cards (see CNP-STAGE-vantiv-test-cards.md).\n\n**Do not use ProcessorToken** \u2014 token rail ignores CVV.\n\n1) eProtect Visa `4457010000000009` + wrong CVV `000` \u2192 expect eProtect reject.\n2) eProtect Amex `374313304211118` \u2192 process-card \u2192 expect CVV/CID decline.",
+      "item": [
+        {
+          "name": "POST eProtect \u2014 Visa AVS card wrong CVV (445701\u20260009)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Confluence: 4457010000000009 Visa CVV 349 ZIP 01803 \u2014 use for CVV/ZIP/AVS.\nThis request sends **wrong CVV 000** (correct is 349).\n**Expect:** eProtect not Success \u2014 often codes 881\u2013883 (CVV) or no paypageRegistrationId / Failure.\nIf you somehow get registrationId, do **not** treat as TC05 pass; use the Amex CVV-fail path below.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.TC05.CVV",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4457010000000009",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "000",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "const text = pm.response.text();",
+                  "console.log(code + ' ' + text.substring(0, 800));",
+                  "let j = {}; try { j = pm.response.json(); } catch (e) {}",
+                  "const resp = String(j.response || '');",
+                  "const msg = String(j.message || '');",
+                  "const hasReg = !!j.paypageRegistrationId;",
+                  "pm.test('HTTP 200 from host', () => pm.expect(code).to.eql(200));",
+                  "pm.test('CVV rejected at eProtect (no Success registration) OR CVV error code', () => {",
+                  "  const cvvCode = /881|882|883/.test(resp) || /validation|cvv|security/i.test(msg + text);",
+                  "  const failed = resp === '889' || msg.toLowerCase() === 'failure' || !hasReg;",
+                  "  const success = hasReg && (msg.toLowerCase() === 'success' || resp === '870');",
+                  "  if (success) {",
+                  "    console.warn('eProtect accepted wrong CVV \u2014 use Amex 374313\u2026 path for TC05');",
+                  "  }",
+                  "  pm.expect(success, 'Wrong CVV should not yield Success+paypageRegistrationId').to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST eProtect \u2014 Amex Decline CVV/CID (374313304211118)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Confluence: 374313304211118 Amex \u2014 Decline CVV/CID Fail.\nThen run process-card in this folder. Expect CVV/CID decline (not 200 approval).",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.TC05.CID",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "374313304211118",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "1234",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not eProtect 889 Failure', () => pm.expect(String(j.response || '')).to.not.eql('889'));",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);",
+                  "console.log('paypageRegistrationId=' + j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 Amex CVV/CID fail card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "After eProtect Amex 374313304211118. Confluence: Decline CVV/CID Fail.\n**Expect:** not approved (4xx or decline without normal approvalNumber success).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.05,\n  \"expirationDate\": \"1230\",\n  \"network\": \"AX\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"{{zipCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-NEG-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "const text = pm.response.text();",
+                  "console.log(code + ' ' + text.substring(0, 800));",
+                  "pm.test('Not a successful approval (expect decline/error)', () => {",
+                  "  const approved = code === 200 && /\\\"approvalNumber\\\"|\\\"transactionId\\\"/i.test(text) && !/error|fail|mismatch|cvv|zip|cid|invalid/i.test(text);",
+                  "  // 200 with transactionId+approval = fail this negative case",
+                  "  const softApproved = code === 200 && /approvalNumber/i.test(text);",
+                  "  pm.expect(softApproved, 'Got approval \u2014 wrong Confluence PAN or path').to.be.false;",
+                  "});",
+                  "pm.test('Error/decline mentions expected signal when possible', () => {",
+                  "  const ok = /cvv|cid|security|fail|decline|invalid/i.test(text) || code >= 400;",
+                  "  if (!ok) console.warn('Check body manually against Confluence expected decline');",
+                  "  pm.expect(code === 200 && /approvalNumber/i.test(text)).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC06. Validate that, CNP receives an error message when the Zipcode does not match.",
+      "description": "AC-6 / Case 13584. Confluence: MasterCard `5112000200000002` = Billing Zip Code mismatch.\nAlt: Visa `4457010000000009` (CVV 349 / ZIP 01803) + process-card zipCode 00000.\nSee CNP-STAGE-vantiv-test-cards.md. Do not use generic ProcessorToken.",
+      "item": [
+        {
+          "name": "POST eProtect \u2014 MC Billing ZIP mismatch card (5112000200000002)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Confluence: 5112000200000002 MasterCard \u2014 Billing Zip Code mismatch.\nThen process-card below.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.TC06.ZIP",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "5112000200000002",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not 889 Failure', () => pm.expect(String(j.response || '')).to.not.eql('889'));",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST eProtect \u2014 Visa AVS card correct CVV (445701\u20260009) optional alt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Optional alt: Confluence AVS card. Use CVV 349, then process-card with zipCode 00000.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.TC06.AVS",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4457010000000009",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "349",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not 889 Failure', () => pm.expect(String(j.response || '')).to.not.eql('889'));",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 MC 511200\u20260002 (Billing Zip mismatch)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "After eProtect 5112000200000002 (primary) or AVS Visa + set zipCode 00000 in body.\n**Expect:** ~409 ProcessorResponse.Failure.ZipCode / Billing Zip Code Mismatch.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.06,\n  \"expirationDate\": \"1230\",\n  \"network\": \"MC\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"00000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-NEG-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "const text = pm.response.text();",
+                  "console.log(code + ' ' + text.substring(0, 800));",
+                  "pm.test('Not approved', () => pm.expect(code === 200 && /approvalNumber/i.test(text)).to.be.false);",
+                  "pm.test('Prefer HTTP 409 ZIP mismatch', () => {",
+                  "  if (code !== 409) console.warn('Expected 409 Billing Zip Code Mismatch when Confluence PAN works');",
+                  "  pm.expect(code).to.be.within(400, 499);",
+                  "});",
+                  "pm.test('Body mentions Zip when present', () => {",
+                  "  const ok = /ZipCode|Zip Code|Billing Zip/i.test(text);",
+                  "  if (!ok) console.warn('Confirm decline reason manually');",
+                  "  pm.expect(code).to.be.at.least(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 AVS Visa wrong zip 00000 (optional alt)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "After optional eProtect 4457010000000009 (CVV 349). zipCode 00000 vs Confluence 01803.\nExpect ~409 Billing Zip Code Mismatch.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.06,\n  \"expirationDate\": \"1230\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"00000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-ZIP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "if (!pm.environment.get('paypageRegistrationId')) throw new Error('Run Visa AVS eProtect first');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "const text = pm.response.text();",
+                  "console.log(code + ' ' + text.substring(0, 800));",
+                  "pm.test('Not approved', () => pm.expect(code === 200 && /approvalNumber/i.test(text)).to.be.false);",
+                  "pm.test('4xx ZIP mismatch preferred', () => pm.expect(code).to.be.within(400, 499));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC07. Validate that, CNP receives an error message when card is expired",
+      "description": "AC-7 / Case 13585.\nPrimary: token process-card with expirationDate `0120` \u2192 409 ExpirationDate.Invalid.\nOptional Confluence: MasterCard `5112001900000003` (Expired Card) via Pay Page.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 expired expirationDate 0120 (API validation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "Primary TC07: Wellfit rejects past MMYY on process-card \u2192 409 ExpirationDate.Invalid.\nUses tokenVisa + expirationDate 0120.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.04,\n  \"expirationDate\": \"0120\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenVisa}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "const text = pm.response.text();",
+                  "console.log(code + ' ' + text.substring(0, 600));",
+                  "pm.test('HTTP 409', () => pm.expect(code).to.eql(409));",
+                  "pm.test('ExpirationDate.Invalid', () => pm.expect(text).to.match(/ExpirationDate\\.Invalid/i));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST eProtect \u2014 MC Expired Card (5112001900000003) optional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Confluence: 5112001900000003 MasterCard \u2014 Expired Card. Optional alternate proof path.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.TC07.EXP",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "5112001900000003",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not 889 Failure', () => pm.expect(String(j.response || '')).to.not.eql('889'));",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 Confluence expired card optional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "After eProtect 5112001900000003. Expect expired / decline (not clean approval).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.07,\n  \"expirationDate\": \"1220\",\n  \"network\": \"MC\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"{{zipCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-NEG-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "const text = pm.response.text();",
+                  "console.log(code + ' ' + text.substring(0, 800));",
+                  "pm.test('Not a successful approval (expect decline/error)', () => {",
+                  "  const approved = code === 200 && /\\\"approvalNumber\\\"|\\\"transactionId\\\"/i.test(text) && !/error|fail|mismatch|cvv|zip|cid|invalid/i.test(text);",
+                  "  // 200 with transactionId+approval = fail this negative case",
+                  "  const softApproved = code === 200 && /approvalNumber/i.test(text);",
+                  "  pm.expect(softApproved, 'Got approval \u2014 wrong Confluence PAN or path').to.be.false;",
+                  "});",
+                  "pm.test('Error/decline mentions expected signal when possible', () => {",
+                  "  const ok = /expir|21|decline|invalid/i.test(text) || code >= 400;",
+                  "  if (!ok) console.warn('Check body manually against Confluence expected decline');",
+                  "  pm.expect(code === 200 && /approvalNumber/i.test(text)).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC08. Validate that, the correct Transaction Amount is stored in the [Payments].[Payments] DB table.",
+      "description": "AC-8 / Case 13586. After successful process-card, Platform [Payments].[Payments].Amount matches request amount.\nUse lastTransactionId from TC01\u2013TC04 (or seed request in this folder).",
+      "item": [
+        {
+          "name": "POST process-card \u2014 seed amount (optional if TC01 already run)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "Optional seed. Prefer reusing lastTransactionId from TC01 if amount known.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 18.75,\n  \"expirationDate\": \"{{expirationDate}}\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenVisa}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('chargeAmount', '18.75');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SQL \u2014 Amount (Send \u2192 Visualize \u2192 Platform)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "https://postman-echo.com/get",
+            "description": "Testmo AC-8. Send \u2192 Visualize \u2192 copy SQL \u2192 Azure Data Studio (**Platform**).\nExpect Amount = lastAmount for lastTransactionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "SELECT Id, TransactionId, Amount, OrderId, TimeStamp\nFROM [Payments].[Payments]\nWHERE TransactionId = '{{lastTransactionId}}';\n-- Expect Amount = {{lastAmount}}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get('lastTransactionId') || '';",
+                  "const amount = pm.environment.get('lastAmount') || '';",
+                  "if (!id) {",
+                  "  pm.test('lastTransactionId present', () => pm.expect.fail('Empty \u2014 run prior API step first'));",
+                  "  return;",
+                  "}",
+                  "pm.test('txn id ready for SQL', () => pm.expect(id).to.be.ok);",
+                  "let sql = \"SELECT Id, TransactionId, Amount, OrderId, TimeStamp\\nFROM [Payments].[Payments]\\nWHERE TransactionId = '{id}';\\n-- Expect Amount = {amount}\";",
+                  "sql = sql.replace('{id}', id).replace('{amount}', amount);",
+                  "console.log(sql);",
+                  "pm.visualizer.set(",
+                  "  `<h3>Copy this SQL \u2192 Azure Data Studio (Platform DB)</h3>` +",
+                  "  `<pre style=\"white-space:pre-wrap;font-size:13px;background:#1e1e1e;color:#ddd;padding:12px;border-radius:6px;\">${sql}</pre>` +",
+                  "  `<p><b>Id used:</b> ${id}</p>`,",
+                  "  { sql, id }",
+                  ");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC09. Validate that, the correct PaymenTypeMethod is stored for the new payment transaction in the [Payments].[Payments] DB table",
+      "description": "AC-9 / Case 13588. After token process-card, PaymentTypeMethod = 2 (CNP token).\nAfter Pay Page (TC14\u201317), re-check \u2192 PaymentTypeMethod = 1.\nMapping: 0 eCheck, 1 Pay Page, 2 CNP token, 3 Apple Pay, 4 Google Pay, 5 CP.",
+      "item": [
+        {
+          "name": "SQL \u2014 PaymentTypeMethod (Send \u2192 Visualize \u2192 Platform)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "https://postman-echo.com/get",
+            "description": "Testmo AC-9. Send \u2192 Visualize \u2192 copy SQL \u2192 **Platform**.\nToken sale \u2192 PaymentTypeMethod = 2. Pay Page \u2192 1.",
+            "body": {
+              "mode": "raw",
+              "raw": "SELECT Id, TransactionId, Amount, PaymentTypeMethod, OrderId, TimeStamp\nFROM [Payments].[Payments]\nWHERE TransactionId = '{{lastTransactionId}}';\n-- Expect PaymentTypeMethod = 2 (token) or 1 (Pay Page)",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get('lastTransactionId') || '';",
+                  "const amount = pm.environment.get('lastAmount') || '';",
+                  "if (!id) {",
+                  "  pm.test('lastTransactionId present', () => pm.expect.fail('Empty \u2014 run prior API step first'));",
+                  "  return;",
+                  "}",
+                  "pm.test('txn id ready for SQL', () => pm.expect(id).to.be.ok);",
+                  "let sql = \"SELECT Id, TransactionId, Amount, PaymentTypeMethod, OrderId, TimeStamp\\nFROM [Payments].[Payments]\\nWHERE TransactionId = '{id}';\\n-- Expect PaymentTypeMethod = 2 (token) or 1 (Pay Page)\";",
+                  "sql = sql.replace('{id}', id).replace('{amount}', amount);",
+                  "console.log(sql);",
+                  "pm.visualizer.set(",
+                  "  `<h3>Copy this SQL \u2192 Azure Data Studio (Platform DB)</h3>` +",
+                  "  `<pre style=\"white-space:pre-wrap;font-size:13px;background:#1e1e1e;color:#ddd;padding:12px;border-radius:6px;\">${sql}</pre>` +",
+                  "  `<p><b>Id used:</b> ${id}</p>`,",
+                  "  { sql, id }",
+                  ");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC10. Validate that, a partial refund is able to get successfully processed for CNP transaction",
+      "description": "AC-10 / Case 13589. Seed charge then POST /refund-transaction partial (wasVoided false).\n**Expect:** 200 + refund transactionId.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 seed for partial refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "Seeds refundOriginalTransactionId (amount 25.00).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 25.00,\n  \"expirationDate\": \"{{expirationDate}}\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenVisa}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.environment.set('refundOriginalTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('refundOriginalTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST refund-transaction \u2014 partial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/refund-transaction",
+            "description": "**Test case:** Validate that, a partial refund is able to get successfully processed for CNP transaction.\n\n**Expect:** HTTP 200 partial refund.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.00,\n  \"orderId\": \"{{lastOrderId}}\",\n  \"originalTransactionId\": \"{{refundOriginalTransactionId}}\",\n  \"wasVoided\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "console.log(pm.response.text().substring(0, 500));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC11. Validate that, the correct partial refund Amount and TransactionID is stored in the [Payments].[Refunds] table",
+      "description": "AC-11 / Case 13590. [Payments].[Refunds] Amount + TransactionId match partial refund.\nJoin via OriginalPaymentId \u2192 Payments where TransactionId = refundOriginalTransactionId.",
+      "item": [
+        {
+          "name": "SQL \u2014 Refunds (Send \u2192 Visualize \u2192 Platform)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "https://postman-echo.com/get",
+            "description": "Testmo AC-11. Send \u2192 Visualize \u2192 copy SQL \u2192 Platform.",
+            "body": {
+              "mode": "raw",
+              "raw": "SELECT r.Id, r.TransactionId, r.Amount, r.OrderId, r.OriginalPaymentId, r.TimeStamp\nFROM [Payments].[Refunds] r\nINNER JOIN [Payments].[Payments] p ON p.Id = r.OriginalPaymentId\nWHERE p.TransactionId = '{{refundOriginalTransactionId}}'\nORDER BY r.TimeStamp DESC;\n-- Expect Amount = 10.00 (partial)",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get('refundOriginalTransactionId') || '';",
+                  "const amount = pm.environment.get('lastAmount') || '';",
+                  "if (!id) {",
+                  "  pm.test('refundOriginalTransactionId present', () => pm.expect.fail('Empty \u2014 run prior API step first'));",
+                  "  return;",
+                  "}",
+                  "pm.test('txn id ready for SQL', () => pm.expect(id).to.be.ok);",
+                  "let sql = \"SELECT r.Id, r.TransactionId, r.Amount, r.OrderId, r.OriginalPaymentId, r.TimeStamp\\nFROM [Payments].[Refunds] r\\nINNER JOIN [Payments].[Payments] p ON p.Id = r.OriginalPaymentId\\nWHERE p.TransactionId = '{id}'\\nORDER BY r.TimeStamp DESC;\\n-- Expect Amount = 10.00 (partial)\";",
+                  "sql = sql.replace('{id}', id).replace('{amount}', amount);",
+                  "console.log(sql);",
+                  "pm.visualizer.set(",
+                  "  `<h3>Copy this SQL \u2192 Azure Data Studio (Platform DB)</h3>` +",
+                  "  `<pre style=\"white-space:pre-wrap;font-size:13px;background:#1e1e1e;color:#ddd;padding:12px;border-radius:6px;\">${sql}</pre>` +",
+                  "  `<p><b>Id used:</b> ${id}</p>`,",
+                  "  { sql, id }",
+                  ");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC12. Validate that, a void transaction (Full refund under the same day window) is able to get successfully processed for CNP transaction",
+      "description": "AC-12 / Case 13591. Same-day void: refund-transaction full amount, wasVoided true.\n**Expect:** 200 + void transactionId.",
+      "item": [
+        {
+          "name": "POST process-card \u2014 seed for void",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "Seeds voidOriginalTransactionId (amount 15.00) same day.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 15.00,\n  \"expirationDate\": \"{{expirationDate}}\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"token\": \"{{tokenVisa}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-CNP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "console.log('orderId=' + orderId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.environment.set('voidOriginalTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('voidOriginalTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST refund-transaction \u2014 void (wasVoided true)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/refund-transaction",
+            "description": "**Test case:** Validate that, a void transaction (Full refund under the same day window) is able to get successfully processed for CNP transaction.\n\n**Expect:** HTTP 200 void / full same-day.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 15.00,\n  \"orderId\": \"{{lastOrderId}}\",\n  \"originalTransactionId\": \"{{voidOriginalTransactionId}}\",\n  \"wasVoided\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "console.log(pm.response.text().substring(0, 500));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC13. Validate that, the correct void amount and transactionID is stored in the [Payments].[Voids] table",
+      "description": "AC-13 / Case 13592. After same-day void, row in [Payments].[Voids].\n**STAGE schema:** Voids has NO Amount column \u2014 assert TransactionId, OrderId, OriginalPaymentId, ResponseCode.",
+      "item": [
+        {
+          "name": "SQL \u2014 Voids (Send \u2192 Visualize \u2192 Platform)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "https://postman-echo.com/get",
+            "description": "Testmo AC-13 (corrected). Send \u2192 Visualize \u2192 copy SQL \u2192 Platform.\nDo not expect Amount on Voids.",
+            "body": {
+              "mode": "raw",
+              "raw": "SELECT v.Id, v.TransactionId, v.OrderId, v.OriginalPaymentId, v.ResponseCode, v.ResponseMessage, v.TimeStamp\nFROM [Payments].[Voids] v\nINNER JOIN [Payments].[Payments] p ON p.Id = v.OriginalPaymentId\nWHERE p.TransactionId = '{{voidOriginalTransactionId}}'\nORDER BY v.TimeStamp DESC;\n-- Expect void row (no Amount column on Voids)",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = pm.environment.get('voidOriginalTransactionId') || '';",
+                  "const amount = pm.environment.get('lastAmount') || '';",
+                  "if (!id) {",
+                  "  pm.test('voidOriginalTransactionId present', () => pm.expect.fail('Empty \u2014 run prior API step first'));",
+                  "  return;",
+                  "}",
+                  "pm.test('txn id ready for SQL', () => pm.expect(id).to.be.ok);",
+                  "let sql = \"SELECT v.Id, v.TransactionId, v.OrderId, v.OriginalPaymentId, v.ResponseCode, v.ResponseMessage, v.TimeStamp\\nFROM [Payments].[Voids] v\\nINNER JOIN [Payments].[Payments] p ON p.Id = v.OriginalPaymentId\\nWHERE p.TransactionId = '{id}'\\nORDER BY v.TimeStamp DESC;\\n-- Expect void row (no Amount column on Voids)\";",
+                  "sql = sql.replace('{id}', id).replace('{amount}', amount);",
+                  "console.log(sql);",
+                  "pm.visualizer.set(",
+                  "  `<h3>Copy this SQL \u2192 Azure Data Studio (Platform DB)</h3>` +",
+                  "  `<pre style=\"white-space:pre-wrap;font-size:13px;background:#1e1e1e;color:#ddd;padding:12px;border-radius:6px;\">${sql}</pre>` +",
+                  "  `<p><b>Id used:</b> ${id}</p><p>Note: [Payments].[Voids] has no Amount column.</p>`,",
+                  "  { sql, id }",
+                  ");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC14. Validate that, CNP with Wellfit GUID can process successful transactions with VISA Card.",
+      "description": "AC-14 / Case 294866. Pay Page: eProtect \u2192 process-card with payPageRegistrationId.\nConfluence Visa approved: PAN 4457010000000009 CVV 349 ZIP 01803. network VI.\nEnv var for registration id: paypageRegistrationId (must match body).",
+      "item": [
+        {
+          "name": "POST eProtect paypage \u2014 VISA Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Confluence Visa 4457010000000009 CVV 349. Expect paypageRegistrationId (not 889).",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489774",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "4457010000000009",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "349",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not eProtect Failure 889', () => {",
+                  "  pm.expect(String(j.response || '')).to.not.eql('889');",
+                  "  pm.expect(String(j.message || '').toLowerCase()).to.not.eql('failure');",
+                  "});",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);",
+                  "console.log('paypageRegistrationId=' + j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 VISA Card Pay Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-14 / Case 294866 step 2. process-card with payPageRegistrationId, network VI, zipCode. **Expect:** 200, transactionId, approvalNumber. Saves lastTransactionId (PaymentTypeMethod=1).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 12.01,\n  \"expirationDate\": \"1230\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"01803\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-PP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId') || pm.environment.get('payPageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "pm.environment.set('paypageRegistrationId', reg);",
+                  "console.log('orderId=' + orderId + ' paypageRegistrationId=' + reg);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC15. Validate that, CNP with Wellfit GUID can process successful transactions with AMEX Card.",
+      "description": "AC-15 / Case 294867. Pay Page flow (Testmo title may say Wellfit GUID): eProtect paypage \u2192 paypageRegistrationId \u2192 process-card with payPageRegistrationId (no ProcessorToken).\nBrand AMEX, network AX. After success, TC09 SQL \u2192 PaymentTypeMethod = 1.\nUse Paypages collection PANs (already in eProtect body).",
+      "item": [
+        {
+          "name": "POST eProtect paypage \u2014 AMEX Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "AC-15 / Case 294867 step 1. POST eProtect paypage (AMEX). Expect 200 + paypageRegistrationId (not response 889).",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489776",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "375000026600004",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "1234",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not eProtect Failure 889', () => {",
+                  "  pm.expect(String(j.response || '')).to.not.eql('889');",
+                  "  pm.expect(String(j.message || '').toLowerCase()).to.not.eql('failure');",
+                  "});",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);",
+                  "console.log('paypageRegistrationId=' + j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 AMEX Card Pay Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-15 / Case 294867 step 2. process-card with payPageRegistrationId, network AX, zipCode. **Expect:** 200, transactionId, approvalNumber. Saves lastTransactionId (PaymentTypeMethod=1).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 12.01,\n  \"expirationDate\": \"1230\",\n  \"network\": \"AX\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"01803\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-PP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId') || pm.environment.get('payPageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "pm.environment.set('paypageRegistrationId', reg);",
+                  "console.log('orderId=' + orderId + ' paypageRegistrationId=' + reg);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC16. Validate that, CNP with Wellfit GUID can process successful transactions with DISCOVER Card.",
+      "description": "AC-16 / Case 294868. Pay Page flow (Testmo title may say Wellfit GUID): eProtect paypage \u2192 paypageRegistrationId \u2192 process-card with payPageRegistrationId (no ProcessorToken).\nBrand DISCOVER, network DI. After success, TC09 SQL \u2192 PaymentTypeMethod = 1.\nUse Paypages collection PANs (already in eProtect body).",
+      "item": [
+        {
+          "name": "POST eProtect paypage \u2014 DISCOVER Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "AC-16 / Case 294868 step 1. POST eProtect paypage (DISCOVER). Expect 200 + paypageRegistrationId (not response 889).",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489776",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "6011010140000004",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "988",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not eProtect Failure 889', () => {",
+                  "  pm.expect(String(j.response || '')).to.not.eql('889');",
+                  "  pm.expect(String(j.message || '').toLowerCase()).to.not.eql('failure');",
+                  "});",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);",
+                  "console.log('paypageRegistrationId=' + j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 DISCOVER Card Pay Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-16 / Case 294868 step 2. process-card with payPageRegistrationId, network DI, zipCode. **Expect:** 200, transactionId, approvalNumber. Saves lastTransactionId (PaymentTypeMethod=1).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 12.01,\n  \"expirationDate\": \"1230\",\n  \"network\": \"DI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"01803\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-PP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId') || pm.environment.get('payPageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "pm.environment.set('paypageRegistrationId', reg);",
+                  "console.log('orderId=' + orderId + ' paypageRegistrationId=' + reg);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TC17. Validate that, CNP with Wellfit GUID can process successful transactions with Master Card.",
+      "description": "AC-17 / Case 294869. Pay Page flow (Testmo title may say Wellfit GUID): eProtect paypage \u2192 paypageRegistrationId \u2192 process-card with payPageRegistrationId (no ProcessorToken).\nBrand Master, network MC. After success, TC09 SQL \u2192 PaymentTypeMethod = 1.\nUse Paypages collection PANs (already in eProtect body).",
+      "item": [
+        {
+          "name": "POST eProtect paypage \u2014 Master Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Host",
+                "value": "request.eprotect.vantivprelive.com"
+              }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "AC-17 / Case 294869 step 1. POST eProtect paypage (Master). Expect 200 + paypageRegistrationId (not response 889).",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "paypageId",
+                  "value": "{{paypageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "reportGroup",
+                  "value": "Default",
+                  "type": "text"
+                },
+                {
+                  "key": "orderId",
+                  "value": "TestOrder.653489774",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1111111111222222222222222",
+                  "type": "text"
+                },
+                {
+                  "key": "accountNumber",
+                  "value": "5454545454545454",
+                  "type": "text"
+                },
+                {
+                  "key": "cvv",
+                  "value": "123",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not eProtect Failure 889', () => {",
+                  "  pm.expect(String(j.response || '')).to.not.eql('889');",
+                  "  pm.expect(String(j.message || '').toLowerCase()).to.not.eql('failure');",
+                  "});",
+                  "pm.test('paypageRegistrationId present', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.environment.set('payPageRegistrationId', j.paypageRegistrationId);",
+                  "console.log('paypageRegistrationId=' + j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST process-card \u2014 Master Card Pay Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{Payment-Bearer-Token}}"
+              }
+            ],
+            "url": "{{URL}}/credit-card/process-card",
+            "description": "AC-17 / Case 294869 step 2. process-card with payPageRegistrationId, network MC, zipCode. **Expect:** 200, transactionId, approvalNumber. Saves lastTransactionId (PaymentTypeMethod=1).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 12.01,\n  \"expirationDate\": \"1230\",\n  \"network\": \"MC\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"{{subMerchantId}}\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"01803\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'R96-PP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "const reg = pm.environment.get('paypageRegistrationId') || pm.environment.get('payPageRegistrationId');",
+                  "if (!reg) { throw new Error('paypageRegistrationId empty \u2014 run eProtect in this folder first'); }",
+                  "pm.environment.set('paypageRegistrationId', reg);",
+                  "console.log('orderId=' + orderId + ' paypageRegistrationId=' + reg);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId;",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.test('approvalNumber present', () => pm.expect(j.approvalNumber || j.ApprovalNumber).to.be.ok);",
+                  "pm.test('billingDescriptor present', () => pm.expect(j.billingDescriptor || j.BillingDescriptor).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.environment.set('lastOrderId', pm.environment.get('orderId'));",
+                  "pm.environment.set('lastAmount', (j.amount != null ? String(j.amount) : pm.environment.get('chargeAmount') || ''));",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

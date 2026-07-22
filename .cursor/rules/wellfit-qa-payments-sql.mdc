@@ -84,4 +84,4 @@ WHERE PaymentTypeMethod = 2
 ORDER BY TimeStamp DESC;
 ```
 
-Related tables: `[Payments].[Refunds]`, `[Payments].[Voids]`, `[Payments].[PaymentTokens]`.
+Related tables: `[Payments].[Refunds]`, `[Payments].[Voids]`. CNP `ProcessorToken` lives on **TokenVault** `dbo.PaymentTokens` (not Platform).

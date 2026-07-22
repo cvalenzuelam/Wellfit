@@ -1,0 +1,42 @@
+[
+  {
+    "caseId": "66735",
+    "testId": "1853886",
+    "title": "Ensure, CP endpoint (/credit-card-present/charge-card) is able to make successfull payment with any payment device",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Present (CP)"
+  },
+  {
+    "caseId": "66736",
+    "testId": "1853887",
+    "title": "Ensure, CP endpoint is able to return token guid in the response",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Present (CP)"
+  },
+  {
+    "caseId": "66737",
+    "testId": "1853888",
+    "title": "Ensure, Refunds are working fine for CP transactions",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Present (CP)"
+  },
+  {
+    "caseId": "66738",
+    "testId": "1853889",
+    "title": "Ensure, voids are working fine for CP transactions",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Present (CP)"
+  },
+  {
+    "caseId": "66739",
+    "testId": "1853890",
+    "title": "Ensure, CP end point returns transactionid with dash (-) (ex: 508616192-1588)",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Card Present (CP)"
+  }
+]

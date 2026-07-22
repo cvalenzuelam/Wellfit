@@ -1,0 +1,74 @@
+[
+  {
+    "caseId": "304030",
+    "testId": "1853978",
+    "title": "Validate that POST  CP /payments API is 200 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304031",
+    "testId": "1853979",
+    "title": "Validate that CP Payment can be successfully sent to the system",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304032",
+    "testId": "1853980",
+    "title": "Validate that CP transaction is successfully stored as 'Approved' in Payments  DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304035",
+    "testId": "1853983",
+    "title": "Validate that  CP transaction gets \"SettlementDate\"value filled via query through Payments  DB Table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304033",
+    "testId": "1853981",
+    "title": "Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304034",
+    "testId": "1853982",
+    "title": "Validate that  \"FundingInstructions\" and \"SettlementDate\" are not NULL for CNP transaction in Payments  DB Table after creating FundingBatch via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304036",
+    "testId": "1853984",
+    "title": "Validate that Payments.FundingInstructions Table contains proper co-relation of  \"FIPC-PayFac\", \"FISC-NetSettlement\" and \"Id\" against  \"fundingInstructionId\". \"PayFacFee\" and \"Amount\" values from  Platform Payments.Payments DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304037",
+    "testId": "1853985",
+    "title": "Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304038",
+    "testId": "1853986",
+    "title": "Validate that Payments.FundingBatches Table contains proper \"BatchFileName\" value after sending funding batch via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CP Payment - Settlement and Funding - Treasury"
+  }
+]

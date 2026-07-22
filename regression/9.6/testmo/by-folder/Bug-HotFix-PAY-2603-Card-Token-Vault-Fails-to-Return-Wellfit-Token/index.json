@@ -1,0 +1,98 @@
+[
+  {
+    "caseId": "168002",
+    "testId": "1853918",
+    "title": "Verify that, Add Token API works successfully without cardZipCode",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168003",
+    "testId": "1853919",
+    "title": "Validate that, a token is created successfully when cardZipCode is provided",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168004",
+    "testId": "1853920",
+    "title": "Validate that, the API accepts a request when cardZipCode is sent as an empty string",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168005",
+    "testId": "1853921",
+    "title": "Validate that, the API rejects invalid cardZipCode values",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168006",
+    "testId": "1853922",
+    "title": "Validate that, the API no longer fails when cardZipCode is omitted",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168007",
+    "testId": "1853923",
+    "title": "Validate that, the Token Vault generates and returns a Wellfit token for a valid CP charge API request without ZipCodeField",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168008",
+    "testId": "1853924",
+    "title": "Validate that, Wellfit Token retrieved in CP charge API response is stored in Token Vauld dbo Tokens table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168009",
+    "testId": "1853925",
+    "title": "Validate that, a Wellfit token is generated successfully for a valid CNP request with ZipCodeField",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168010",
+    "testId": "1853926",
+    "title": "Validate that, Wellfit Token retrieved in CNP API response is stored in Token Vauld dbo Tokens table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168011",
+    "testId": "1853927",
+    "title": "Validate that, a Wellfit token is generated successfully for a valid CNP request without ZipCodeField",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "213300",
+    "testId": "1853931",
+    "title": "Validate that, a transaction is generated successfully for a valid CNP request with Wellfit Token",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  },
+  {
+    "caseId": "168012",
+    "testId": "1853928",
+    "title": "Validate that, the Token Vault returns a Processor token and generates a DevOps alert when Wellfit token generation fails for a CP request",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Bug/HotFix* PAY-2603   Card Token Vault Fails to Return Wellfit Token"
+  }
+]

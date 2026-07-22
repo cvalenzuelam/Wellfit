@@ -77,6 +77,27 @@
 
 **Not on Platform:** `[Transactions].[PaymentTransaction]`, `[Transactions].[PaymentMethodACH]`
 
+### `TokenVault.dbo.PaymentTokens` columns (verified STAGE 2026-07-22 — Chris)
+
+**DB: TokenVault** (not Platform — Platform has no `Payments.PaymentTokens`).
+
+| column_name | data_type |
+|-------------|-----------|
+| Id | uniqueidentifier |
+| ProcessorId | int |
+| ProcessorToken | nvarchar |
+| CardLastFour | nvarchar |
+| CardBrand | nvarchar |
+| CardExpirationMonth | int |
+| CardExpirationYear | int |
+| CardZipCode | nvarchar |
+| EntityUpdated | datetimeoffset |
+
+**QA use:** body `token` on legacy `POST …/credit-card/process-card` = **`ProcessorToken`**. Filter by `CardBrand` for VISA/MC/AMEX/Discover.
+
+**Reusable STAGE query (all brands):** `regression/9.6/scripts/cnp-payment-tokens-by-brand-STAGE.sql`  
+Postman env keys: `tokenVisa`, `tokenAmex`, `tokenDiscover`, `tokenMc` (and `tokenVisaZipSensitive` when ZIP/CVV negatives need it).
+
 ### `[Payments].[AchPaymentDetails]` columns (verified 2026-07-16)
 
 | column_id | column_name | data_type |
@@ -448,7 +469,7 @@ Same STAGE server, DB **TokenVault**.
 |------------|-----|
 | **BankAccountTokens** | Primary ACH bank tokens |
 | **BankAccountTokenLog** | Token audit / changes |
-| **PaymentTokens** | Payment tokens (confirm before use; may be card-related) |
+| **PaymentTokens** | CNP card tokens — full cols under `TokenVault.dbo.PaymentTokens` section |
 
 ### Ops / ignore for QA
 

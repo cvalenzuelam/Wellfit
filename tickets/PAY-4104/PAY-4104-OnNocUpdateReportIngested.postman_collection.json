@@ -1,0 +1,69 @@
+{
+  "info": {
+    "name": "PAY-4104 — OnNocUpdateReportIngested (STAGE)",
+    "_postman_id": "pay4104-noc-update-report-ingested-stage",
+    "description": "STAGE retest for PAY-4104: POST Event Grid webhook to stage-wf-payments-func → OnNocUpdateReportIngested after a claimable [AccountUpdater].[AchNOCs] row (Status NULL) exists on Payments DB.\n\nImport with the matching STAGE environment. Set functionKey = system key eventgrid_extension from stage-wf-payments-func (App keys → System keys) — not host key default.\n\nProof of fix: App Insights drain claimed 1 / published 1 / failed 0 and no \"No routing configured for event type: Account.NoC.Received\".",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Trigger NOC drain",
+      "item": [
+        {
+          "name": "POST OnNocUpdateReportIngested",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const eventId = pm.variables.replaceIn('{{$guid}}');",
+                  "const eventTime = new Date().toISOString();",
+                  "pm.environment.set('eventId', eventId);",
+                  "pm.environment.set('eventTime', eventTime);",
+                  "console.log('eventId = ' + eventId);",
+                  "console.log('eventTime (UTC) = ' + eventTime);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200 or 202', function () {",
+                  "    pm.expect([200, 202]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "aeg-event-type",
+                "value": "Notification"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"specversion\": \"1.0\",\n  \"id\": \"{{eventId}}\",\n  \"source\": \"qa/fixture/pay-4104-noc\",\n  \"type\": \"Account.NocUpdateReport.Ingested\",\n  \"subject\": \"Account.NocUpdateReport.Ingested\",\n  \"time\": \"{{eventTime}}\",\n  \"datacontenttype\": \"application/json\",\n  \"data\": {\n    \"fileName\": \"{{fileName}}\",\n    \"recordCount\": 1,\n    \"processedAt\": \"{{eventTime}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{paymentsFuncBaseUrl}}/runtime/webhooks/EventGrid?functionName=OnNocUpdateReportIngested&code={{functionKey}}",
+            "description": "PAY-4104. Run after AchNOCs insert (Status NULL) on Payments DB. Current QA NocId example: 42a6c7c9-bb0f-4cb8-9af9-d373bd2fa542."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "caseId": "303953",
+    "testId": "1853958",
+    "title": "Validate that POST  CNP /payments API is 200 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303954",
+    "testId": "1853959",
+    "title": "Validate that CNP Payment can be successfully sent to the system",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303955",
+    "testId": "1853960",
+    "title": "Validate that CNP transaction is successfully stored as 'Approved' in Payments  DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303958",
+    "testId": "1853963",
+    "title": "Validate that  CNP transaction gets \"SettlementDate\"value filled via query through Payments  DB Table",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303956",
+    "testId": "1853961",
+    "title": "Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303957",
+    "testId": "1853962",
+    "title": "Validate that  \"FundingInstructions\" and \"SettlementDate\" are not NULL for CNP transaction in Payments  DB Table after creating FundingBatch via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303960",
+    "testId": "1853964",
+    "title": "Validate that Payments.FundingInstructions Table contains proper co-relation of  \"FIPC-PayFac\", \"FISC-NetSettlement\" and \"Id\" against  \"fundingInstructionId\". \"PayFacFee\" and \"Amount\" values from  Platform Payments.Payments DB",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303961",
+    "testId": "1853965",
+    "title": "Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "303962",
+    "testId": "1853966",
+    "title": "Validate that Payments.FundingBatches Table contains proper \"BatchFileName\" value after sending funding batch via API",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "CNP Payment - Settlement and Funding - Treasury"
+  }
+]

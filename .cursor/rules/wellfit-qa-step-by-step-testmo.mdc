@@ -1,11 +1,22 @@
 ---
-description: During STAGE paso-a-paso QA, give Testmo cases only after Chris confirms the step passed
+description: During STAGE paso-a-paso QA, after every ✅ send Testmo case + evidence (priority while testing)
 alwaysApply: true
 ---
 
 # Wellfit QA — paso a paso + Testmo + evidencia
 
 When Chris asks for **paso a paso** to test in **STAGE** (or any env walkthrough):
+
+## Priority (Chris — always while testing)
+
+While we are actively testing a ticket, this rule **outranks** “save Testmo for the end” or skipping evidence:
+
+1. He runs a verifiable step and pastes the result.
+2. You mark ✅ / ❌ / ⚠️.
+3. On **✅** (or a negative that correctly asserted): **in the same reply**, paste-ready **Testmo case** + **Evidence** section — do **not** wait until ticket close, do **not** forget Evidence.
+4. Only then (same reply or next) give the next paso.
+
+If you confirm a pass and omit Testmo or Evidence, that is a miss — fix immediately in the next message.
 
 ## Goal
 
@@ -16,8 +27,8 @@ Execute → **confirm result** → then document in Testmo. Do **not** dump past
 | When | What to send |
 |------|----------------|
 | **Before** he runs the step | Carpeta + request (plain chat), short expected outcome. **No** full Testmo case to copy. |
-| **After** he pastes the result and you confirm it **passed** (✅) | **Then** give the paste-ready Testmo case (+ short evidence checklist). |
-| Result **failed** (❌) or **blocked** (⚠️) | Do **not** hand a “pass” case. Fix/retry or note failure; case only after a good run (or a deliberate fail-case if the negative assert itself passed). |
+| **After** he pastes the result and you confirm it **passed** (✅) | **Same message:** paste-ready Testmo case **and** Evidence (queries/screenshots/IDs). |
+| Result **failed** (❌) or **blocked** (⚠️) | Do **not** hand a “pass” case. Fix/retry or note failure; case only after a good run (or a deliberate fail/blocked case if that assert itself is the documented outcome). |
 
 **Never** send the copy/paste Testmo body in the same message as “go run this” for a verifiable step — wait until he confirms with real response/data.
 
@@ -34,13 +45,14 @@ Execute → **confirm result** → then document in Testmo. Do **not** dump past
 
 1. What to run (Postman: carpeta + request).
 2. Short expected (e.g. 2xx / 4xx / field).
-3. Optional: `Testmo: after you confirm the result.`
+3. Optional: `Testmo + evidencia: after you confirm.`
 
-### Message B — after his result
+### Message B — after his result (PRIORITY)
 
-1. ✅ / ❌ / ⚠️ marker + one-line read of the result.
-2. If ✅ (or negative that correctly returned 4xx): full Testmo case ready to paste + evidence checklist.
-3. Next paso only after that (or in the same reply if he is ready).
+1. ✅ / ❌ / ⚠️ + one-line read of the result.
+2. If ✅ (or correct negative): **full Testmo case** ready to paste.
+3. Immediately under it: **Evidence** — what to screenshot / which SQL / which Kusto / key IDs from **this** run.
+4. Next paso only after that (or in the same reply if he is ready).
 
 ## Which steps get a case (after confirm)
 
@@ -49,7 +61,7 @@ Execute → **confirm result** → then document in Testmo. Do **not** dump past
 | Pure setup (import Postman, select env, fill a key) | No case |
 | **Authentication** | **Always** — after 200 + scopes confirmed |
 | Find/seed data only | Usually no case |
-| Verifiable outcome (API, SQL, alert, recovery, negative) | **Yes — 1 case** matching what actually happened |
+| Verifiable outcome (API, SQL, alert, recovery, Log stream, negative) | **Yes — 1 case** matching what actually happened |
 | Same run proves a second distinct check | Second case only if both were confirmed |
 
 Align Expected/Steps with the **real** status codes, errorCodes, and ids from his paste — do not invent green results he did not show.
@@ -62,8 +74,12 @@ Align Expected/Steps with the **real** status codes, errorCodes, and ids from hi
 | Failed | ❌ |
 | Blocked / inconclusive | ⚠️ |
 
-## Evidence (with the case, after confirm)
+## Evidence (required with every case after ✅)
 
-- Name the artifact: Postman status/body, SQL grid, Kusto, Portal DLQ, etc.
+Always include a clear **Evidence** block under the Testmo case:
+
+- Artifact: Postman status/body, SQL grid, Kusto, Log stream, Portal, etc.
+- Ready-to-run query when SQL/Kusto was the proof (copy-paste).
+- Key IDs from **this** run (txn, NocId, TokenId, InvocationId, correlation Id).
 - Before/after when deltas matter.
-- Point evidence to **Testmo**; no secrets/PANs.
+- No secrets/PANs / function keys.

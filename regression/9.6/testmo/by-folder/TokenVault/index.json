@@ -1,0 +1,117 @@
+[
+  {
+    "n": 1,
+    "caseId": "167990",
+    "title": "Ensure CNP V1 endpoint is able to make a successful payment with processor token",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 2,
+    "caseId": "167991",
+    "title": "Ensure CNP V1 endpoint is able to make a successful payment with token GUID",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 3,
+    "caseId": "167996",
+    "title": "Ensure, CNP V1 endpoint is able  to make a sucessful payment with paypageID",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 4,
+    "caseId": "167992",
+    "title": "Ensure, Token is not saved into tokenvalut DB when CNP V1 endpoint  runs with processor token ( Right now not saving in future it might be saved)",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 5,
+    "caseId": "167993",
+    "title": "Ensure, CP V1 endpoint returns token GUID in the response",
+    "status": "Untested",
+    "flags": [
+      "NEEDS_CP"
+    ]
+  },
+  {
+    "n": 6,
+    "caseId": "167994",
+    "title": "Ensure, CNP V1 endpoint is able to make a successful payment with token GUID which returns on CP response",
+    "status": "Untested",
+    "flags": []
+  },
+  {
+    "n": 7,
+    "caseId": "167995",
+    "title": "Ensure, Token is able to save into tokenvalut DB when CP V1 endpoint runs",
+    "status": "Untested",
+    "flags": [
+      "NEEDS_CP"
+    ]
+  },
+  {
+    "n": 8,
+    "caseId": "167997",
+    "title": "Ensure, Token is able to add successfully and able to save into token valut DB when tokenVaultAPI/add-token end point runs",
+    "status": "Untested",
+    "flags": [
+      "EMPTY_DESC",
+      "EMPTY_EXPECTED",
+      "EMPTY_STEPS"
+    ]
+  },
+  {
+    "n": 9,
+    "caseId": "167998",
+    "title": "Ensure, CNP V2 ( v2/cnp/charge) endpoint is able to make a successful payment with processor token",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 10,
+    "caseId": "167999",
+    "title": "Ensure, CNP V2 ( v2/cnp/charge) endpoint is able to make a successful payment with token GUID'",
+    "status": "Untested",
+    "flags": []
+  },
+  {
+    "n": 11,
+    "caseId": "168000",
+    "title": "Ensure, CNP V2 ( v2/cnp/charge) endpoint is able to make a successful payment with paypageid",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 12,
+    "caseId": "168001",
+    "title": "Ensure, token is able to save into tokenvallt DB when CNP V2 end point runs with processor token ( If token is not present  in DB it will save . If token is already there it will not save)",
+    "status": "Untested",
+    "flags": [
+      "WRONG_DB_ref"
+    ]
+  },
+  {
+    "n": 13,
+    "caseId": "168013",
+    "title": "Ensure that, CP charge card API retrieves Wellfit Token GUID as \"cardToken\" value response",
+    "status": "Untested",
+    "flags": [
+      "NEEDS_CP"
+    ]
+  }
+]

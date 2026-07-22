@@ -1,0 +1,74 @@
+[
+  {
+    "caseId": "18564",
+    "testId": "1853879",
+    "title": "Verify that, from Wellfit Provisioning authenticate API is working 200 ok",
+    "priority": "Normal",
+    "status": "Passed",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "18565",
+    "testId": "1853880",
+    "title": "Verify that, from Wellfit Provisioning, create new submerchant API is working 200 ok",
+    "priority": "Normal",
+    "status": "Passed",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "18566",
+    "testId": "1853881",
+    "title": "Verify that, from Wellfit Provisioning collection, create update submerchant API is working 200 ok",
+    "priority": "Normal",
+    "status": "Passed",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "18567",
+    "testId": "1853882",
+    "title": "Verify that, from Wellfit Provisioning collection, create read submerchant API is working 200 ok",
+    "priority": "Normal",
+    "status": "Passed",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "18568",
+    "testId": "1853883",
+    "title": "Verify that, from DB Payments.Submerchant's table, created new submerchant is logged and stored correctly",
+    "priority": "Normal",
+    "status": "Passed",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "304279",
+    "testId": "1853997",
+    "title": "Verify that, from Wellfit Provisioning, read merchant category codes API returns 200 OK",
+    "priority": "Normal",
+    "status": "Passed",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "304280",
+    "testId": "1853998",
+    "title": "Verify that, from Wellfit Provisioning, create merchant category code API returns 200 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "304281",
+    "testId": "1853999",
+    "title": "Verify that, from Wellfit Provisioning, delete merchant category code API returns 200 OK",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Wellfit Provisioning"
+  },
+  {
+    "caseId": "304282",
+    "testId": "1854000",
+    "title": "Verify that, when a new sub-merchant is created, its merchant category code is stored and matches MerchantCategoryCodes",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "Wellfit Provisioning"
+  }
+]

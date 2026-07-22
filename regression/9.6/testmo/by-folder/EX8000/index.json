@@ -1,0 +1,10 @@
+[
+  {
+    "caseId": "213134",
+    "testId": "1853930",
+    "title": "Verify transaction successful on EX8000 device",
+    "priority": "Normal",
+    "status": "Untested",
+    "folder": "EX8000"
+  }
+]

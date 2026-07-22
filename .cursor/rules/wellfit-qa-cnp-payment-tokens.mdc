@@ -1,0 +1,48 @@
+---
+description: STAGE CNP ProcessorTokens from TokenVault — never invent tokens; use verified query
+alwaysApply: false
+globs:
+  - regression/9.6/**
+  - postman/**/*CNP*
+  - postman/**/*cnp*
+---
+
+# Wellfit QA — CNP PaymentTokens (STAGE)
+
+## Important
+
+`TokenVault.dbo.PaymentTokens.ProcessorToken` values (e.g. `WPAC4T*`) often return **Token was not found** on legacy `process-card`.
+
+For 9.6 CNP regression: run collection folder **00b. Tokenize cards** (`POST …/credit-card/tokenize-card`) first — scripts save live tokens into `tokenVisa` / `tokenAmex` / `tokenDiscover` / `tokenMc`.
+
+## Where (inventory / brand labels only)
+
+- **DB:** `TokenVault` — table `dbo.PaymentTokens` (brand inventory SQL still useful)
+- **Live charge tokens:** create via **tokenize-card** on STAGE Payments API
+
+## Canonical inventory query
+
+`regression/9.6/scripts/cnp-payment-tokens-by-brand-STAGE.sql` — brand counts / labels only; prefer tokenize-card for runnable tokens.
+
+## Postman env mapping (9.6 CNP)
+
+| Env key | Use |
+|---------|-----|
+| `tokenVisa` | CardBrand VISA / VI |
+| `tokenAmex` | AMEX / AX |
+| `tokenDiscover` | Discover / DI / DS |
+| `tokenMc` | MasterCard / MC |
+| `tokenVisaZipSensitive` | Optional — ZIP/CVV negatives only |
+
+When Chris pastes query results, **update** `regression/9.6/Regression-STAGE/Regression-STAGE.postman_environment.json` and tell him to re-import / refresh env **Regression STAGE**.
+
+## Known STAGE inventory (2026-07-22)
+
+See `regression/9.6/CNP-STAGE-known-processor-tokens.md`.
+
+Quick map in env:
+- `tokenVisa` = `WPAC4T2607170000010`
+- `tokenAmex` = `111300261500004` (zip 75039)
+- `tokenDiscover` = `WPAC4T2607170000004`
+- `tokenMc` = `1112000299535454` (zip 06002)
+- `tokenVisaZipSensitive` = Amex with zip (`111300261500004`) for CVV/ZIP negatives

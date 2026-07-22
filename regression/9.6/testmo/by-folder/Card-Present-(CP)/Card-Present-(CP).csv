@@ -1,0 +1,6 @@
+Case ID,Test ID,Test,Result ID,Assigned to,Comment,Created at,Created by,Deleted,Deleted at,Deleted by,Description,Description__2,Elapsed,Estimate,Expected,Folder,Forecast,Issues,Issues (case),Priority,State,Status,Steps (Expected),Steps (Note),Steps (Status),Steps (Step),Tags,Template,Updated at,Updated by
+66735,1853886,"Ensure, CP endpoint (/credit-card-present/charge-card) is able to make successfull payment with any payment device",,,,,,,,,,,,,,Card Present (CP),,,,Normal,Active,Untested,,,,,,Case (text),,
+66736,1853887,"Ensure, CP endpoint is able to return token guid in the response",,,,,,,,,,,,,,Card Present (CP),,,,Normal,Active,Untested,,,,,,Case (text),,
+66737,1853888,"Ensure, Refunds are working fine for CP transactions",,,,,,,,,,,,,,Card Present (CP),,,,Normal,Active,Untested,,,,,,Case (text),,
+66738,1853889,"Ensure, voids are working fine for CP transactions",,,,,,,,,,,,,,Card Present (CP),,,,Normal,Active,Untested,,,,,,Case (text),,
+66739,1853890,"Ensure, CP end point returns transactionid with dash (-) (ex: 508616192-1588)",,,,,,,,,,,,,,Card Present (CP),,,,Normal,Active,Untested,,,,,,Case (text),,
