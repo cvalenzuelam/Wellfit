@@ -3,7 +3,6 @@
     "caseId": "304094",
     "testId": "1853996",
     "title": "Verify that Funding and Settlement are skipped on holidays and processed on the next business day",
-    "priority": "Normal",
     "status": "Untested",
     "folder": "Treasury"
   }

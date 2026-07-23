@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "dbf7a9c3-4e9f-4d4b-879f-ec4504c76dff",
-    "name": "PAY-2452 ACH Refunds \u2014 QA Test Collection",
-    "description": "Test collection for ACH Refund epic (PAY-2452).\n\n## Setup\n1. Run `postman/seed-refund-test-data.sql` against your Payments database to create test transactions\n2. Set `payments-management-api` variable to your environment (e.g., `https://localhost:5001`)\n3. Set `access-token` in your Postman environment (inherited via Authorization header)\n4. Collection variables are pre-populated with seed script transaction IDs\n\n## Workflow Order\nRun folders top-to-bottom:\n1. **Prereq** \u2014 verify test transaction exists\n2. **Happy Path** \u2014 full and partial refunds\n3. **Eligibility Validation** \u2014 all error scenarios\n4. **Idempotency** \u2014 duplicate handling\n5. **Status Verification** \u2014 query refund status and history\n6. **Blocking Rule** \u2014 RETURNED child blocks further refunds\n\n## Key Changes in v2 Epic\n- Partial refund \u2192 original status PARTIALLY_REFUNDED (18)\n- Full refund \u2192 original status REFUNDED (10)\n- Refund credit return \u2192 refund txn RETURNED (7), original conditional\n- Blocking rule: any child RETURNED blocks ALL future refunds\n- Event name: `Payment.Refund.Submitted` (singular)\n- Refundable amount calc: only APPROVED, FUNDED, SETTLED count",
+    "name": "PAY-2452 ACH Refunds — QA Test Collection",
+    "description": "Test collection for ACH Refund epic (PAY-2452).\n\n## Setup\n1. Run `postman/seed-refund-test-data.sql` against your Payments database to create test transactions\n2. Set `payments-management-api` variable to your environment (e.g., `https://localhost:5001`)\n3. Set `access-token` in your Postman environment (inherited via Authorization header)\n4. Collection variables are pre-populated with seed script transaction IDs\n\n## Workflow Order\nRun folders top-to-bottom:\n1. **Prereq** — verify test transaction exists\n2. **Happy Path** — full and partial refunds\n3. **Eligibility Validation** — all error scenarios\n4. **Idempotency** — duplicate handling\n5. **Status Verification** — query refund status and history\n6. **Blocking Rule** — RETURNED child blocks further refunds\n\n## Key Changes in v2 Epic\n- Partial refund → original status PARTIALLY_REFUNDED (18)\n- Full refund → original status REFUNDED (10)\n- Refund credit return → refund txn RETURNED (7), original conditional\n- Blocking rule: any child RETURNED blocks ALL future refunds\n- Event name: `Payment.Refund.Submitted` (singular)\n- Refundable amount calc: only APPROVED, FUNDED, SETTLED count",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "32666628",
     "_collection_link": "https://go.postman.co/collection/32666628-dbf7a9c3-4e9f-4d4b-879f-ec4504c76dff?source=collection_link"
@@ -18,11 +18,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "const body = pm.response.json();",
-                  "pm.test('Token 200', function(){ pm.response.to.have.status(200); });",
-                  "pm.environment.set('Payment-Bearer-Token', body.access_token);",
-                  "pm.environment.set('access-token', body.access_token);",
-                  "console.log('scopes:', body.scope);"
+                  "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", \"\");",
+                  "var jsonData = JSON.parse(responseBody);",
+                  "postman.setEnvironmentVariable(\"Payment-Bearer-Token\", jsonData.access_token);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -44,13 +42,13 @@
                 },
                 {
                   "key": "client_id",
-                  "value": "WellfitUnifiedPaymentsAPI",
+                  "value": "WellfitPaymentManagementAPI",
                   "type": "text",
                   "uuid": "a35fedf2-366d-47ab-916b-3fcab7e80021"
                 },
                 {
                   "key": "client_secret",
-                  "value": "Testing123!!W3llf1t1!",
+                  "value": "Test123!",
                   "type": "text",
                   "uuid": "ff560797-85b1-4324-bffa-380f58f57a45"
                 }
@@ -75,7 +73,7 @@
       ]
     },
     {
-      "name": "1. Prereq \u2014 Verify Test Transaction",
+      "name": "1. Prereq — Verify Test Transaction",
       "item": [
         {
           "name": "Get settled ACH transaction (verify exists)",
@@ -125,7 +123,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -147,7 +145,7 @@
       ]
     },
     {
-      "name": "2. Happy Path \u2014 Partial Refund",
+      "name": "2. Happy Path — Partial Refund",
       "item": [
         {
           "name": "Submit partial refund ($40 of $100)",
@@ -209,7 +207,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -243,7 +241,7 @@
           "response": []
         },
         {
-          "name": "Verify original \u2192 PARTIALLY_REFUNDED (18)",
+          "name": "Verify original → PARTIALLY_REFUNDED (18)",
           "event": [
             {
               "listen": "test",
@@ -285,7 +283,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -346,7 +344,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -368,7 +366,7 @@
       ]
     },
     {
-      "name": "3. Happy Path \u2014 Second Partial Refund",
+      "name": "3. Happy Path — Second Partial Refund",
       "item": [
         {
           "name": "Submit second partial refund ($30 more)",
@@ -402,7 +400,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -468,7 +466,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -490,7 +488,7 @@
       ]
     },
     {
-      "name": "4. Happy Path \u2014 Full Refund",
+      "name": "4. Happy Path — Full Refund",
       "item": [
         {
           "name": "Submit full refund (second transaction)",
@@ -539,7 +537,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -573,7 +571,7 @@
           "response": []
         },
         {
-          "name": "Verify original \u2192 REFUNDED (10)",
+          "name": "Verify original → REFUNDED (10)",
           "event": [
             {
               "listen": "test",
@@ -605,7 +603,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -627,7 +625,7 @@
       ]
     },
     {
-      "name": "5. Eligibility Validation \u2014 Error Scenarios",
+      "name": "5. Eligibility Validation — Error Scenarios",
       "item": [
         {
           "name": "ERR_REFUND_RAIL_NOT_SUPPORTED (non-ACH)",
@@ -660,7 +658,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -718,7 +716,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -776,7 +774,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -840,7 +838,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -900,7 +898,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -953,7 +951,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -1028,7 +1026,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -1088,7 +1086,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -1124,7 +1122,7 @@
       ]
     },
     {
-      "name": "7. Status Verification \u2014 History & Queries",
+      "name": "7. Status Verification — History & Queries",
       "item": [
         {
           "name": "Get refund transaction history (audit trail)",
@@ -1158,7 +1156,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -1202,7 +1200,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -1258,7 +1256,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               }
             ],
@@ -1285,7 +1283,7 @@
       ]
     },
     {
-      "name": "8. Blocking Rule \u2014 RETURNED Child Blocks Refunds",
+      "name": "8. Blocking Rule — RETURNED Child Blocks Refunds",
       "item": [
         {
           "name": "Attempt refund on txn with RETURNED child (should fail)",
@@ -1318,7 +1316,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -1353,7 +1351,7 @@
           "response": []
         }
       ],
-      "description": "These tests require a refund transaction that has been RETURNED by the bank (via AchReturnReceivedEvent processing). This cannot be triggered via API \u2014 it requires an event. Use these requests AFTER a return has been processed in the test environment to verify the blocking rule."
+      "description": "These tests require a refund transaction that has been RETURNED by the bank (via AchReturnReceivedEvent processing). This cannot be triggered via API — it requires an event. Use these requests AFTER a return has been processed in the test environment to verify the blocking rule."
     },
     {
       "name": "9. Edge Cases",
@@ -1383,7 +1381,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -1413,12 +1411,12 @@
                 "refund"
               ]
             },
-            "description": "Run AFTER folder 2 (partial refund) \u2014 the original should be in PARTIALLY_REFUNDED status, which is eligible for further refunds."
+            "description": "Run AFTER folder 2 (partial refund) — the original should be in PARTIALLY_REFUNDED status, which is eligible for further refunds."
           },
           "response": []
         },
         {
-          "name": "Remaining balance refund \u2192 original becomes REFUNDED",
+          "name": "Remaining balance refund → original becomes REFUNDED",
           "event": [
             {
               "listen": "test",
@@ -1442,7 +1440,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{Payment-Bearer-Token}}",
+                "value": "Bearer {{access-token}}",
                 "type": "text"
               },
               {
@@ -1477,7 +1475,7 @@
                 "refund"
               ]
             },
-            "description": "NOTE: Replace the amount with the actual remaining refundable balance. The 99999.99 is a placeholder \u2014 first check the ERR_REFUND_AMOUNT_EXCEEDED response to see the refundableAmount, then use that value."
+            "description": "NOTE: Replace the amount with the actual remaining refundable balance. The 99999.99 is a placeholder — first check the ERR_REFUND_AMOUNT_EXCEEDED response to see the refundableAmount, then use that value."
           },
           "response": []
         }
@@ -1487,38 +1485,38 @@
   "variable": [
     {
       "key": "payments-management-api",
-      "value": "https://stage-wf-payment-management-api.azurewebsites.net",
+      "value": "https://localhost:5001",
       "type": "string"
     },
     {
       "key": "settledAchTransactionId",
       "value": "refund-qa-settled-ach-01",
       "type": "string",
-      "description": "SETTLED ACH $100 \u2014 created by seed-refund-test-data.sql"
+      "description": "SETTLED ACH $100 — created by seed-refund-test-data.sql"
     },
     {
       "key": "settledAchTransactionId2",
       "value": "refund-qa-settled-ach-02",
       "type": "string",
-      "description": "SETTLED ACH $100 for full refund \u2014 created by seed-refund-test-data.sql"
+      "description": "SETTLED ACH $100 for full refund — created by seed-refund-test-data.sql"
     },
     {
       "key": "nonAchTransactionId",
       "value": "refund-qa-cnp-settled-01",
       "type": "string",
-      "description": "SETTLED CNP transaction \u2014 created by seed-refund-test-data.sql"
+      "description": "SETTLED CNP transaction — created by seed-refund-test-data.sql"
     },
     {
       "key": "pendingTransactionId",
       "value": "refund-qa-pending-ach-01",
       "type": "string",
-      "description": "PENDING ACH transaction \u2014 created by seed-refund-test-data.sql"
+      "description": "PENDING ACH transaction — created by seed-refund-test-data.sql"
     },
     {
       "key": "oldTransactionId",
       "value": "refund-qa-old-settled-01",
       "type": "string",
-      "description": "SETTLED ACH >6 months old \u2014 created by seed-refund-test-data.sql"
+      "description": "SETTLED ACH >6 months old — created by seed-refund-test-data.sql"
     },
     {
       "key": "refundTransactionId",

@@ -1,0 +1,55 @@
+---
+description: When Chris shares Postman collections/envs, classify into core/regression/tickets and rebuild Wellfit Payments import folder
+alwaysApply: true
+---
+
+# Wellfit QA — Postman → Wellfit Payments (always refresh)
+
+When Chris **drops, attaches, or pastes** Postman collection/env JSON (or says he uploaded them):
+
+## 1. Classify and place (never leave at repo root)
+
+| Kind | Put source JSON here |
+|------|----------------------|
+| **Core** product API (ACH payments-v2, CNP, V2, CP, Paypages, TokenVault, Wallet, Merchant Provisioning, Treasury API, MyChart, …) | `postman/collections/core/` + env → `postman/environments/core/` |
+| **Regression 9.6** modules / updates to the unified regression suite | Merge into `regression/9.6/Regression-STAGE/` (collection + env). Do **not** create a nested “9.6” wrapper folder inside Postman. |
+| **Tickets** (`PAY-XXXX`, one-off suites) | `postman/collections/tickets/` + env → `postman/environments/tickets/` |
+
+If unsure (core vs ticket), **ask once**. Prefer ticket if name has `PAY-` / ticket id.
+
+Also follow `wellfit-qa-file-organization.mdc` (no orphan JSON at workspace root).
+
+## 2. Rebuild the single import pack (mandatory)
+
+After placing files, regenerate **`Wellfit Payments/`** so Chris only re-imports that folder:
+
+```
+Wellfit Payments/
+├── Wellfit Payments.postman_collection.json
+└── Wellfit Payments STAGE.postman_environment.json
+```
+
+Run: `python3 "Wellfit Payments/rebuild.py"` (from repo root).
+
+Tree inside the collection must be:
+
+```
+Wellfit Payments
+├── 0 — Regression     ← modules DIRECTLY (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury) — no extra 9.6 folder
+├── 1 — Core
+└── 2 — Tickets
+```
+
+Env name: **Wellfit Payments STAGE** (merge Regression STAGE + useful core keys e.g. ACH v2; don’t wipe existing STAGE secrets unnecessarily).
+
+## 3. Tell Chris (Spanish, short)
+
+1. Paths where sources landed (core / regression / tickets).  
+2. **Re-import** folder `Wellfit Payments/` (replace) → select env **Wellfit Payments STAGE**.  
+3. He can delete old loose Postman sidebar collections.
+
+## Do not
+
+- Leave exports at repo root.
+- Nest `0 — Regression` → `9.6` → modules (flat modules under Regression only).
+- Ask him to manually merge folders in Postman UI — the rebuild is the fix.

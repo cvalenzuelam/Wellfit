@@ -8,11 +8,30 @@
 ```
 Regression - STAGE
 ├── CNP
-└── TokenVault
+├── TokenVault
+├── Wellfit Provisioning
+├── Wallet
+├── PAY-2603
+└── Treasury
+    ├── 00. Shared setup
+    ├── A. CNP Payment …
+    ├── B. CNP Refund …
+    ├── C. ACH Payment …
+    ├── D. ACH Refund …
+    ├── E/F CP … (PARKED)
+    └── G. Holiday skip (PARKED)
 
 Environment: Regression STAGE
 ```
 
-## TokenVault SQL
+## SQL Visualize
 
-Each TokenVault TC that needs DB proof has a **SQL — … (Send → Visualize)** request after the API calls. Send it → open **Visualize** → copy into Azure Data Studio (**Platform** or **TokenVault** as labeled). Details: `../tokenvault/README.md`.
+| Module | DB dropdown | Notes |
+|--------|-------------|--------|
+| TokenVault | Platform / TokenVault | Labeled per request |
+| Wellfit Provisioning | Platform | TC05 / TC09 |
+| Wallet | **Wallet** | See `../wallet/` |
+| PAY-2603 | TokenVault / Platform | See `../pay-2603/` |
+| Treasury | **Platform** (+ Payments for ACH) | See `../treasury/` — create/send use **`api_key`** |
+
+Azure Data Studio: **Run** (not Estimated Plan).

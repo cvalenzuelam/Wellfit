@@ -1,5 +1,5 @@
 ---
-description: Release 9.6 STAGE regression — Postman layout, TokenVault/CNP status, resume context
+description: Release 9.6 STAGE regression — Postman layout, modules status, resume context
 alwaysApply: false
 globs:
   - regression/9.6/**
@@ -11,17 +11,21 @@ globs:
 
 Import **only** `regression/9.6/Regression-STAGE/` (collection **Regression - STAGE** + env **Regression STAGE**).
 
-Modules: **CNP** · **TokenVault**. Do not reintroduce split CNP/TokenVault collections at `9.6/` root.
+Modules: **CNP** · **TokenVault** · **Wellfit Provisioning** · **Wallet** · **PAY-2603** · **Treasury**. Do not reintroduce split collections at `9.6/` root.
 
 ## Resume
 
-Read `regression/9.6/SESSION-CONTEXT.md` first for status, hosts, SQL DBs, and open TokenVault work.
+Read `regression/9.6/SESSION-CONTEXT.md` first for status, hosts, SQL DBs, and open work.
 
 ## Quick facts
 
 - Processor tokens: numeric from `TokenVault.dbo.PaymentTokens` (see `scripts/cnp-payment-tokens-by-brand-STAGE.sql` + `cnp/` docs).
-- TokenVault SQL Visualize requests are inside each TC folder (Platform vs TokenVault labeled).
+- SQL Visualize requests are inside TC folders (Platform / TokenVault / Wallet labeled).
 - CP TokenVault TCs (05–07, 13): PARKED — physical lane / `cardToken`.
-- `add-token` may return **Returned existing token.** (idempotent by processorToken) — still valid for TC08.
-- If `/tokenvault` → **403 Site Disabled**: App Service `stage-wf-tokenvault-api` is Stopped → Start in Azure.
+- Wallet auth returns **`accessToken`** (not `bearerToken`) → `walletBearerToken`.
+- Wallet SQL DB dropdown: **Wallet** (`wallet/wallet-db-checks-STAGE.sql`).
+- Wallet B TC03/TC04 (subscription / payment plan): PARKED — need fixtures.
+- PAY-2603: add-token zip optional (TC01–05 runnable); CP TC06–07 + alert TC12 PARKED; docs `pay-2603/`.
+- Treasury: `api_key` (not Bearer) on create/send-funding-batch; CNP Payment/Refund runnable; CP + holiday PARKED; docs `treasury/`.
+- If `/tokenvault` → **403 Site Disabled**: Start `stage-wf-tokenvault-api` in Azure.
 - Azure Data Studio: **Run** only — Estimated Plan → `SHOWPLAN permission denied` (not a product fail).

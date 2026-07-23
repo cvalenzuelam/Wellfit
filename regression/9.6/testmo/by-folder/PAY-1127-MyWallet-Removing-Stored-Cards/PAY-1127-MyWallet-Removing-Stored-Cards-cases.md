@@ -8,10 +8,6 @@ Cases: **7**
 - **Priority:** Normal
 - **Status (at export):** Untested
 
-### Description
-
-Validate the API response for a successful deletion confirmation
-
 ### Expected
 
 Send a request to the "Delete Token" API with the corresponding token.
@@ -23,10 +19,6 @@ Send a request to the "Delete Token" API with the corresponding token.
 - **Case ID:** 67604
 - **Priority:** Normal
 - **Status (at export):** Untested
-
-### Description
-
-Attempt to call the "Delete Token" API without an access token.
 
 ### Expected
 
@@ -40,10 +32,6 @@ Ensure the API returns an unauthorized (HTTP 401) response
 - **Priority:** Normal
 - **Status (at export):** Untested
 
-### Description
-
-Attempt to delete a token linked to an active subscription.
-
 ### Expected
 
 Validate that the API returns an error message (HTTP 400/409) with an appropriate reason.
@@ -55,10 +43,6 @@ Validate that the API returns an error message (HTTP 400/409) with an appropriat
 - **Case ID:** 67606
 - **Priority:** Normal
 - **Status (at export):** Untested
-
-### Description
-
-Attempt to delete a token linked to an active payment plans
 
 ### Expected
 
@@ -72,10 +56,6 @@ Validate that the API returns an error message (HTTP 400/409) with an appropriat
 - **Priority:** Normal
 - **Status (at export):** Untested
 
-### Description
-
-Attempt to delete a non-existent token, a token linked to a payments plan and an active subscription
-
 ### Expected
 
 Validate that the API returns a proper error response (e.g., HTTP 404)
@@ -87,10 +67,6 @@ Validate that the API returns a proper error response (e.g., HTTP 404)
 - **Case ID:** 67608
 - **Priority:** Normal
 - **Status (at export):** Untested
-
-### Description
-
-Test with different card types Visa, MasterCard, Amex, Discover
 
 ### Expected
 
@@ -109,3 +85,4 @@ Ensure all can be successfully deleted unless restricted.
 Query the wallet database to confirm that the token no longer exists after deletion.
 
 ---
+

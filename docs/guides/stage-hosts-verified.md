@@ -12,6 +12,8 @@
 | Payments V2 API | `https://stage-platform.wellfit.com/payments-v2` | Verified alive (401 without token; PAY-3683 / PAY-4087). Alternate: `https://stage-wf-payments-v2-api.azurewebsites.net` |
 | Worldpay Wrapper API | `https://stage-wf-worldpay-wrapper-api.azurewebsites.net` | Known (credentials rule) |
 | Platform host (general) | `https://stage-platform.wellfit.com` | Known |
+| Wallet API (platform) | `https://stage-platform.wellfit.com/wallet` | Verified 2026-07-23 (health 200; authenticate returns `accessToken`) |
+| Wallet API (Azure twin) | `https://stage-wf-wallet-api.azurewebsites.net` | Verified alive (health 200) |
 | Treasury | `https://stage-platform.wellfit.com/treasury` | Known (PAY-3821) |
 | Payments func | `stage-wf-payments-func` (Azure Function App) | Known (ACH return FileProcessedEvent) |
 | SQL server | `stage-platform-wellfit-sqlserver.database.windows.net` | Verified |

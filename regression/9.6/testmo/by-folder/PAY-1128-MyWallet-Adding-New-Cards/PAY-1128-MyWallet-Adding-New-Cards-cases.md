@@ -8,10 +8,6 @@ Cases: **8**
 - **Priority:** Normal
 - **Status (at export):** Untested
 
-### Description
-
-Send a request to the authentication API with valid credentials.
-
 ### Expected
 
 Successful response (HTTP 200/201) and retrieve the access token.
@@ -24,10 +20,6 @@ Successful response (HTTP 200/201) and retrieve the access token.
 - **Priority:** Normal
 - **Status (at export):** Untested
 
-### Description
-
-Send a request to the wallet creation API.
-
 ### Expected
 
 Validate the response for expected fields (wallet token ID, creation timestamp).
@@ -39,12 +31,6 @@ Validate the response for expected fields (wallet token ID, creation timestamp).
 - **Case ID:** 67590
 - **Priority:** Normal
 - **Status (at export):** Untested
-
-### Description
-
-Send a request to the tokenization API with valid card details.
-
-Validate that the response contains a valid token and expected fields.
 
 ### Expected
 
@@ -69,10 +55,6 @@ Query the wallet database to confirm a new entry with the correct user ID, walle
 - **Case ID:** 67592
 - **Priority:** Normal
 - **Status (at export):** Untested
-
-### Description
-
-Send requests with various invalid card numbers (incomplete, non-numeric, too short/long)
 
 ### Expected
 
@@ -111,15 +93,9 @@ Query the wallet database to confirm a new entry with the correct user ID, walle
 - **Priority:** Normal
 - **Status (at export):** Untested
 
-### Description
-
-- A valid request to add a token to the wallet is made with the necessary authentication and data.
-- Wallet DB is accessible for querying and contains the required schema for storing tokenized data.
-
 ### Expected
 
-- The resultant tokenId is correctly generated and stored in the Wallet DB.
-- The tokenId can be queried and found in the Wallet DB.
-- API response: HTTP 200 OK (or equivalent success response indicating successful tokenization and storage).
+The resultant tokenId is correctly generated and stored in the Wallet DB.The tokenId can be queried and found in the Wallet DB.API response: HTTP 200 OK (or equivalent success response indicating successful tokenization and storage).
 
 ---
+

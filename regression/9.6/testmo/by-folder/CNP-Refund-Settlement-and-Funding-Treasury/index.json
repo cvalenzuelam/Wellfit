@@ -1,0 +1,65 @@
+[
+  {
+    "caseId": "304015",
+    "testId": "1853969",
+    "title": "Validate that POST  CNP /payments API is 200 OK",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304016",
+    "testId": "1853970",
+    "title": "Validate that CNP partial refund  can be successfully sent to the system",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304017",
+    "testId": "1853971",
+    "title": "Validate that CNP partial refund is successfully stored as 'Approved' in Payments  DB",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304020",
+    "testId": "1853974",
+    "title": "Validate that  CNP partial refund gets \"SettlementDate\"value filled via query through Payments  DB Table",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304018",
+    "testId": "1853972",
+    "title": "Validate that POST treasury/create-funding-batch API can be successfully executed 202 OK",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304019",
+    "testId": "1853973",
+    "title": "Validate that  \"FundingInstructions\" and \"SettlementDate\" are not NULL for CNP partial refund in Payments  DB Table after creating FundingBatch via API",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304021",
+    "testId": "1853975",
+    "title": "Validate that Payments.FundingInstructions Table contains proper co-relation of  \"FIPC-PayFac\", \"FISC-NetSettlement\" and \"Id\" against  \"fundingInstructionId\". \"PayFacFee\" and \"Amount\" values from  Platform Payments.Payments DB",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304022",
+    "testId": "1853976",
+    "title": "Validate that POST treasury/send-funding-batch API can be successfully executed 202 OK",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  },
+  {
+    "caseId": "304023",
+    "testId": "1853977",
+    "title": "Validate that Payments.FundingBatches Table contains proper \"BatchFileName\" value after sending funding batch via API",
+    "status": "Untested",
+    "folder": "CNP Refund - Settlement and Funding - Treasury"
+  }
+]

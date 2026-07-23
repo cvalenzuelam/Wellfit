@@ -1,0 +1,443 @@
+{
+  "info": {
+    "_postman_id": "088ccf6f-bf90-4b54-a0f4-e0a62e361d4b",
+    "name": "ACH payments-v2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "32666628",
+    "_collection_link": "https://go.postman.co/collection/32666628-088ccf6f-bf90-4b54-a0f4-e0a62e361d4b?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authenticate_Payment-Stage Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "postman.setEnvironmentVariable(\"bearer-token\", \"\");",
+              "var jsonData = JSON.parse(responseBody);",
+              "postman.setEnvironmentVariable(\"bearer-token\", jsonData.bearerToken);"
+            ],
+            "type": "text/javascript",
+            "packages": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //Stage\r\n  //\"username\": \"WellfitAutomation\",\r\n  //\"password\": \"Test123!\"\r\n  //\"username\": \"WellfitTreatmentAPI\",\r\n  //\"password\": \"Test123!\"\r\n   \"username\": \"WellfitUnifiedPaymentsAPI\",\r\n   \"password\": \"Testing123!!W3llf1t1!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-platform.wellfit.com/payments/authenticate",
+          "protocol": "https",
+          "host": [
+            "stage-platform",
+            "wellfit",
+            "com"
+          ],
+          "path": [
+            "payments",
+            "authenticate"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ach-v2 verbal in person auth",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);",
+              "",
+              "function generateRoutingNumber() {",
+              "  let digits = [];",
+              "  for (let i = 0; i < 8; i++) {",
+              "    digits.push(Math.floor(Math.random() * 10));",
+              "  }",
+              "",
+              "  let sum =",
+              "    3 * digits[0] +",
+              "    7 * digits[1] +",
+              "    1 * digits[2] +",
+              "    3 * digits[3] +",
+              "    7 * digits[4] +",
+              "    1 * digits[5] +",
+              "    3 * digits[6] +",
+              "    7 * digits[7];",
+              "",
+              "  let checksum = (10 - (sum % 10)) % 10;",
+              "  digits.push(checksum);",
+              "",
+              "  return digits.join('');",
+              "}",
+              "",
+              "pm.environment.set(\"randomRoutingNumber\", generateRoutingNumber());",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"worldpay-token\", json.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{bearer-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearer-token}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"subMerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\",\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", \r\n  //\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\",\r\n  //\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\",\r\n\r\n  \"subMerchantId\": \"a2a70000-4805-0022-c3a0-08dd78251074\",\r\n  \"transactionType\": \"Sale\",\r\n  \"amount\": 120,\r\n  \"currency\": \"USD\",\r\n  \"orderId\": \"ORD-2025-040\",\r\n  \"orderIdType\": \"Invoice\",\r\n  \"paymentMethod\": {\r\n    \"type\": \"ACH\",\r\n    \"ach\": {\r\n      \"accountFirstName\": \"Luna\",\r\n      \"accountLastName\": \"Brown\",\r\n      \"accountNumber\": \"1099999996\",\r\n      \"routingNumber\": \"011075150\",\r\n      //\"routingNumber\": \"{{randomRoutingNumber}}\", \r\n      \"accountType\": \"savings\", //savings, checking\r\n      \"secCode\": \"WEB\",\r\n\r\n    \"authorization\": {\r\n        \"AuthorizationType\": \"VERBAL_IN_PERSON\",\r\n        \"AuthorizationDate\": \"2026-04-06T09:15:00-05:00\",\r\n        \"AuthorizationReference\": \"VISIT-20260406-DB\",\r\n        \"SignedAuthorizationOnFile\": null,\r\n        \"AuthorizingUserId\": \"front-desk-02\",\r\n        \"DisclosureConfirmed\": true\r\n        }\r\n    }\r\n  },\r\n  \"metadata\": \"{\\\"invoiceId\\\": \\\"INV-002\\\", \\\"customerId\\\": \\\"CUST-67890\\\"}\"\r\n\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-payments-v2-api.azurewebsites.net/api/v1/payments",
+          "protocol": "https",
+          "host": [
+            "stage-wf-payments-v2-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ach-v2 verbal telephone auth",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);",
+              "",
+              "function generateRoutingNumber() {",
+              "  let digits = [];",
+              "  for (let i = 0; i < 8; i++) {",
+              "    digits.push(Math.floor(Math.random() * 10));",
+              "  }",
+              "",
+              "  let sum =",
+              "    3 * digits[0] +",
+              "    7 * digits[1] +",
+              "    1 * digits[2] +",
+              "    3 * digits[3] +",
+              "    7 * digits[4] +",
+              "    1 * digits[5] +",
+              "    3 * digits[6] +",
+              "    7 * digits[7];",
+              "",
+              "  let checksum = (10 - (sum % 10)) % 10;",
+              "  digits.push(checksum);",
+              "",
+              "  return digits.join('');",
+              "}",
+              "",
+              "pm.environment.set(\"randomRoutingNumber\", generateRoutingNumber());",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"worldpay-token\", json.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{bearer-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearer-token}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"subMerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\",\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", \r\n  //\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\",\r\n  //\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\",\r\n\r\n  \"subMerchantId\": \"48260000-bd02-6045-04c7-08de5d1db434\",\r\n  \"transactionType\": \"Sale\",\r\n  \"amount\": 20,\r\n  \"currency\": \"USD\",\r\n  \"orderId\": \"ORD-2025-029\",\r\n  \"orderIdType\": \"Invoice\",\r\n  \"paymentMethod\": {\r\n    \"type\": \"ACH\",\r\n    \"ach\": {\r\n      \"accountFirstName\": \"Luna\",\r\n      \"accountLastName\": \"Brown\",\r\n      \"accountNumber\": \"1099999996\",\r\n      \"routingNumber\": \"011075150\",\r\n      //\"routingNumber\": \"{{randomRoutingNumber}}\", \r\n      \"accountType\": \"savings\", //savings, checking\r\n      \"secCode\": \"WEB\",\r\n\r\n    \"authorization\": {\r\n        \"authorizationType\": \"VERBAL_TELEPHONE\",\r\n        \"authorizationDate\": \"2026-04-06T10:00:00+00:00\",\r\n        \"authorizationReference\": \"CALL-001\",\r\n        \"AuthorizingUserId\": \"front-desk-02\",\r\n        \"disclosureConfirmed\": true\r\n        }\r\n    }\r\n  },\r\n  \"metadata\": \"{\\\"invoiceId\\\": \\\"INV-002\\\", \\\"customerId\\\": \\\"CUST-67890\\\"}\"\r\n\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-payments-v2-api.azurewebsites.net/api/v1/payments",
+          "protocol": "https",
+          "host": [
+            "stage-wf-payments-v2-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ach-v2 electronic",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);",
+              "",
+              "function generateRoutingNumber() {",
+              "  let digits = [];",
+              "  for (let i = 0; i < 8; i++) {",
+              "    digits.push(Math.floor(Math.random() * 10));",
+              "  }",
+              "",
+              "  let sum =",
+              "    3 * digits[0] +",
+              "    7 * digits[1] +",
+              "    1 * digits[2] +",
+              "    3 * digits[3] +",
+              "    7 * digits[4] +",
+              "    1 * digits[5] +",
+              "    3 * digits[6] +",
+              "    7 * digits[7];",
+              "",
+              "  let checksum = (10 - (sum % 10)) % 10;",
+              "  digits.push(checksum);",
+              "",
+              "  return digits.join('');",
+              "}",
+              "",
+              "pm.environment.set(\"randomRoutingNumber\", generateRoutingNumber());",
+              "",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"worldpay-token\", json.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{bearer-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearer-token}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"subMerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\",\r\n//\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", \r\n  //\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\",\r\n  //\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\",\r\n\r\n  \"subMerchantId\": \"48260000-bd02-6045-04c7-08de5d1db434\",\r\n  \"transactionType\": \"Sale\",\r\n  \"amount\": 120,\r\n  \"currency\": \"USD\",\r\n  \"orderId\": \"ORD-2025-029\",\r\n  \"orderIdType\": \"Invoice\",\r\n  \"paymentMethod\": {\r\n    \"type\": \"ACH\",\r\n    \"ach\": {\r\n      \"accountFirstName\": \"Luna\",\r\n      \"accountLastName\": \"Brown\",\r\n      \"accountNumber\": \"1099999996\",\r\n      \"routingNumber\": \"011075150\",\r\n      //\"routingNumber\": \"{{randomRoutingNumber}}\", \r\n      \"accountType\": \"savings\", //savings, checking\r\n      \"secCode\": \"WEB\",\r\n\r\n    \"authorization\": {\r\n        \"AuthorizationType\": \"ELECTRONIC\",\r\n        \"AuthorizationDate\": \"2026-04-06T09:15:00-05:00\",\r\n        \"AuthorizationReference\": \"VISIT-20260406-DB\",\r\n        \"SignedAuthorizationOnFile\": true,\r\n        \"AuthorizingUserId\": \"front-desk-02\",\r\n        \"DisclosureConfirmed\": true\r\n        }\r\n    }\r\n  },\r\n  \"metadata\": \"{\\\"invoiceId\\\": \\\"INV-002\\\", \\\"customerId\\\": \\\"CUST-67890\\\"}\"\r\n\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-payments-v2-api.azurewebsites.net/api/v1/payments",
+          "protocol": "https",
+          "host": [
+            "stage-wf-payments-v2-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "ach-v2 token usage",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.environment.set('random-order-id', Math.floor(Math.random() * 900000) + 100000000);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();\r",
+              "pm.environment.set(\"worldpay-token\", json.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{bearer-token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearer-token}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{$guid}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  //\"subMerchantId\": \"A372295A-7AEB-4184-B4E9-16AB615237C4\",\r\n  //\"subMerchantId\": \"4431318D-E50D-4A3B-AAB7-FB65B489F5AF\", \r\n  //\"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\",\r\n  //\"subMerchantId\": \"3C8C0000-FF98-0003-AA5B-08D6B3AFD5A4\",\r\n  \"subMerchantId\": \"a2a70000-4805-0022-c3a0-08dd78251074\",\r\n  \"transactionType\": \"Sale\",\r\n  \"amount\": 90,\r\n  \"currency\": \"USD\",\r\n  \"orderId\": \"ORD-2025-033\",\r\n  \"orderIdType\": \"Invoice\",\r\n  \"paymentMethod\": {\r\n    \"type\": \"Ach\",\r\n    \"ach\": {\r\n       \"token\": \"86620000-05d5-2235-d31a-08de9b0feb51\",\r\n        \"secCode\": \"WEB\",\r\n\r\n       //ACH payment details - token stored in TokenVault.BankAccountTokens,\r\n        \"authorization\": {\r\n            \"AuthorizationType\": \"VERBAL_IN_PERSON\",\r\n            \"AuthorizationDate\": \"2026-04-06T09:15:00-05:00\",\r\n            \"AuthorizationReference\": \"VISIT-20260406-DB\",\r\n            \"SignedAuthorizationOnFile\": null,\r\n            \"AuthorizingUserId\": \"front-desk-02\",\r\n            \"DisclosureConfirmed\": true\r\n        }\r\n    }\r\n  },\r\n  \"metadata\": \"{\\\"invoiceId\\\": \\\"INV-002\\\", \\\"customerId\\\": \\\"CUST-67890\\\"}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://stage-wf-payments-v2-api.azurewebsites.net/api/v1/payments",
+          "protocol": "https",
+          "host": [
+            "stage-wf-payments-v2-api",
+            "azurewebsites",
+            "net"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "payments"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
