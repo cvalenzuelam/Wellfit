@@ -1,0 +1,278 @@
+{
+  "info": {
+    "_postman_id": "test1-paypage-token-flow-stage",
+    "name": "test1",
+    "description": "Mini STAGE flow (Radhika/Ana): Auth → Pay Page → process-card → add-token → get-token-details.\nHardcoded STAGE values. Select env **test1 STAGE** (or any env; scripts also set collection vars).\n\nOrder: run folder 1 → 2 → 3 → 4 → 5.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "URL", "value": "https://stage-platform.wellfit.com/payments" },
+    { "key": "TokenVaultAPI", "value": "https://stage-platform.wellfit.com/tokenvault" },
+    { "key": "Payment-Bearer-Token", "value": "" },
+    { "key": "paypageRegistrationId", "value": "" },
+    { "key": "wellfitTokenGuid", "value": "" },
+    { "key": "lastTransactionId", "value": "" },
+    { "key": "lastProcessorToken", "value": "" },
+    { "key": "orderId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "POST authenticate (hardcoded STAGE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('bearerToken present', () => pm.expect(j.bearerToken).to.be.ok);",
+                  "pm.environment.set('Payment-Bearer-Token', j.bearerToken);",
+                  "pm.collectionVariables.set('Payment-Bearer-Token', j.bearerToken);",
+                  "console.log('Payment-Bearer-Token saved');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "https://stage-platform.wellfit.com/payments/authenticate",
+            "description": "STAGE Payments authenticate. Hardcoded WellfitUnifiedPaymentsAPI (TokenVault scopes).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"WellfitUnifiedPaymentsAPI\",\n  \"password\": \"Testing123!!W3llf1t1!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Pay Page (eProtect) — register with processor",
+      "item": [
+        {
+          "name": "POST eProtect paypage — VISA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('not 889', () => pm.expect(String(j.response || '')).to.not.eql('889'));",
+                  "pm.test('paypageRegistrationId', () => pm.expect(j.paypageRegistrationId).to.be.ok);",
+                  "pm.environment.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "pm.collectionVariables.set('paypageRegistrationId', j.paypageRegistrationId);",
+                  "console.log('paypageRegistrationId=' + j.paypageRegistrationId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" },
+              { "key": "Host", "value": "request.eprotect.vantivprelive.com" }
+            ],
+            "url": "https://request.eprotect.vantivprelive.com/eProtect/paypage",
+            "description": "Vantiv Pre-Live Pay Page. Hardcoded STAGE paypageId + Confluence Visa test PAN.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "paypageId", "value": "XhybNHfFjYF3aTRR", "type": "text" },
+                { "key": "reportGroup", "value": "Default", "type": "text" },
+                { "key": "orderId", "value": "Test1.PayPage.Visa", "type": "text" },
+                { "key": "id", "value": "1111111111222222222222222", "type": "text" },
+                { "key": "accountNumber", "value": "4457010000000009", "type": "text" },
+                { "key": "cvv", "value": "349", "type": "text" }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. process-card — Pay Page (creates live charge / token path)",
+      "item": [
+        {
+          "name": "POST process-card — Pay Page",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const orderId = 'TEST1-PP-' + Date.now().toString().slice(-10);",
+                  "pm.environment.set('orderId', orderId);",
+                  "pm.collectionVariables.set('orderId', orderId);",
+                  "const pp = pm.environment.get('paypageRegistrationId') || pm.collectionVariables.get('paypageRegistrationId');",
+                  "if (!pp) throw new Error('Run step 2 eProtect first — paypageRegistrationId empty');",
+                  "const tok = pm.environment.get('Payment-Bearer-Token') || pm.collectionVariables.get('Payment-Bearer-Token');",
+                  "if (!tok) throw new Error('Run step 1 Auth first — Payment-Bearer-Token empty');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const txn = j.transactionId || j.TransactionId || (j.response && j.response.transactionId);",
+                  "pm.test('transactionId present', () => pm.expect(txn).to.be.ok);",
+                  "pm.environment.set('lastTransactionId', String(txn));",
+                  "pm.collectionVariables.set('lastTransactionId', String(txn));",
+                  "const token = j.token || j.Token || (j.response && j.response.token);",
+                  "if (token) {",
+                  "  pm.environment.set('lastProcessorToken', String(token));",
+                  "  pm.collectionVariables.set('lastProcessorToken', String(token));",
+                  "  console.log('response.token=' + token);",
+                  "}",
+                  "console.log('lastTransactionId=' + txn);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{Payment-Bearer-Token}}" }
+            ],
+            "url": "https://stage-platform.wellfit.com/payments/credit-card/process-card",
+            "description": "Hardcoded STAGE host + Redhill subMerchant. Uses paypageRegistrationId from step 2.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 11.03,\n  \"expirationDate\": \"1230\",\n  \"network\": \"VI\",\n  \"orderId\": \"{{orderId}}\",\n  \"payFacFee\": 0,\n  \"subMerchantId\": \"159F2670-1B71-4EF6-AD30-0EBF0991E2CC\",\n  \"payPageRegistrationId\": \"{{paypageRegistrationId}}\",\n  \"zipCode\": \"01803\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. add-token — save Wellfit GUID in TokenVault",
+      "item": [
+        {
+          "name": "POST add-token (hardcoded Visa processorToken fallback)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tok = pm.environment.get('Payment-Bearer-Token') || pm.collectionVariables.get('Payment-Bearer-Token');",
+                  "if (!tok) throw new Error('Run step 1 Auth first');",
+                  "// Prefer token from step 3 if it looks like a processor token (not a GUID).",
+                  "const fromCharge = pm.environment.get('lastProcessorToken') || pm.collectionVariables.get('lastProcessorToken') || '';",
+                  "const use = (fromCharge && !/-/.test(fromCharge)) ? fromCharge : '1111000281821111';",
+                  "pm.environment.set('addTokenProcessorToken', use);",
+                  "pm.collectionVariables.set('addTokenProcessorToken', use);",
+                  "console.log('add-token processorToken=' + use);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json();",
+                  "const pt = j.paymentToken || j.PaymentToken || {};",
+                  "const id = pt.id || pt.Id || j.id || j.Id;",
+                  "pm.test('Wellfit GUID (paymentToken.id)', () => pm.expect(id).to.be.ok);",
+                  "pm.environment.set('wellfitTokenGuid', String(id));",
+                  "pm.collectionVariables.set('wellfitTokenGuid', String(id));",
+                  "if (pt.processorToken) {",
+                  "  pm.environment.set('lastProcessorToken', String(pt.processorToken));",
+                  "  pm.collectionVariables.set('lastProcessorToken', String(pt.processorToken));",
+                  "}",
+                  "console.log('wellfitTokenGuid=' + id + ' statusMessage=' + (j.statusMessage || ''));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "url": "https://stage-platform.wellfit.com/tokenvault/add-token",
+            "description": "Hardcoded TokenVault host. Body uses {{addTokenProcessorToken}} set in prerequest (from step 3 if numeric, else STAGE Visa 1111000281821111). Idempotent Returned existing token is OK.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"processorToken\": \"{{addTokenProcessorToken}}\",\n  \"cardLastFour\": \"1111\",\n  \"cardBrand\": \"VISA\",\n  \"cardExpirationMonth\": 12,\n  \"cardExpirationYear\": 2034,\n  \"cardZipCode\": \"01803\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. get-token-details — by tokenId (GUID)",
+      "item": [
+        {
+          "name": "GET get-token-details",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const guid = pm.environment.get('wellfitTokenGuid') || pm.collectionVariables.get('wellfitTokenGuid');",
+                  "if (!guid) throw new Error('Run step 4 add-token first — wellfitTokenGuid empty');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "pm.test('Token found', () => pm.expect(pm.response.text()).to.match(/Token found|Approved/i));",
+                  "pm.test('not Token not found', () => pm.expect(pm.response.text()).to.not.match(/not found/i));",
+                  "console.log(pm.response.text().substring(0, 500));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "{{Payment-Bearer-Token}}", "type": "string" }
+              ]
+            },
+            "url": "https://stage-platform.wellfit.com/tokenvault/get-token-details?tokenId={{wellfitTokenGuid}}",
+            "description": "Hardcoded TokenVault host. tokenId = Wellfit GUID from step 4."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

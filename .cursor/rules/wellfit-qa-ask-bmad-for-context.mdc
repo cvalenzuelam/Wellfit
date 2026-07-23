@@ -1,0 +1,83 @@
+---
+description: When ticket/product context is thin, ask Chris to query BMAD Chat and paste the answer
+alwaysApply: true
+---
+
+# Wellfit QA — ask Chris to query BMAD Chat for context
+
+Chris has **BMAD Chat**: `https://bmachat.com/` (theme dashboard: `theme-dashboard.html`). Login: Azure AD. Filter: **Payments (PAY)**. Right sidebar: **Knowledge Base** (Wellfit KB Agent).
+
+**Mindset:** BMAD is a **normal QA tool** now (like Azure/SQL/Postman). When context is thin or a Dev runbook is missing, **ask Chris with confidence** — give a paste-ready KB prompt. Do not wait for him to remember BMAD.
+
+## When to ask (do not invent)
+
+If local ticket/BMAD docs are missing, thin, stale, or you are guessing about:
+
+- What a **PAY-XXXX** / feature / Express Lane item actually changed
+- ACs, Correct-Course risks, architecture intent, event contracts
+- Which service owns a flow (Legacy vs Payments V2 vs Payment Management vs Wrapper)
+- Runbook / solution / TEST_COVERAGE that is not in this workspace
+- **QA runbook** — Devs may no longer hand off runbooks; Chris asks BMAD to synthesize one from Solution / Correct-Course / TEST_COVERAGE / architecture
+- Flag names, dual-handler/legacy retirement proof, “is fix deployed”, event field contracts, deferred Correct-Course items
+
+→ **Stop guessing.** Ask Chris (Spanish, short) to paste a BMAD KB question and return the reply (or Sources links).
+
+Prefer this over inventing from memory or DEV-only chatter. Complements `wellfit-qa-ask-chris-before-guess.mdc` (SQL/hosts) — BMAD is for **product/design/ticket** context.
+
+## How to ask Chris
+
+1. Say clearly: need BMAD context for X (or a **QA runbook** for PAY-XXXX).
+2. Give a **ready-to-paste** prompt for Knowledge Base.
+3. Wait for his paste; then continue QA (Postman/SQL/Testmo) with that truth.
+4. Save durable bits under `tickets/PAY-XXXX/` (runbook + STAGE Postman package). Adapt DEV hosts → STAGE per `wellfit-qa-prefer-stage-docs.mdc`. Do not treat BMAD hosts/SQL as verified until checked.
+5. When improving a BMAD runbook, pass Chris a **STAGE facts block** (hosts, flag path, fixture pattern) so KB invents less.
+
+## Ready prompts (adapt ticket id)
+
+```text
+What is PAY-XXXX about? Summarize the change, acceptance criteria, and what QA should verify in STAGE. Cite sources.
+```
+
+```text
+For PAY-XXXX, list known risks, feature flags, event contracts, and blockers QA must check. Cite sources.
+```
+
+```text
+Is there BMAD documentation for PAY-XXXX? List solution, Correct-Course, TEST_COVERAGE, architecture, or QA guides. Cite sources with paths.
+```
+
+### QA runbook from BMAD (primary when no Dev runbook)
+
+```text
+Using only BMAD sources for PAY-XXXX (solution, analysis, Correct-Course, TEST_COVERAGE, architecture), write a STEP-BY-STEP QA runbook for STAGE.
+
+Include:
+1) Preconditions (flags, services, test data, auth/scopes)
+2) Happy path steps (API/DB/events) with expected results
+3) Key negatives / risks from Correct-Course
+4) SQL or event assertions (table/field names only if cited in sources — otherwise mark UNKNOWN)
+5) Evidence checklist for Testmo
+6) Out of scope / unit-test-only items
+
+Cite every source. Do not invent hosts, credentials, or schema. If STAGE details are missing, list explicit gaps for QA to fill.
+```
+
+### STAGE adapt (after first draft)
+
+Give Chris the verified STAGE facts block from `docs/reference/bmad/README.md` / ticket notes, then:
+
+```text
+Adapt the PAY-XXXX QA runbook for STAGE only using the verified STAGE facts I provide. Keep Correct-Course risks. Mark UNKNOWN — do not invent hosts, SQL columns, or credentials.
+```
+
+## Dashboard note
+
+**Themes & Features** = Highway themes (large features). Many QA tickets (e.g. Express Lane enhancements like PAY-4032) **won’t** appear as theme rows — use **Knowledge Base** + Sources, not only the theme list.
+
+## Do not
+
+- Pretend BMAD Chat is reachable from the agent (Chris pastes).
+- Replace STAGE proof (Postman/SQL/Azure) with KB answers alone.
+- Ship BMAD runbook hosts/SQL into Postman without STAGE verify.
+- Stay silent when BMAD would unblock a gap — ask him.
+- Ask him to query BMAD when verified local docs already answer the question.

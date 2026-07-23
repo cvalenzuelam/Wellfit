@@ -7,9 +7,9 @@
 
 ```
 Wellfit Payments
-├── 0 — Regression   (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury)
 ├── 1 — Core
-└── 2 — Tickets
+├── 2 — Tickets
+└── 3 — Regression   (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury)
 ```
 
 Rebuild after adding sources: `python3 "Wellfit Payments/rebuild.py"`

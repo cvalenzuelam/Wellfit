@@ -1,46 +1,43 @@
 # Treasury — Settlement & Funding (9.6 STAGE)
 
-## Postman
+## ACH alignment (updated)
 
-Module **Treasury** in `../Regression-STAGE/` · env **Regression STAGE**.
+Treasury **C / D** now follow **`ACH payments-v2`** (not a guessed body):
 
-## Auth
+| Item | Value |
+|------|--------|
+| Host | `https://stage-wf-payments-v2-api.azurewebsites.net` (`paymentsV2BaseUrl`) |
+| Auth | Payments authenticate → `bearer-token` **and** `Payment-Bearer-Token` |
+| Sale (primary) | Raw ACH verbal in person — routing `011075150` / account `1099999996` |
+| Sale amount | `treasuryAchChargeAmount` (default **120** — not CNP `1.15`) |
+| Sale headers | **`Idempotency-Key`** required (auto `achIdempotencyKey` per run) |
+| Sale (optional) | Vault token `treasuryAchBankToken` (collection default GUID) |
+| Refund auth | Identity `WellfitUnifiedPaymentsAPI` → `Payment-Bearer-Token` (PAY-4064 scopes) |
+| Refund partial | PM refund amount `treasuryAchPartialRefundAmount` (default **0.50**) |
+| Refund full (#5) | Separate ULIDs: `achFullRefundPaymentTransactionId` + `treasuryAchFullRefundAmount` |
+| Treasury | `api_key` on create/send-funding-batch |
 
-| Call | Auth |
-|------|------|
-| `/payments/*` charges & refunds | Bearer (`Payment-Bearer-Token` from payments authenticate) |
-| `/treasury/create-funding-batch` & `/send-funding-batch` | Header **`api_key`** (`treasuryApiKey`) — **not** Bearer |
-| `/treasury/health` | none |
+## Postman ↔ Testmo (Section D — 12 cases, 1:1)
 
-Host: `https://stage-platform.wellfit.com/treasury`
+| Postman TC | Testmo # | Case ID |
+|------------|----------|---------|
+| TC01 | 1 | 303923 authenticate |
+| TC02 | 2 | 303924 **new** txn (seed + SQL6 + Identity + refund) |
+| TC03 | 3 | 303968 **existent** txn (discovery + SQL6 + Identity + refund) |
+| TC04 | 4 | 303925 status **18** SQL |
+| TC05 | 5 | 303969 full refund **10** — separate txn (`achFullRefund*` env vars) |
+| TC06 | 6 | 303928 SettlementDate charge + **Refunds** |
+| TC07 | 7 | 303926 create-funding-batch |
+| TC08 | 8 | 303927 FI on refund row |
+| TC09 | 9 | 303929 Funded **5** |
+| TC10 | 10 | 303930 FI FIPC/FISC |
+| TC11 | 11 | 303931 send-funding-batch |
+| TC12 | 12 | 303932 FundingBatches |
 
-## Testmo coverage (~59 cases)
+## Import
 
-| Section | Folder | Runnable? |
-|---------|--------|-----------|
-| A | CNP Payment - Settlement and Funding - Treasury (9) | Yes |
-| B | CNP Refund - Settlement and Funding - Treasury (9) | Yes |
-| C | ACH Payment - Settlement and Funding - Treasury (10) | Needs `treasuryAchBankToken` |
-| D | ACH Refund - Settlement and Funding - Treasury (12) | Partial — refund seed manual/PAY-4064 |
-| E | CP Payment … Treasury (9) | **PARKED** CP lane |
-| F | CP Refund … Treasury (9) | **PARKED** |
-| G | Treasury holiday skip (1) | **PARKED** calendar timing |
+Prefer folder **`Wellfit Payments/`** (rebuild after regression edits).
 
-## Typical order (CNP Payment)
+Or Regression module inside that pack: **3 — Regression → Treasury → F (ACH Refund)**.
 
-1. Shared / section Auth  
-2. process-card → save `treasuryTransactionId`  
-3. SQL confirm SettlementDate NULL  
-4. SQL UPDATE SettlementDate (business day)  
-5. POST create-funding-batch → 202  
-6. SQL FundingInstructionId filled  
-7. POST send-funding-batch → 202  
-8. SQL FundingBatches.BatchFileName  
-
-## Gap before ACH Payment
-
-Fill env `treasuryAchBankToken` = active `TokenVault.dbo.BankAccountTokens.Id` for STAGE ACH.
-
-## SQL
-
-`treasury-db-checks-STAGE.sql` · Visualize requests inside each TC.
+Treasury section order: **00 Shared** → **A/B CP** → **C/D CNP** → **E/F ACH** → **G holiday**.

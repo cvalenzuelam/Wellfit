@@ -1,0 +1,689 @@
+Date: Thu, 23 Jul 2026 17:24:53 +0000 (UTC)
+Message-ID: <2070263675.551.1784827493800@f5c9f004def6>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_550_417871385.1784827493799"
+
+------=_Part_550_417871385.1784827493799
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>=F0=9F=9A=80 BMAD Academy =E2=80=94 Your Guide to Building Smart=
+er</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>=F0=9F=9A=80 BMAD Academy =E2=80=94 Your Guide to Building Smarter<=
+/h1>
+    <div class=3D"Section1">
+        <h1 local-id=3D"f783292500c1" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=
+=80=94YourGuidetoBuildingSmarter-=F0=9F=9A=80Module0=E2=80=94WelcometoBMADC=
+hat!">=F0=9F=9A=80 Module 0 =E2=80=94 Welcome to BMAD Chat!</h1>
+<p local-id=3D"44fc5171c8f1"><strong>Who this is for:</strong> Everyone =E2=
+=80=94 yes, you too =F0=9F=91=8B <strong>Time to complete:</strong> ~20 min=
+utes <strong>Vibe:</strong> Buckle up, it's going to be a good one.</p>
+<hr local-id=3D"b007cbb2-3820-47f1-8a6b-15a2ea169811">
+<blockquote local-id=3D"afcf2e36-1fef-474b-99fe-869285309d9e">
+<p local-id=3D"7c2d3b28cf80">=F0=9F=92=AC <em>"What if your team had a bril=
+liant analyst, a sharp product manager, a seasoned architect, a coding wiza=
+rd, and a QA ninja =E2=80=94 all available instantly, any time of day, and =
+none of them in your Slack DMs asking for meeting links?"</em></p>
+<p local-id=3D"1fa70d80321a">That's BMAD. Let's get into it.</p>
+</blockquote>
+<hr local-id=3D"14e84a99-179a-4bb8-a3a0-53360c29b825">
+<h2 local-id=3D"aa5d2f2a6b69" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=A4=94OkayBut...WhatEvenISBMAD?">=F0=9F=A4=94 =
+Okay But... What Even IS BMAD?</h2>
+<p local-id=3D"108c3d2c95ef"><strong>BMAD</strong> stands for <strong>Build=
+ Me A Dream.</strong> And yes, it lives up to the name.</p>
+<p local-id=3D"db4715098edd">At its heart, BMAD is a methodology =E2=80=94 =
+a smart, structured way of using AI agents to take your team from a half-ba=
+ked idea scribbled on a sticky note all the way to production-ready, tested=
+, shipped software. Without losing your mind in the process.</p>
+<p local-id=3D"7e003ccdeca4">Here's the fun part: it's not just one AI. It'=
+s a <strong>whole crew</strong> of specialized agents, each with their own =
+lane:</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"a0=
+1c7655-045c-45ea-ab5f-2b9e1cbe2ddb" class=3D"confluenceTable">
+<tbody>
+<tr data-local-id=3D"9d3fd4f7-86d2-41cc-b713-c7e970ea5bb5">
+<th data-local-id=3D"7b64e46c-fd92-49bb-8455-c243e0f02f03" class=3D"conflue=
+nceTh">
+<p local-id=3D"9db8a146f30a">=F0=9F=A4=96 Agent</p></th>
+<th data-local-id=3D"14dca7e3-7630-4724-a2f8-c41f59c21a7e" class=3D"conflue=
+nceTh">
+<p local-id=3D"30c41b0421dd">=F0=9F=8E=AF Their Superpower</p></th>
+</tr>
+<tr data-local-id=3D"1264b5e0-a37d-4d1c-bda0-a81a8f83bf13">
+<td data-local-id=3D"d97fe52e-fd99-4376-ae22-83dd0a85b5b8" class=3D"conflue=
+nceTd">
+<p local-id=3D"933807778831">=F0=9F=94=8D <strong>Analyst (BA)</strong></p>=
+</td>
+<td data-local-id=3D"3947f300-cc21-4564-86fa-bc0ca8f9e4a2" class=3D"conflue=
+nceTd">
+<p local-id=3D"e0d630dd48db">Turns your vague ideas into crystal-clear requ=
+irements</p></td>
+</tr>
+<tr data-local-id=3D"9ed70289-8778-4751-b327-4e5980ce80e3">
+<td data-local-id=3D"f3541671-f3f4-4e77-9bf2-216dda943125" class=3D"conflue=
+nceTd">
+<p local-id=3D"04aac4dec81a">=F0=9F=93=8B <strong>Product Manager</strong><=
+/p></td>
+<td data-local-id=3D"8c2cac46-567a-48f0-ad16-954f4c00e2d1" class=3D"conflue=
+nceTd">
+<p local-id=3D"ee29557c10ab">Chops requirements into epics, stories, and ta=
+sks</p></td>
+</tr>
+<tr data-local-id=3D"3c48c2e0-36e0-48da-b9f6-d85a849a15a1">
+<td data-local-id=3D"52ed2ced-0362-45b3-8b5b-b9ffb83bc3cb" class=3D"conflue=
+nceTd">
+<p local-id=3D"e3b2e6a3bf4d">=F0=9F=8F=97=EF=B8=8F <strong>Architect</stron=
+g></p></td>
+<td data-local-id=3D"4f816f17-bac8-4e4c-b5c5-2158075058d7" class=3D"conflue=
+nceTd">
+<p local-id=3D"be437c4ab84f">Designs the technical blueprint so devs aren't=
+ guessing</p></td>
+</tr>
+<tr data-local-id=3D"43f9e33b-fdf6-4198-ab87-9a43ddedb2aa">
+<td data-local-id=3D"d189e52d-1ad1-49e6-a4f7-9f58d3aa61b3" class=3D"conflue=
+nceTd">
+<p local-id=3D"4f532ebf016d">=F0=9F=92=BB <strong>Developer</strong></p></t=
+d>
+<td data-local-id=3D"236551ef-e698-4e9c-b8c5-4c6a2a8f3e04" class=3D"conflue=
+nceTd">
+<p local-id=3D"3d8d77b55163">Helps write, review, and refactor code like a =
+senior dev on demand</p></td>
+</tr>
+<tr data-local-id=3D"bf4b20aa-2218-436c-94ac-782b59537e46">
+<td data-local-id=3D"91d90b99-f48c-4c9a-b771-3ee55348c88d" class=3D"conflue=
+nceTd">
+<p local-id=3D"928e6fe95b98">=F0=9F=A7=AA <strong>QA Engineer</strong></p><=
+/td>
+<td data-local-id=3D"e35f88a3-836d-4877-b4ab-c384285d2871" class=3D"conflue=
+nceTd">
+<p local-id=3D"6e6209ae8adb">Generates test cases so nothing sneaks through=
+ to prod</p></td>
+</tr>
+<tr data-local-id=3D"21016fcc-bf5c-46f3-908b-b63428dab689">
+<td data-local-id=3D"a936d227-784e-40be-9f85-1a0bdd1fe56c" class=3D"conflue=
+nceTd">
+<p local-id=3D"8f182cd4cbb4">=F0=9F=A7=AD <strong>Scrum Master</strong></p>=
+</td>
+<td data-local-id=3D"7d67d139-c38f-4c21-a93b-d42770437a4b" class=3D"conflue=
+nceTd">
+<p local-id=3D"855f2a6dc75b">Keeps everyone moving and the chaos organized<=
+/p></td>
+</tr>
+<tr data-local-id=3D"e4e90227-d60c-41be-83f0-74486a9079e2">
+<td data-local-id=3D"a6cf94b8-ea80-4273-8889-db180289eb60" class=3D"conflue=
+nceTd">
+<p local-id=3D"0c89f5204943">=F0=9F=8E=A8 <strong>UX Designer</strong></p><=
+/td>
+<td data-local-id=3D"fef09ec8-4da0-436c-b83f-f0e1e37311cf" class=3D"conflue=
+nceTd">
+<p local-id=3D"bc5a80c0f4ba">Makes sure users actually enjoy what you build=
+</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p local-id=3D"110d045b43ef">None of these agents are here to take anyone's=
+ job. They're here to do the <strong>heavy lifting on the boring stuff</str=
+ong> so your team can focus on the decisions that actually need a human bra=
+in. =F0=9F=A7=A0</p>
+<hr local-id=3D"997c9c8d-e44f-4be4-963e-5bd120b08178">
+<h2 local-id=3D"ad4a436a3504" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=92=BBSoWhatisBMADChat?">=F0=9F=92=BB So What =
+is BMAD Chat?</h2>
+<p local-id=3D"e31cb9dc20d3">Think of BMAD Chat as the <strong>front door</=
+strong> to the whole BMAD world. It's a web app where every role on your te=
+am =E2=80=94 PO, Dev, QA, Scrum Master =E2=80=94 gets a guided, structured =
+experience without needing to be an AI whisperer or a command-line ninja.</=
+p>
+<p local-id=3D"67efd644c8d6">Here's what's waiting for you inside:</p>
+<h3 local-id=3D"14bcf4325e04" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=97=A8=EF=B8=8FClaudeDirectChat">=F0=9F=97=A8=
+=EF=B8=8F Claude Direct Chat</h3>
+<p local-id=3D"78e3bc5d4bb2">Your main interface for talking to the agents.=
+ Pick an agent, describe what you're working on, and let it guide you. It's=
+ conversational, intuitive, and surprisingly fun.</p>
+<h3 local-id=3D"8775fe57525f" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=96=A5=EF=B8=8FPTYTerminal">=F0=9F=96=A5=EF=B8=
+=8F PTY Terminal</h3>
+<p local-id=3D"5123e21c186e">For the developers who want to get their hands=
+ dirty. Full terminal access for deeper control. Power users, this one's fo=
+r you.</p>
+<h3 local-id=3D"4fc33e0ae67e" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=93=8AFeatureWorkflowDashboard">=F0=9F=93=8A F=
+eature Workflow Dashboard</h3>
+<p local-id=3D"5d40ba349ffe">A visual command center showing every feature =
+your team is working on =E2=80=94 where it is in the lifecycle, what files =
+exist, what's been created. No more "wait, where did we land on that featur=
+e?" conversations.</p>
+<h3 local-id=3D"45e509274dfa" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=97=82=EF=B8=8FMulti-ProductWorkspaces">=F0=9F=
+=97=82=EF=B8=8F Multi-Product Workspaces</h3>
+<p local-id=3D"c03378eea2d4">Working on more than one product? No problem. =
+BMAD Chat supports multiple workspaces, each wired up to its own Git repo (=
+GitHub or Azure DevOps). Everything stays organized and separate.</p>
+<h3 local-id=3D"f56df7ea3ff0" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=94=90Oh,andSecurity?">=F0=9F=94=90 Oh, and Se=
+curity?</h3>
+<p local-id=3D"a4aa04aded86">You log in with your <strong>company Azure AD =
+account</strong> =E2=80=94 same as your email and Microsoft 365. No new pas=
+swords, no new accounts, no sticky notes on your monitor. Sessions are secu=
+re, isolated, and sandboxed. Your IT team already loves this.</p>
+<hr local-id=3D"9e84faa2-e574-4445-a640-f98d63dc855f">
+<h2 local-id=3D"4f6a5fdaa2d9" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=97=BA=EF=B8=8FTheBMADJourney=E2=80=94FromIdea=
+toShipped">=F0=9F=97=BA=EF=B8=8F The BMAD Journey =E2=80=94 From Idea to Sh=
+ipped</h2>
+<p local-id=3D"c3a9a97c26dc">Here's the magic of BMAD in one beautiful flow=
+. Every step has an agent. Every output lands somewhere useful.</p>
+<div class=3D"code panel pdl" style=3D"border-width: 1px;">
+<div class=3D"codeContent panelContent pdl">
+<pre class=3D"syntaxhighlighter-pre" data-syntaxhighlighter-params=3D"brush=
+: java; gutter: false; theme: Confluence" data-theme=3D"Confluence">=F0=9F=
+=92=A1 Someone has an idea
+        =E2=86=93
+=F0=9F=93=84 Analyst Agent =E2=86=92 Product Brief
+        =E2=86=93
+=F0=9F=93=8B PM Agent =E2=86=92 PRD (epics, stories, acceptance criteria)
+        =E2=86=93
+=F0=9F=8E=AB Automatic push =E2=86=92 JIRA tickets (your team picks them up=
+!)
+        =E2=86=93
+=F0=9F=8F=97=EF=B8=8F Architect Agent =E2=86=92 Technical design
+        =E2=86=93
+=F0=9F=92=BB Dev picks up ticket =E2=86=92 Claude Code in VS Code helps bui=
+ld it
+        =E2=86=93
+=F0=9F=A7=AA QA generates test cases =E2=86=92 bugs logged in JIRA
+        =E2=86=93
+=F0=9F=94=84 Bug webhook =E2=86=92 flows back into BMAD automatically
+        =E2=86=93
+=E2=9C=85 UAT sign-off by Product
+        =E2=86=93
+=F0=9F=9A=80 Rob hits the button =E2=86=92 Production!
+</pre>
+</div>
+</div>
+<p local-id=3D"20b2a6b572e5">From sticky-note idea to live feature. With ev=
+ery role supported the whole way. Pretty neat, right?</p>
+<hr local-id=3D"8acf1701-947c-4cf7-b294-d28caa78a021">
+<h2 local-id=3D"bf534d206f3e" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=8E=ABBMAD+JIRA=E2=80=94BetterTogether">=F0=9F=
+=8E=AB BMAD + JIRA =E2=80=94 Better Together</h2>
+<p local-id=3D"597fadb0bec4">JIRA and BMAD are best friends. Here's how the=
+y talk to each other:</p>
+<h3 local-id=3D"44c2fbfb4f64" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-BMAD=E2=86=92JIRA(theeasypart)">BMAD =E2=86=92 JIRA =
+<em>(the easy part)</em></h3>
+<p local-id=3D"cfc2f611a5b7">When the PM agent finishes generating epics an=
+d stories, they <strong>automatically push into JIRA</strong> as tickets. Y=
+our team sees them on the board and starts picking them up. Zero copy-paste=
+. Zero "can you format that as a story?" emails.</p>
+<h3 local-id=3D"a363930b6406" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-JIRA=E2=86=92BMAD(thecleverpart)">JIRA =E2=86=92 BMA=
+D <em>(the clever part)</em></h3>
+<p local-id=3D"be0ebf6475f5">QA engineers log bugs in JIRA the way they alw=
+ays have. A <strong>webhook</strong> then automatically pulls those bugs ba=
+ck into BMAD so developers can action them without leaving their workflow. =
+Bugs in JIRA? Dev sees them in BMAD. Seamless.</p>
+<blockquote local-id=3D"7e394576-07b1-426d-bbf1-fdb9f73297f9">
+<p local-id=3D"5aa0dd75f32a">=E2=9A=A0=EF=B8=8F <strong>Heads up:</strong> =
+Status updates are manual for now. This is intentional =E2=80=94 we're buil=
+ding trust with AI-assisted workflows one step at a time. As confidence gro=
+ws, so will the automation. Baby steps. =F0=9F=91=B6</p>
+</blockquote>
+<hr local-id=3D"72bd2ecb-0451-4da1-98f2-d01e58479a1a">
+<h2 local-id=3D"8449f9bf63a0" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=8C=8DYourThreeEnvironments=E2=80=94KnowThem,L=
+oveThem">=F0=9F=8C=8D Your Three Environments =E2=80=94 Know Them, Love The=
+m</h2>
+<p local-id=3D"ef7af6d4ce88">Before you touch anything, get friendly with t=
+hese three environments. They are sacred.</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"7c=
+e0ca84-8346-4abe-8f1a-e39aed5d654c" class=3D"confluenceTable">
+<tbody>
+<tr data-local-id=3D"6d348dba-efcb-4eb2-ad4c-ae7c320efa59">
+<th data-local-id=3D"a99d7ff4-8b57-4ba4-988d-f7e2e1958370" class=3D"conflue=
+nceTh">
+<p local-id=3D"65fabd01ebfd">=F0=9F=8F=A0 Environment</p></th>
+<th data-local-id=3D"e9d916df-b85b-40d8-8e16-e359bda965e0" class=3D"conflue=
+nceTh">
+<p local-id=3D"04dcf65c9be3">=F0=9F=8E=AF Purpose</p></th>
+<th data-local-id=3D"2525fecd-22af-4194-8080-e25f986a232f" class=3D"conflue=
+nceTh">
+<p local-id=3D"aa36dc745c07">=F0=9F=91=A5 Who's There</p></th>
+</tr>
+<tr data-local-id=3D"54d5d96d-34b4-4247-a6fc-71fd61032c9a">
+<td data-local-id=3D"51c776b5-3631-48a9-825a-ab16bbb5aecb" class=3D"conflue=
+nceTd">
+<p local-id=3D"49ab8045f3d6"><strong>DEV</strong></p></td>
+<td data-local-id=3D"18ed460f-5c13-4564-af45-71765f1dae95" class=3D"conflue=
+nceTd">
+<p local-id=3D"faa8a2fe33c0">Build it, break it, fix it</p></td>
+<td data-local-id=3D"a41391f9-956d-4458-969f-61a9e90bb5aa" class=3D"conflue=
+nceTd">
+<p local-id=3D"14c674e6ccff">Dev team</p></td>
+</tr>
+<tr data-local-id=3D"10eefad2-4c82-47d5-ace4-b2b98fb36aa8">
+<td data-local-id=3D"af5d2e9c-e5ab-471f-b760-9eb56cbff621" class=3D"conflue=
+nceTd">
+<p local-id=3D"8986ff4edb9c"><strong>UAT</strong></p></td>
+<td data-local-id=3D"a8d79f3d-9853-42a7-94a5-df571c2f958b" class=3D"conflue=
+nceTd">
+<p local-id=3D"709c7ffa71e9">Does it actually work? Is it actually good?</p=
+></td>
+<td data-local-id=3D"267834f5-7f12-4711-be86-f122fb000ed4" class=3D"conflue=
+nceTd">
+<p local-id=3D"dee62e58b3c1">BMAD Champions + Product</p></td>
+</tr>
+<tr data-local-id=3D"7b31d8bc-9d56-4117-b773-09590f2d0d2d">
+<td data-local-id=3D"2115bac8-2d35-4413-9ca4-eb79987c1a5e" class=3D"conflue=
+nceTd">
+<p local-id=3D"80ec74144a11"><strong>PROD</strong></p></td>
+<td data-local-id=3D"46f027f8-92bc-4a60-8805-4eef2dc9bac0" class=3D"conflue=
+nceTd">
+<p local-id=3D"5a222b1c669c">The real deal. Real users. Real stakes.</p></t=
+d>
+<td data-local-id=3D"cfa6d075-4463-4782-87f7-95e579ae3ecf" class=3D"conflue=
+nceTd">
+<p local-id=3D"f8959ee065c2">Everyone (after sign-off!)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 local-id=3D"fbac6ac956b0" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-TheGoldenRule=F0=9F=A5=87">The Golden Rule =F0=9F=A5=
+=87</h3>
+<blockquote local-id=3D"2b0d971b-6b48-4669-8e3f-bee89d70765f">
+<p local-id=3D"e2d8ac491c94"><strong>Nothing =E2=80=94 and we mean NOTHING =
+=E2=80=94 goes to production without UAT sign-off from Product.</strong></p=
+>
+</blockquote>
+<p local-id=3D"549634ba0536"><strong>Rob</strong> is the keeper of the rele=
+ase. He's the one who gets sign-off and pushes to prod. If you're not Rob, =
+you don't release to prod. If you are Rob =E2=80=94 no pressure. =F0=9F=98=
+=85</p>
+<hr local-id=3D"aeb9fecc-7a7d-4458-9249-95170e93de9d">
+<h2 local-id=3D"19f8e1523910" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=9A=ABWhatBMADisNOT">=F0=9F=9A=AB What BMAD is=
+ NOT</h2>
+<p local-id=3D"f2e9d96ff0ea">Let's bust some myths before they become bad h=
+abits:</p>
+<p local-id=3D"9fb1aee3db0b">=E2=9D=8C <strong>"BMAD will just do everythin=
+g for me"</strong> Nope! Agents produce great drafts. YOU make the final ca=
+ll. Always. The human is always in the loop.</p>
+<p local-id=3D"60cc1f0745cc">=E2=9D=8C <strong>"I can just auto-deploy from=
+ BMAD"</strong> Hard no. Every change still goes through your normal review=
+ and release process.</p>
+<p local-id=3D"050e459aa6fb">=E2=9D=8C <strong>"It's just a fancy chatbot"<=
+/strong> It's a structured methodology. The agents have specific purposes, =
+produce specific outputs, and follow a specific process. Treat them like a =
+specialist, not Google.</p>
+<p local-id=3D"f89a70626a77">=E2=9D=8C <strong>"Once I set it up, I never h=
+ave to think again"</strong> After a long session, AI can start to lose the=
+ plot a little =E2=80=94 responses feel off, context gets fuzzy. It's norma=
+l. Just <strong>start a fresh session</strong> and you're golden. =E2=9C=A8=
+</p>
+<hr local-id=3D"ff2f644e-fc8f-4f12-8e34-5c09ad26f118">
+<h2 local-id=3D"dca01eeb6e1e" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=9B=A0=EF=B8=8FWhatYouNeedtoGetStarted">=F0=9F=
+=9B=A0=EF=B8=8F What You Need to Get Started</h2>
+<p local-id=3D"9d2e2952a076">Good news =E2=80=94 most of you just need a br=
+owser!</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"16=
+0d8d50-f7c9-444c-a8af-9345951f293b" class=3D"confluenceTable">
+<tbody>
+<tr data-local-id=3D"14dd3939-7be6-4b58-a471-3f10e77e83c5">
+<th data-local-id=3D"c9f31f3e-07d5-47a4-9339-973992658e2c" class=3D"conflue=
+nceTh">
+<p local-id=3D"612dd02a463d">=F0=9F=91=A4 Role</p></th>
+<th data-local-id=3D"27b511e5-30f9-4aa3-be66-52a1de92e5b1" class=3D"conflue=
+nceTh">
+<p local-id=3D"c0084875f6d8">=F0=9F=A7=B0 What You Need</p></th>
+<th data-local-id=3D"d4cae1607ae3" class=3D"confluenceTh">
+<p local-id=3D"035877b99bec"></p></th>
+</tr>
+<tr data-local-id=3D"cf6104af-da18-4f63-aa16-4ba47ebc03ac">
+<td data-local-id=3D"6f98ddf8-5df3-408c-81c8-af96c536ffc1" class=3D"conflue=
+nceTd">
+<p local-id=3D"95fa2607d39f"><strong>Product Owner</strong></p></td>
+<td data-local-id=3D"393e6371-2484-40a8-a011-c74ba0bd072f" class=3D"conflue=
+nceTd">
+<p local-id=3D"bddeb2cecb4c">Browser + Azure AD login + JIRA access</p></td=
+>
+<td data-local-id=3D"b10d8684b56c" class=3D"confluenceTd">
+<p local-id=3D"eb4daa8e6404"></p></td>
+</tr>
+<tr data-local-id=3D"9fb9ed5b-7159-4d6e-a24c-ea08c74836ab">
+<td data-local-id=3D"86dc7f9d-b2eb-4754-8ee4-365e0d8cbb00" class=3D"conflue=
+nceTd">
+<p local-id=3D"37e6572c7333"><strong>Developer</strong></p></td>
+<td data-local-id=3D"863ed45c-5abc-4f62-9388-e8690578f626" class=3D"conflue=
+nceTd">
+<p local-id=3D"25575a7372e3"></p></td>
+<td data-local-id=3D"d12bd47ce282" class=3D"confluenceTd">
+<p local-id=3D"8c0932902a05">VS Code + Claude Code extension + Git + Docker=
+ + Azure AD login</p></td>
+</tr>
+<tr data-local-id=3D"f61b67d8-80e8-4649-98f0-5b39d3b1b7a9">
+<td data-local-id=3D"a193c0b7-e409-4864-871b-389c69b05e29" class=3D"conflue=
+nceTd">
+<p local-id=3D"9afd6c4d132a"><strong>QA Engineer</strong></p></td>
+<td data-local-id=3D"3c3ac2de-37ed-4b1c-95db-6c8b56c9b1ad" class=3D"conflue=
+nceTd">
+<p local-id=3D"c6ed1bc9a6f7">Browser + Azure AD login + JIRA access (VS Cod=
+e optional)</p></td>
+<td data-local-id=3D"7672a97483e1" class=3D"confluenceTd">
+<p local-id=3D"73b03f69962c"></p></td>
+</tr>
+<tr data-local-id=3D"c478a1c0-a3c9-4746-8823-455a08cf803f">
+<td data-local-id=3D"15aa3a0d-eca4-4884-be29-c196370abc2e" class=3D"conflue=
+nceTd">
+<p local-id=3D"d5e49d1b13e2"><strong>Scrum Master / PM</strong></p></td>
+<td data-local-id=3D"11fbb649-f230-4b1e-8591-41880fc84510" class=3D"conflue=
+nceTd">
+<p local-id=3D"c7099bb144dd">Browser + Azure AD login + JIRA access</p></td=
+>
+<td data-local-id=3D"7188ee1c0676" class=3D"confluenceTd">
+<p local-id=3D"1c2522ab4edc"></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote local-id=3D"23d66ccc-f0f5-435c-bb69-102ea56833d2">
+<p local-id=3D"8f7508cfc3c2">=F0=9F=92=A1 <strong>Can't log in?</strong> Re=
+ach out to your BMAD Champion or admin. They'll sort you out.</p>
+</blockquote>
+<hr local-id=3D"530d3d7c-8bbf-4ea5-bcb5-5c3a0c22a75d">
+<h2 local-id=3D"4d6f94e9e173" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=F0=9F=8E=89YouMadeItThroughModule0!">=F0=9F=8E=89 Y=
+ou Made It Through Module 0!</h2>
+<p local-id=3D"141bd663eb3c">Look at you, all BMAD-informed and ready to go=
+. Here's what you now know:</p>
+<p local-id=3D"11bbf4465152">=E2=9C=85 What BMAD is (and the dream team of =
+agents behind it) =E2=9C=85 What BMAD Chat looks like and what's inside =E2=
+=9C=85 How the full workflow flows from idea to production =E2=9C=85 How JI=
+RA and BMAD talk to each other =E2=9C=85 The three environments and why the=
+y matter =E2=9C=85 What BMAD is NOT (just as important!)</p>
+<hr local-id=3D"a92f0a9e-5913-4b7d-a946-614436f2b64a">
+<h2 local-id=3D"a867a83f2649" id=3D"id-=F0=9F=9A=80BMADAcademy=E2=80=94Your=
+GuidetoBuildingSmarter-=E2=9E=A1=EF=B8=8FNowGoFindYourModule!">=E2=9E=A1=EF=
+=B8=8F Now Go Find Your Module!</h2>
+<p local-id=3D"3509521da1d6">Each role has its own deep-dive module waiting=
+ for you. Pick yours:</p>
+<div class=3D"table-wrap">
+<table data-table-width=3D"760" data-layout=3D"default" data-local-id=3D"7f=
+fba434-b14a-4141-8c66-3f6d79f89a93" class=3D"confluenceTable">
+<tbody>
+<tr data-local-id=3D"711bc1bb-a301-4c4b-80b5-bc05ea2043e6">
+<th data-local-id=3D"269c6343-14d9-4e3f-b96e-2f812929c6af" class=3D"conflue=
+nceTh">
+<p local-id=3D"497f892564cd">=F0=9F=91=A4 Your Role</p></th>
+<th data-local-id=3D"8860fe67-63b1-46b6-92d8-a8cc85391190" class=3D"conflue=
+nceTh">
+<p local-id=3D"c887c972f7f6">=F0=9F=93=98 Your Module</p></th>
+</tr>
+<tr data-local-id=3D"3d97a026-8534-4ad5-8760-7dec168e68eb">
+<td data-local-id=3D"c08da612-cb61-49d9-93fa-6b101fc6e984" class=3D"conflue=
+nceTd">
+<p local-id=3D"019928dc18d4">Product Owner</p></td>
+<td data-local-id=3D"4a00ddc1-6eed-4cea-af76-874208d79f9f" class=3D"conflue=
+nceTd">
+<p local-id=3D"01d746737ee6">Module 1 =E2=80=94 Product Owner</p></td>
+</tr>
+<tr data-local-id=3D"e180339e-c867-4993-bcdc-3f494398dec2">
+<td data-local-id=3D"32b4515e-307b-4846-80e0-999fc6caa029" class=3D"conflue=
+nceTd">
+<p local-id=3D"492628b4877c">Developer</p></td>
+<td data-local-id=3D"8cb41761-5162-464d-ba89-ecddb58b7532" class=3D"conflue=
+nceTd">
+<p local-id=3D"8ebbcd50523a">Module 2 =E2=80=94 Developer</p></td>
+</tr>
+<tr data-local-id=3D"515ffd9c-23ec-4c12-b19f-c5070e6fe3cc">
+<td data-local-id=3D"25e6706c-92a7-43cf-a141-4eca08de7b1c" class=3D"conflue=
+nceTd">
+<p local-id=3D"ca895ba3cc97">QA Engineer</p></td>
+<td data-local-id=3D"1c5d50ed-b924-498d-b17c-5eeddd6e5bad" class=3D"conflue=
+nceTd">
+<p local-id=3D"26db8f5d7ee3">Module 3 =E2=80=94 QA Engineer</p></td>
+</tr>
+<tr data-local-id=3D"aebbb4f2-2752-42b7-b496-bc37e25f68c7">
+<td data-local-id=3D"af97c74e-b73b-4375-ad2b-974967144db9" class=3D"conflue=
+nceTd">
+<p local-id=3D"3b7fc8878e80">Scrum Master / PM</p></td>
+<td data-local-id=3D"17917c09-8103-4e55-a2b9-2547efce70eb" class=3D"conflue=
+nceTd">
+<p local-id=3D"1013529f2910">Module 4 =E2=80=94 Scrum Master / PM</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p local-id=3D"3ce603b9f21e">See you on the other side! =F0=9F=9A=80</p>
+<p local-id=3D"004259a7f46c"></p>
+    </div>
+</body>
+</html>
+------=_Part_550_417871385.1784827493799--

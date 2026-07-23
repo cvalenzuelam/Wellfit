@@ -35,21 +35,21 @@ Tree inside the collection must be:
 
 ```
 Wellfit Payments
-├── 0 — Regression     ← modules DIRECTLY (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury) — no extra 9.6 folder
 ├── 1 — Core
-└── 2 — Tickets
+├── 2 — Tickets
+└── 3 — Regression     ← modules DIRECTLY (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury) — no extra 9.6 folder
 ```
 
 Env name: **Wellfit Payments STAGE** (merge Regression STAGE + useful core keys e.g. ACH v2; don’t wipe existing STAGE secrets unnecessarily).
 
 ## 3. Tell Chris (Spanish, short)
 
-1. Paths where sources landed (core / regression / tickets).  
-2. **Re-import** folder `Wellfit Payments/` (replace) → select env **Wellfit Payments STAGE**.  
+1. Paths where sources landed (core / regression / tickets). 
+2. **Re-import** folder `Wellfit Payments/` (replace) → select env **Wellfit Payments STAGE**. 
 3. He can delete old loose Postman sidebar collections.
 
 ## Do not
 
 - Leave exports at repo root.
-- Nest `0 — Regression` → `9.6` → modules (flat modules under Regression only).
+- Nest `3 — Regression` → `9.6` → modules (flat modules under Regression only).
 - Ask him to manually merge folders in Postman UI — the rebuild is the fix.

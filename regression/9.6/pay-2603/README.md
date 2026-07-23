@@ -25,7 +25,8 @@ Module **PAY-2603** inside `../Regression-STAGE/` (env **Regression STAGE**).
 
 ## Notes
 
-- `add-token` may return **Returned existing token.** (idempotent by processorToken) — still PASS.
+- `add-token` may return **Returned existing token.** (idempotent by processorToken) — still PASS for TC01–TC03/TC05.
+- **TC04** uses a **unique NUMERIC** `processorToken` per Send (`1111…` + timestamp — not alphanumeric `PAY2603-INVZIP-*`, not `tokenVisa`) so invalid zip is validated instead of idempotent return.
 - Table is **`TokenVault.dbo.PaymentTokens`** (not Platform `Payments.PaymentTokens`).
 - Auth: same as TokenVault module (`Payment-Bearer-Token`).
 - SQL script: `pay-2603-db-checks-STAGE.sql`

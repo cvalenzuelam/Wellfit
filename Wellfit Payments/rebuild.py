@@ -70,20 +70,15 @@ def main() -> None:
             "name": "Wellfit Payments",
             "description": (
                 "Import folder Wellfit Payments/ (collection + env).\n\n"
-                "0 — Regression → modules directly (no nested 9.6 folder)\n"
                 "1 — Core\n"
-                "2 — Tickets\n\n"
+                "2 — Tickets\n"
+                "3 — Regression → modules directly (no nested 9.6 folder)\n\n"
                 "Env: Wellfit Payments STAGE"
             ),
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         },
         "variable": merged_vars[:120],
         "item": [
-            {
-                "name": "0 — Regression",
-                "description": "Release 9.6 STAGE. Modules are direct children.",
-                "item": reg_modules,
-            },
             {
                 "name": "1 — Core",
                 "description": "Product APIs.",
@@ -94,10 +89,18 @@ def main() -> None:
                 "description": "PAY-XXXX suites.",
                 "item": [f for _, f, _ in ticket_cols],
             },
+            {
+                "name": "3 — Regression",
+                "description": "Release 9.6 STAGE. Modules are direct children.",
+                "item": reg_modules,
+            },
         ],
     }
     if reg.get("auth"):
-        collection["item"][0]["auth"] = deepcopy(reg["auth"])
+        for section in collection["item"]:
+            if section["name"].startswith("3 — Regression"):
+                section["auth"] = deepcopy(reg["auth"])
+                break
 
     reg_env = json.loads(REG_ENV.read_text(encoding="utf-8"))
     values, seen_keys = [], set()
@@ -134,9 +137,9 @@ def main() -> None:
         "## Structure\n\n"
         "```\n"
         "Wellfit Payments\n"
-        "├── 0 — Regression   (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury)\n"
         "├── 1 — Core\n"
-        "└── 2 — Tickets\n"
+        "├── 2 — Tickets\n"
+        "└── 3 — Regression   (CNP, TokenVault, Provisioning, Wallet, PAY-2603, Treasury)\n"
         "```\n\n"
         "Rebuild after adding sources: `python3 \"Wellfit Payments/rebuild.py\"`\n",
         encoding="utf-8",
