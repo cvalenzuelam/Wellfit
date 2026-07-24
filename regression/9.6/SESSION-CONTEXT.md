@@ -32,6 +32,8 @@ Wellfit Payments
 
 Source of truth for edits: `regression/9.6/Regression-STAGE/` (+ `postman/collections/core|tickets/`).
 
+**API automation (optional):** `automation/regression-9.6-playwright/` — `npm run test:smoke` (CP / SQL / eProtect parked).
+
 ## 2026-07-23 — Treasury STAGE run (Chris)
 
 ### Verdict summary

@@ -1,0 +1,26 @@
+{
+  "name": "wellfit-regression-9.6-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "description": "STAGE API regression automation (Playwright + TypeScript) mirrored from Wellfit Payments / Regression 9.6",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:cnp": "playwright test tests/cnp",
+    "test:tokenvault": "playwright test tests/tokenvault",
+    "test:pay2603": "playwright test tests/pay-2603",
+    "test:treasury": "playwright test tests/treasury",
+    "test:parked": "playwright test tests/parked",
+    "report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^22.16.5",
+    "dotenv": "^16.6.1",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

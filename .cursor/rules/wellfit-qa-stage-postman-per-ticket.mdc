@@ -14,6 +14,7 @@ When Chris starts (or hands over) a **new ticket**, **always** produce a **STAGE
    - `PAY-XXXX-…-STAGE.postman_environment.json` (name must say **STAGE**)
 2. **Do not** also put duplicates under `tickets/PAY-XXXX/postman/` — that shows 4 files on import. Optional mirror only under repo `postman/collections/` + `postman/environments/`.
 3. Tell Chris the **two paths** and: import → select STAGE env → Send.
+4. **Also** copy the collection into `postman/collections/tickets/` and run `python3 "Wellfit Payments/rebuild.py"` so it appears under **`2 — Tickets`** (mandatory — see `wellfit-qa-ticket-to-wellfit-payments.mdc`).
 
 ## Do not trust incoming Postman as STAGE-ready
 

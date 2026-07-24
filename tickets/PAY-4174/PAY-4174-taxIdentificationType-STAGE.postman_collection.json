@@ -1,0 +1,926 @@
+{
+  "info": {
+    "_postman_id": "pay-4174-taxidtype-stage",
+    "name": "PAY-4174 taxIdentificationType STAGE",
+    "description": "STAGE QA for PAY-4174 \u2014 Worldpay taxIdentificationType on Merchant Onboarding (CORE).\n\nCore:\n0 Auth\n1 Sole prop TaxId=SSN \u2192 SSN\n2 LLC TaxId\u2260SSN \u2192 EIN\n\nEdges (optional):\n3 Corporation always EIN (even if TaxId=primary SSN)\n4 LLC TaxId=primary SSN \u2192 SSN\n5 TaxId length \u2260 9 \u2192 EIN (or API 4xx validation)\n6 TaxId matches secondary owner only \u2192 EIN\n\nEvidence: retrieve \u2192 providerResponses[1] (CORE / paymentProcessor 1) \u2192 metadataAsRaw.subMerchant.taxIdentificationType",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Authenticate",
+      "item": [
+        {
+          "name": "POST authenticate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('bearerToken present', () => pm.expect(j.bearerToken).to.be.a('string').and.not.empty);",
+                  "pm.environment.set('bearerToken', j.bearerToken);",
+                  "console.log('bearerToken saved to environment');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{mpUsername}}\",\n  \"password\": \"{{mpPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/authenticate",
+            "description": "STAGE Merchant Provisioning authenticate. Saves bearerToken to env."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. SSN path \u2014 sole prop TaxId matches primary owner",
+      "item": [
+        {
+          "name": "POST create-sub-merchant (sole prop \u2192 SSN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const now = new Date();",
+                  "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+                  "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+                  "const uniq8 = () => String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);",
+                  "const uniq10 = () => String(1000000000 + Math.floor(Math.random() * 8999999999)).slice(0, 10);",
+                  "const ssn = uniq9();",
+                  "pm.environment.set('randomSsn', ssn);",
+                  "pm.environment.set('randomTaxId', ssn);",
+                  "pm.environment.set('randomSsn2', uniq9());",
+                  "pm.environment.set('createAccepted', 'true');",
+                  "pm.environment.set('pspMerchantIdOverride', `P4174SSN-${stamp}`);",
+                  "pm.environment.set('qaLegalEntityName', `P4174SSN LE ${stamp}`);",
+                  "pm.environment.set('qaDbaName', `P4174SSN DBA ${stamp}`);",
+                  "pm.environment.set('qaMerchantName', `P4174SSN QA ${stamp}`);",
+                  "pm.environment.set('qaOwnerEmail1', `p4174ssn.o1.${stamp}@example.com`);",
+                  "pm.environment.set('qaOwnerEmail2', `p4174ssn.o2.${stamp}@example.com`);",
+                  "pm.environment.set('qaPcEmail', `p4174ssn.pc.${stamp}@example.com`);",
+                  "pm.environment.set('randomPspMerchantId', uniq9());",
+                  "pm.environment.set('expectedTaxIdentificationType', 'SSN');",
+                  "console.log('edge prep', { expected: pm.environment.get('expectedTaxIdentificationType'), taxId: pm.environment.get('randomTaxId'), ssn: pm.environment.get('randomSsn'), ssn2: pm.environment.get('randomSsn2') });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const j = pm.response.json();",
+                  "const id = j.wellfitSubMerchantId || j.WellfitSubMerchantId;",
+                  "pm.test('wellfitSubMerchantId present', () => pm.expect(id).to.be.a('string').and.not.empty);",
+                  "if (id) { pm.environment.set('wellfitSubMerchantId', id); console.log('wellfitSubMerchantId=' + id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"INDIVIDUAL_SOLE_PROPRIETORSHIP\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomSsn}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 100,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4174-edge\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*P4174EDG\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"P4174EDG\",\n      \"CompanyName\": \"P4174EDG\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"{{mpOrganizationId}}\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/provisioning/create-sub-merchant",
+            "description": "Core: sole prop + TaxId = primary Ssn + StakePercent 100 \u2192 expect SSN."
+          },
+          "response": []
+        },
+        {
+          "name": "GET retrieve-sub-merchant (expect SSN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('expectedTaxIdentificationType', 'SSN');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = pm.environment.get('createAccepted');",
+                  "if (accepted === 'false') {",
+                  "  pm.test('Skipped retrieve assert \u2014 create was rejected (validation gate)', () => pm.expect(true).to.be.true);",
+                  "  return;",
+                  "}",
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const expected = pm.environment.get('expectedTaxIdentificationType');",
+                  "function findTaxIdTypes(node, out) {",
+                  "  if (!node || typeof node !== 'object') return;",
+                  "  if (Array.isArray(node)) { node.forEach(x => findTaxIdTypes(x, out)); return; }",
+                  "  if (Object.prototype.hasOwnProperty.call(node, 'taxIdentificationType')) out.push(String(node.taxIdentificationType));",
+                  "  Object.keys(node).forEach(k => findTaxIdTypes(node[k], out));",
+                  "}",
+                  "const found = [];",
+                  "findTaxIdTypes(j, found);",
+                  "console.log('taxIdentificationType values found:', JSON.stringify(found));",
+                  "let coreType = null;",
+                  "const providers = j.providerResponses || j.ProviderResponses || [];",
+                  "if (Array.isArray(providers) && providers.length >= 2) {",
+                  "  const coreFound = [];",
+                  "  findTaxIdTypes(providers[1], coreFound);",
+                  "  if (coreFound.length) coreType = coreFound[0];",
+                  "  console.log('2nd provider (CORE) candidates:', JSON.stringify(coreFound));",
+                  "}",
+                  "if (!coreType && found.length) coreType = found[0];",
+                  "if (coreType) pm.environment.set('lastCoreTaxIdentificationType', coreType);",
+                  "pm.test('taxIdentificationType present in retrieve', () => pm.expect(found.length).to.be.above(0));",
+                  "pm.test('CORE taxIdentificationType = ' + expected, () => pm.expect(coreType).to.eql(expected));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": "{{mpBaseUrl}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfitSubMerchantId}}",
+            "description": "Assert CORE taxIdentificationType = SSN."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. EIN path \u2014 LLC TaxId does not match owner SSN",
+      "item": [
+        {
+          "name": "POST create-sub-merchant (LLC \u2192 EIN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const now = new Date();",
+                  "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+                  "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+                  "const uniq8 = () => String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);",
+                  "const uniq10 = () => String(1000000000 + Math.floor(Math.random() * 8999999999)).slice(0, 10);",
+                  "let taxId = uniq9();",
+                  "let ssn = uniq9();",
+                  "while (taxId === ssn) { ssn = uniq9(); }",
+                  "pm.environment.set('randomTaxId', taxId);",
+                  "pm.environment.set('randomSsn', ssn);",
+                  "pm.environment.set('randomSsn2', uniq9());",
+                  "pm.environment.set('createAccepted', 'true');",
+                  "pm.environment.set('pspMerchantIdOverride', `P4174EIN-${stamp}`);",
+                  "pm.environment.set('qaLegalEntityName', `P4174EIN LE ${stamp}`);",
+                  "pm.environment.set('qaDbaName', `P4174EIN DBA ${stamp}`);",
+                  "pm.environment.set('qaMerchantName', `P4174EIN QA ${stamp}`);",
+                  "pm.environment.set('qaOwnerEmail1', `p4174ein.o1.${stamp}@example.com`);",
+                  "pm.environment.set('qaOwnerEmail2', `p4174ein.o2.${stamp}@example.com`);",
+                  "pm.environment.set('qaPcEmail', `p4174ein.pc.${stamp}@example.com`);",
+                  "pm.environment.set('randomPspMerchantId', uniq9());",
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');",
+                  "console.log('edge prep', { expected: pm.environment.get('expectedTaxIdentificationType'), taxId: pm.environment.get('randomTaxId'), ssn: pm.environment.get('randomSsn'), ssn2: pm.environment.get('randomSsn2') });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const j = pm.response.json();",
+                  "const id = j.wellfitSubMerchantId || j.WellfitSubMerchantId;",
+                  "pm.test('wellfitSubMerchantId present', () => pm.expect(id).to.be.a('string').and.not.empty);",
+                  "if (id) { pm.environment.set('wellfitSubMerchantId', id); console.log('wellfitSubMerchantId=' + id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"LIMITED_LIABILITY_COMPANY\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomTaxId}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 100,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4174-edge\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*P4174EDG\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"P4174EDG\",\n      \"CompanyName\": \"P4174EDG\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"{{mpOrganizationId}}\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/provisioning/create-sub-merchant",
+            "description": "Core: LLC + TaxId \u2260 owner Ssn \u2192 expect EIN."
+          },
+          "response": []
+        },
+        {
+          "name": "GET retrieve-sub-merchant (expect EIN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = pm.environment.get('createAccepted');",
+                  "if (accepted === 'false') {",
+                  "  pm.test('Skipped retrieve assert \u2014 create was rejected (validation gate)', () => pm.expect(true).to.be.true);",
+                  "  return;",
+                  "}",
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const expected = pm.environment.get('expectedTaxIdentificationType');",
+                  "function findTaxIdTypes(node, out) {",
+                  "  if (!node || typeof node !== 'object') return;",
+                  "  if (Array.isArray(node)) { node.forEach(x => findTaxIdTypes(x, out)); return; }",
+                  "  if (Object.prototype.hasOwnProperty.call(node, 'taxIdentificationType')) out.push(String(node.taxIdentificationType));",
+                  "  Object.keys(node).forEach(k => findTaxIdTypes(node[k], out));",
+                  "}",
+                  "const found = [];",
+                  "findTaxIdTypes(j, found);",
+                  "console.log('taxIdentificationType values found:', JSON.stringify(found));",
+                  "let coreType = null;",
+                  "const providers = j.providerResponses || j.ProviderResponses || [];",
+                  "if (Array.isArray(providers) && providers.length >= 2) {",
+                  "  const coreFound = [];",
+                  "  findTaxIdTypes(providers[1], coreFound);",
+                  "  if (coreFound.length) coreType = coreFound[0];",
+                  "  console.log('2nd provider (CORE) candidates:', JSON.stringify(coreFound));",
+                  "}",
+                  "if (!coreType && found.length) coreType = found[0];",
+                  "if (coreType) pm.environment.set('lastCoreTaxIdentificationType', coreType);",
+                  "pm.test('taxIdentificationType present in retrieve', () => pm.expect(found.length).to.be.above(0));",
+                  "pm.test('CORE taxIdentificationType = ' + expected, () => pm.expect(coreType).to.eql(expected));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": "{{mpBaseUrl}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfitSubMerchantId}}",
+            "description": "Assert CORE taxIdentificationType = EIN."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Edge \u2014 corporation always EIN",
+      "item": [
+        {
+          "name": "POST create-sub-merchant (CORPORATION \u2192 EIN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const now = new Date();",
+                  "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+                  "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+                  "const uniq8 = () => String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);",
+                  "const uniq10 = () => String(1000000000 + Math.floor(Math.random() * 8999999999)).slice(0, 10);",
+                  "const ssn = uniq9();",
+                  "pm.environment.set('randomSsn', ssn);",
+                  "pm.environment.set('randomTaxId', ssn);  // match on purpose \u2014 still expect EIN for corp",
+                  "pm.environment.set('randomSsn2', uniq9());",
+                  "pm.environment.set('createAccepted', 'true');",
+                  "pm.environment.set('pspMerchantIdOverride', `P4174CORP-${stamp}`);",
+                  "pm.environment.set('qaLegalEntityName', `P4174CORP LE ${stamp}`);",
+                  "pm.environment.set('qaDbaName', `P4174CORP DBA ${stamp}`);",
+                  "pm.environment.set('qaMerchantName', `P4174CORP QA ${stamp}`);",
+                  "pm.environment.set('qaOwnerEmail1', `p4174corp.o1.${stamp}@example.com`);",
+                  "pm.environment.set('qaOwnerEmail2', `p4174corp.o2.${stamp}@example.com`);",
+                  "pm.environment.set('qaPcEmail', `p4174corp.pc.${stamp}@example.com`);",
+                  "pm.environment.set('randomPspMerchantId', uniq9());",
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');",
+                  "console.log('edge prep', { expected: pm.environment.get('expectedTaxIdentificationType'), taxId: pm.environment.get('randomTaxId'), ssn: pm.environment.get('randomSsn'), ssn2: pm.environment.get('randomSsn2') });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const j = pm.response.json();",
+                  "const id = j.wellfitSubMerchantId || j.WellfitSubMerchantId;",
+                  "pm.test('wellfitSubMerchantId present', () => pm.expect(id).to.be.a('string').and.not.empty);",
+                  "if (id) { pm.environment.set('wellfitSubMerchantId', id); console.log('wellfitSubMerchantId=' + id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"CORPORATION\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomTaxId}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 100,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4174-edge\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*P4174EDG\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"P4174EDG\",\n      \"CompanyName\": \"P4174EDG\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"{{mpOrganizationId}}\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/provisioning/create-sub-merchant",
+            "description": "Bucket B: CORPORATION. TaxId equals primary SSN on purpose \u2014 still expect EIN."
+          },
+          "response": []
+        },
+        {
+          "name": "GET retrieve-sub-merchant (expect EIN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = pm.environment.get('createAccepted');",
+                  "if (accepted === 'false') {",
+                  "  pm.test('Skipped retrieve assert \u2014 create was rejected (validation gate)', () => pm.expect(true).to.be.true);",
+                  "  return;",
+                  "}",
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const expected = pm.environment.get('expectedTaxIdentificationType');",
+                  "function findTaxIdTypes(node, out) {",
+                  "  if (!node || typeof node !== 'object') return;",
+                  "  if (Array.isArray(node)) { node.forEach(x => findTaxIdTypes(x, out)); return; }",
+                  "  if (Object.prototype.hasOwnProperty.call(node, 'taxIdentificationType')) out.push(String(node.taxIdentificationType));",
+                  "  Object.keys(node).forEach(k => findTaxIdTypes(node[k], out));",
+                  "}",
+                  "const found = [];",
+                  "findTaxIdTypes(j, found);",
+                  "console.log('taxIdentificationType values found:', JSON.stringify(found));",
+                  "let coreType = null;",
+                  "const providers = j.providerResponses || j.ProviderResponses || [];",
+                  "if (Array.isArray(providers) && providers.length >= 2) {",
+                  "  const coreFound = [];",
+                  "  findTaxIdTypes(providers[1], coreFound);",
+                  "  if (coreFound.length) coreType = coreFound[0];",
+                  "  console.log('2nd provider (CORE) candidates:', JSON.stringify(coreFound));",
+                  "}",
+                  "if (!coreType && found.length) coreType = found[0];",
+                  "if (coreType) pm.environment.set('lastCoreTaxIdentificationType', coreType);",
+                  "pm.test('taxIdentificationType present in retrieve', () => pm.expect(found.length).to.be.above(0));",
+                  "pm.test('CORE taxIdentificationType = ' + expected, () => pm.expect(coreType).to.eql(expected));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": "{{mpBaseUrl}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfitSubMerchantId}}",
+            "description": "Assert CORE taxIdentificationType = EIN for corporation."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Edge \u2014 LLC TaxId matches primary SSN \u2192 SSN",
+      "item": [
+        {
+          "name": "POST create-sub-merchant (LLC match \u2192 SSN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const now = new Date();",
+                  "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+                  "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+                  "const uniq8 = () => String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);",
+                  "const uniq10 = () => String(1000000000 + Math.floor(Math.random() * 8999999999)).slice(0, 10);",
+                  "const ssn = uniq9();",
+                  "pm.environment.set('randomSsn', ssn);",
+                  "pm.environment.set('randomTaxId', ssn);",
+                  "pm.environment.set('randomSsn2', uniq9());",
+                  "pm.environment.set('createAccepted', 'true');",
+                  "pm.environment.set('pspMerchantIdOverride', `P4174LLCSSN-${stamp}`);",
+                  "pm.environment.set('qaLegalEntityName', `P4174LLCSSN LE ${stamp}`);",
+                  "pm.environment.set('qaDbaName', `P4174LLCSSN DBA ${stamp}`);",
+                  "pm.environment.set('qaMerchantName', `P4174LLCSSN QA ${stamp}`);",
+                  "pm.environment.set('qaOwnerEmail1', `p4174llcssn.o1.${stamp}@example.com`);",
+                  "pm.environment.set('qaOwnerEmail2', `p4174llcssn.o2.${stamp}@example.com`);",
+                  "pm.environment.set('qaPcEmail', `p4174llcssn.pc.${stamp}@example.com`);",
+                  "pm.environment.set('randomPspMerchantId', uniq9());",
+                  "pm.environment.set('expectedTaxIdentificationType', 'SSN');",
+                  "console.log('edge prep', { expected: pm.environment.get('expectedTaxIdentificationType'), taxId: pm.environment.get('randomTaxId'), ssn: pm.environment.get('randomSsn'), ssn2: pm.environment.get('randomSsn2') });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const j = pm.response.json();",
+                  "const id = j.wellfitSubMerchantId || j.WellfitSubMerchantId;",
+                  "pm.test('wellfitSubMerchantId present', () => pm.expect(id).to.be.a('string').and.not.empty);",
+                  "if (id) { pm.environment.set('wellfitSubMerchantId', id); console.log('wellfitSubMerchantId=' + id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"LIMITED_LIABILITY_COMPANY\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomTaxId}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 100,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4174-edge\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*P4174EDG\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"P4174EDG\",\n      \"CompanyName\": \"P4174EDG\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"{{mpOrganizationId}}\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/provisioning/create-sub-merchant",
+            "description": "Bucket A LLC: TaxId = primary Ssn (9 digits) \u2192 expect SSN."
+          },
+          "response": []
+        },
+        {
+          "name": "GET retrieve-sub-merchant (expect SSN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('expectedTaxIdentificationType', 'SSN');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = pm.environment.get('createAccepted');",
+                  "if (accepted === 'false') {",
+                  "  pm.test('Skipped retrieve assert \u2014 create was rejected (validation gate)', () => pm.expect(true).to.be.true);",
+                  "  return;",
+                  "}",
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const expected = pm.environment.get('expectedTaxIdentificationType');",
+                  "function findTaxIdTypes(node, out) {",
+                  "  if (!node || typeof node !== 'object') return;",
+                  "  if (Array.isArray(node)) { node.forEach(x => findTaxIdTypes(x, out)); return; }",
+                  "  if (Object.prototype.hasOwnProperty.call(node, 'taxIdentificationType')) out.push(String(node.taxIdentificationType));",
+                  "  Object.keys(node).forEach(k => findTaxIdTypes(node[k], out));",
+                  "}",
+                  "const found = [];",
+                  "findTaxIdTypes(j, found);",
+                  "console.log('taxIdentificationType values found:', JSON.stringify(found));",
+                  "let coreType = null;",
+                  "const providers = j.providerResponses || j.ProviderResponses || [];",
+                  "if (Array.isArray(providers) && providers.length >= 2) {",
+                  "  const coreFound = [];",
+                  "  findTaxIdTypes(providers[1], coreFound);",
+                  "  if (coreFound.length) coreType = coreFound[0];",
+                  "  console.log('2nd provider (CORE) candidates:', JSON.stringify(coreFound));",
+                  "}",
+                  "if (!coreType && found.length) coreType = found[0];",
+                  "if (coreType) pm.environment.set('lastCoreTaxIdentificationType', coreType);",
+                  "pm.test('taxIdentificationType present in retrieve', () => pm.expect(found.length).to.be.above(0));",
+                  "pm.test('CORE taxIdentificationType = ' + expected, () => pm.expect(coreType).to.eql(expected));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": "{{mpBaseUrl}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfitSubMerchantId}}",
+            "description": "Assert CORE taxIdentificationType = SSN for matching LLC."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Edge \u2014 TaxId length not 9 digits \u2192 EIN or 4xx",
+      "item": [
+        {
+          "name": "POST create-sub-merchant (8-digit TaxId)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const now = new Date();",
+                  "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+                  "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+                  "const uniq8 = () => String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);",
+                  "const uniq10 = () => String(1000000000 + Math.floor(Math.random() * 8999999999)).slice(0, 10);",
+                  "const ssn = uniq9();",
+                  "const taxId = uniq8();  // intentionally 8 digits",
+                  "pm.environment.set('randomSsn', ssn);",
+                  "pm.environment.set('randomTaxId', taxId);",
+                  "pm.environment.set('randomSsn2', uniq9());",
+                  "pm.environment.unset('createAccepted');",
+                  "pm.environment.set('pspMerchantIdOverride', `P4174LEN-${stamp}`);",
+                  "pm.environment.set('qaLegalEntityName', `P4174LEN LE ${stamp}`);",
+                  "pm.environment.set('qaDbaName', `P4174LEN DBA ${stamp}`);",
+                  "pm.environment.set('qaMerchantName', `P4174LEN QA ${stamp}`);",
+                  "pm.environment.set('qaOwnerEmail1', `p4174len.o1.${stamp}@example.com`);",
+                  "pm.environment.set('qaOwnerEmail2', `p4174len.o2.${stamp}@example.com`);",
+                  "pm.environment.set('qaPcEmail', `p4174len.pc.${stamp}@example.com`);",
+                  "pm.environment.set('randomPspMerchantId', uniq9());",
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');",
+                  "console.log('edge prep', { expected: pm.environment.get('expectedTaxIdentificationType'), taxId: pm.environment.get('randomTaxId'), ssn: pm.environment.get('randomSsn'), ssn2: pm.environment.get('randomSsn2') });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const code = pm.response.code;",
+                  "console.log('create status', code);",
+                  "if ([200, 201].includes(code)) {",
+                  "  const j = pm.response.json();",
+                  "  const id = j.wellfitSubMerchantId || j.WellfitSubMerchantId;",
+                  "  pm.test('wellfitSubMerchantId present', () => pm.expect(id).to.be.a('string').and.not.empty);",
+                  "  if (id) { pm.environment.set('wellfitSubMerchantId', id); console.log('wellfitSubMerchantId=' + id); }",
+                  "  pm.environment.set('createAccepted', 'true');",
+                  "} else {",
+                  "  pm.test('API rejected invalid TaxId length (acceptable alternate)', () => pm.expect(code).to.be.at.least(400));",
+                  "  pm.environment.set('createAccepted', 'false');",
+                  "  console.log('create rejected \u2014 document validation gate; skip retrieve assert or expect no id');",
+                  "  try { console.log(pm.response.text()); } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"INDIVIDUAL_SOLE_PROPRIETORSHIP\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomTaxId}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 100,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4174-edge\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*P4174EDG\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"P4174EDG\",\n      \"CompanyName\": \"P4174EDG\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"{{mpOrganizationId}}\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/provisioning/create-sub-merchant",
+            "description": "TaxId intentionally 8 digits. Prefer create + CORE EIN; alternate: API 4xx validation."
+          },
+          "response": []
+        },
+        {
+          "name": "GET retrieve-sub-merchant (expect EIN if create ok)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = pm.environment.get('createAccepted');",
+                  "if (accepted === 'false') {",
+                  "  pm.test('Skipped retrieve assert \u2014 create was rejected (validation gate)', () => pm.expect(true).to.be.true);",
+                  "  return;",
+                  "}",
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const expected = pm.environment.get('expectedTaxIdentificationType');",
+                  "function findTaxIdTypes(node, out) {",
+                  "  if (!node || typeof node !== 'object') return;",
+                  "  if (Array.isArray(node)) { node.forEach(x => findTaxIdTypes(x, out)); return; }",
+                  "  if (Object.prototype.hasOwnProperty.call(node, 'taxIdentificationType')) out.push(String(node.taxIdentificationType));",
+                  "  Object.keys(node).forEach(k => findTaxIdTypes(node[k], out));",
+                  "}",
+                  "const found = [];",
+                  "findTaxIdTypes(j, found);",
+                  "console.log('taxIdentificationType values found:', JSON.stringify(found));",
+                  "let coreType = null;",
+                  "const providers = j.providerResponses || j.ProviderResponses || [];",
+                  "if (Array.isArray(providers) && providers.length >= 2) {",
+                  "  const coreFound = [];",
+                  "  findTaxIdTypes(providers[1], coreFound);",
+                  "  if (coreFound.length) coreType = coreFound[0];",
+                  "  console.log('2nd provider (CORE) candidates:', JSON.stringify(coreFound));",
+                  "}",
+                  "if (!coreType && found.length) coreType = found[0];",
+                  "if (coreType) pm.environment.set('lastCoreTaxIdentificationType', coreType);",
+                  "pm.test('taxIdentificationType present in retrieve', () => pm.expect(found.length).to.be.above(0));",
+                  "pm.test('CORE taxIdentificationType = ' + expected, () => pm.expect(coreType).to.eql(expected));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": "{{mpBaseUrl}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfitSubMerchantId}}",
+            "description": "If createAccepted=false, retrieve assert is skipped."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Edge \u2014 TaxId matches secondary owner only \u2192 EIN",
+      "item": [
+        {
+          "name": "POST create-sub-merchant (secondary SSN match \u2192 EIN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const now = new Date();",
+                  "const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;",
+                  "const uniq9 = () => String(100000000 + Math.floor(Math.random() * 899999999)).slice(0, 9);",
+                  "const uniq8 = () => String(10000000 + Math.floor(Math.random() * 89999999)).slice(0, 8);",
+                  "const uniq10 = () => String(1000000000 + Math.floor(Math.random() * 8999999999)).slice(0, 10);",
+                  "const ssn1 = uniq9();",
+                  "let ssn2 = uniq9();",
+                  "while (ssn2 === ssn1) { ssn2 = uniq9(); }",
+                  "pm.environment.set('randomSsn', ssn1);",
+                  "pm.environment.set('randomSsn2', ssn2);",
+                  "pm.environment.set('randomTaxId', ssn2);  // matches secondary only",
+                  "pm.environment.set('createAccepted', 'true');",
+                  "pm.environment.set('pspMerchantIdOverride', `P4174SEC-${stamp}`);",
+                  "pm.environment.set('qaLegalEntityName', `P4174SEC LE ${stamp}`);",
+                  "pm.environment.set('qaDbaName', `P4174SEC DBA ${stamp}`);",
+                  "pm.environment.set('qaMerchantName', `P4174SEC QA ${stamp}`);",
+                  "pm.environment.set('qaOwnerEmail1', `p4174sec.o1.${stamp}@example.com`);",
+                  "pm.environment.set('qaOwnerEmail2', `p4174sec.o2.${stamp}@example.com`);",
+                  "pm.environment.set('qaPcEmail', `p4174sec.pc.${stamp}@example.com`);",
+                  "pm.environment.set('randomPspMerchantId', uniq9());",
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');",
+                  "console.log('edge prep', { expected: pm.environment.get('expectedTaxIdentificationType'), taxId: pm.environment.get('randomTaxId'), ssn: pm.environment.get('randomSsn'), ssn2: pm.environment.get('randomSsn2') });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const j = pm.response.json();",
+                  "const id = j.wellfitSubMerchantId || j.WellfitSubMerchantId;",
+                  "pm.test('wellfitSubMerchantId present', () => pm.expect(id).to.be.a('string').and.not.empty);",
+                  "if (id) { pm.environment.set('wellfitSubMerchantId', id); console.log('wellfitSubMerchantId=' + id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LegalEntity\": {\n    \"Name\": \"{{qaLegalEntityName}}\",\n    \"DoingBusinessAs\": \"{{qaDbaName}}\",\n    \"Type\": \"LIMITED_LIABILITY_COMPANY\",\n    \"OwnershipType\": \"PRIVATE\",\n    \"TaxId\": \"{{randomTaxId}}\",\n    \"AnnualCreditCardSalesVolume\": 500000,\n    \"HasAcceptedCreditCards\": true,\n    \"YearsInBusiness\": 5,\n    \"Address\": {\n      \"StreetAddress1\": \"800 Address St\",\n      \"StreetAddress2\": \"Apartment 800\",\n      \"City\": \"Boston\",\n      \"State\": \"MA\",\n      \"PostalCode\": \"01970\"\n    },\n    \"Phone\": \"7817659800\",\n    \"Principals\": [\n      {\n        \"Title\": \"owner1\",\n        \"Ssn\": \"{{randomSsn}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 51,\n        \"Order\": 0,\n        \"FirstName\": \"p first\",\n        \"LastName\": \"p last\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail1}}\"\n      },\n      {\n        \"Title\": \"owner2\",\n        \"Ssn\": \"{{randomSsn2}}\",\n        \"DateOfBirth\": \"1980-10-12\",\n        \"StakePercent\": 49,\n        \"Order\": 1,\n        \"FirstName\": \"p first 2\",\n        \"LastName\": \"p last 2\",\n        \"Address\": {\n          \"StreetAddress1\": \"711 Princ 01 St 2\",\n          \"StreetAddress2\": \"Apartment 711\",\n          \"City\": \"Wylie\",\n          \"State\": \"TX\",\n          \"PostalCode\": \"01811\"\n        },\n        \"Phone\": \"7817659800\",\n        \"Email\": \"{{qaOwnerEmail2}}\"\n      }\n    ]\n  },\n  \"SubMerchant\": {\n    \"Name\": \"{{qaMerchantName}}\",\n    \"Url\": \"https://example.com/pay4174-edge\",\n    \"BankRoutingNumber\": \"211370545\",\n    \"BankAccountNumber\": \"84012312415\",\n    \"BankAccountType\": \"Checking\",\n    \"PspMerchantId\": \"{{randomPspMerchantId}}\",\n    \"PspMerchantIdOverride\": \"{{pspMerchantIdOverride}}\",\n    \"BillingDescriptor\": \"PDS*P4174EDG\",\n    \"MerchantCategoryCode\": \"8021\",\n    \"MerchantCategoryDetail\": \"8021 Detail\",\n    \"MaxTransactionAmount\": 5000,\n    \"IsRevenueBoostEnabled\": false,\n    \"ECheck\": {\n      \"BillingDescription\": \"P4174EDG\",\n      \"CompanyName\": \"P4174EDG\",\n      \"Enabled\": true\n    },\n    \"Address\": {\n      \"StreetAddress1\": \"811 PrimaryContact St\",\n      \"StreetAddress2\": \"Apartment 811\",\n      \"City\": \"Carpenter\",\n      \"State\": \"TX\",\n      \"PostalCode\": \"01811\"\n    },\n    \"Phone\": \"7817652345\",\n    \"PrimaryContact\": {\n      \"FirstName\": \"pc first\",\n      \"LastName\": \"pc last\",\n      \"Address\": null,\n      \"Phone\": \"7817653456\",\n      \"Email\": \"{{qaPcEmail}}\"\n    },\n    \"OrganizationId\": \"{{mpOrganizationId}}\",\n    \"SubMerchantEnabled\": true,\n    \"FundingEnabled\": true,\n    \"AccountState\": 2\n  },\n  \"SubMerchantAccounts\": [\n    { \"PaymentProcessor\": 0, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 1, \"AccountState\": 2 },\n    { \"PaymentProcessor\": 3, \"AccountState\": 2 }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{mpBaseUrl}}/provisioning/create-sub-merchant",
+            "description": "Two principals 51/49. TaxId = owner2 Ssn only \u2192 expect EIN (primary-only match)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET retrieve-sub-merchant (expect EIN)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('expectedTaxIdentificationType', 'EIN');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const accepted = pm.environment.get('createAccepted');",
+                  "if (accepted === 'false') {",
+                  "  pm.test('Skipped retrieve assert \u2014 create was rejected (validation gate)', () => pm.expect(true).to.be.true);",
+                  "  return;",
+                  "}",
+                  "pm.test('HTTP 200', () => pm.expect(pm.response.code).to.eql(200));",
+                  "const j = pm.response.json();",
+                  "const expected = pm.environment.get('expectedTaxIdentificationType');",
+                  "function findTaxIdTypes(node, out) {",
+                  "  if (!node || typeof node !== 'object') return;",
+                  "  if (Array.isArray(node)) { node.forEach(x => findTaxIdTypes(x, out)); return; }",
+                  "  if (Object.prototype.hasOwnProperty.call(node, 'taxIdentificationType')) out.push(String(node.taxIdentificationType));",
+                  "  Object.keys(node).forEach(k => findTaxIdTypes(node[k], out));",
+                  "}",
+                  "const found = [];",
+                  "findTaxIdTypes(j, found);",
+                  "console.log('taxIdentificationType values found:', JSON.stringify(found));",
+                  "let coreType = null;",
+                  "const providers = j.providerResponses || j.ProviderResponses || [];",
+                  "if (Array.isArray(providers) && providers.length >= 2) {",
+                  "  const coreFound = [];",
+                  "  findTaxIdTypes(providers[1], coreFound);",
+                  "  if (coreFound.length) coreType = coreFound[0];",
+                  "  console.log('2nd provider (CORE) candidates:', JSON.stringify(coreFound));",
+                  "}",
+                  "if (!coreType && found.length) coreType = found[0];",
+                  "if (coreType) pm.environment.set('lastCoreTaxIdentificationType', coreType);",
+                  "pm.test('taxIdentificationType present in retrieve', () => pm.expect(found.length).to.be.above(0));",
+                  "pm.test('CORE taxIdentificationType = ' + expected, () => pm.expect(coreType).to.eql(expected));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearerToken}}"
+              }
+            ],
+            "url": "{{mpBaseUrl}}/provisioning/retrieve-sub-merchant?wellfitSubMerchantId={{wellfitSubMerchantId}}",
+            "description": "Assert CORE taxIdentificationType = EIN when only secondary matches."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

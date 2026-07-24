@@ -1,0 +1,37 @@
+---
+description: When testing a PAY ticket, always add its Postman collection into Wellfit Payments (2 — Tickets) and rebuild the import pack
+alwaysApply: true
+---
+
+# Wellfit QA — ticket collection → Wellfit Payments
+
+Cada vez que **probemos / preparemos STAGE** un ticket `PAY-XXXX` con colección Postman:
+
+## Obligatorio (antes o al empezar a correr requests)
+
+1. Dejar la colección en **`postman/collections/tickets/`**  
+   (copiar desde `tickets/PAY-XXXX/*.postman_collection.json` si aún no está ahí).
+2. Si hay env del ticket, espejo opcional en **`postman/environments/tickets/`** (la suite runnable sigue en `tickets/PAY-XXXX/`).
+3. Rebuild:
+
+```bash
+python3 "Wellfit Payments/rebuild.py"
+```
+
+4. Decirle a Chris (español, corto): re-importar carpeta **`Wellfit Payments/`** → env **Wellfit Payments STAGE**. La suite queda bajo **`2 — Tickets`**.
+
+## Dónde vive qué
+
+| Ubicación | Rol |
+|-----------|-----|
+| `tickets/PAY-XXXX/` | Paquete STAGE del ticket (import rápido / paso a paso) |
+| `postman/collections/tickets/` | Fuente que entra al merge |
+| `Wellfit Payments/` | Único pack que Chris re-importa en el día a día |
+
+## No hacer
+
+- Probar un ticket y dejar la colección solo en `tickets/PAY-XXXX/` sin copiar + rebuild.
+- Pedirle que una a mano la carpeta en la UI de Postman — el rebuild es el fix.
+- Meter tickets bajo Core o Regression.
+
+Detalle del árbol / rebuild: `wellfit-qa-postman-wellfit-payments.mdc`. Paquete STAGE por ticket: `wellfit-qa-stage-postman-per-ticket.mdc`.
